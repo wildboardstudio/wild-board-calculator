@@ -8,58 +8,35 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #ffffff;
-      --bg2: #f2f2f2;
-      --bg3: #e4e4e4;
-      --text: #111111;
-      --text2: #666666;
-      --text3: #aaaaaa;
-      --border: #dddddd;
-      --border2: #bbbbbb;
-      --red: #cc2200;
-      --blue: #007aff;
+      --bg: #ffffff; --bg2: #f2f2f2; --bg3: #e4e4e4;
+      --text: #111111; --text2: #666666; --text3: #aaaaaa;
+      --border: #dddddd; --border2: #bbbbbb;
+      --red: #cc2200; --blue: #007aff; --green: #248a3d;
       --radius: 8px;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1c1c1e;
-        --bg2: #2c2c2e;
-        --bg3: #3a3a3c;
-        --text: #f2f2f7;
-        --text2: #aeaeb2;
-        --text3: #6c6c70;
-        --border: #3a3a3c;
-        --border2: #555555;
-        --red: #ff453a;
+        --bg: #1c1c1e; --bg2: #2c2c2e; --bg3: #3a3a3c;
+        --text: #f2f2f7; --text2: #aeaeb2; --text3: #6c6c70;
+        --border: #3a3a3c; --border2: #555555;
+        --red: #ff453a; --green: #30d158;
       }
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg2);
-      color: var(--text);
-      padding: 14px;
-      font-size: 16px;
-      -webkit-text-size-adjust: 100%;
+      background: var(--bg2); color: var(--text);
+      padding: 14px; font-size: 16px; -webkit-text-size-adjust: 100%;
     }
-
     .wrap { max-width: 680px; margin: 0 auto; }
-
     h1 { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
     .sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
 
     input[type=text], input[type=number] {
-      font-size: 16px;
-      padding: 9px 8px;
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      background: var(--bg);
-      color: var(--text);
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      min-height: 40px;
+      font-size: 16px; padding: 9px 8px;
+      border: 1px solid var(--border2); border-radius: var(--radius);
+      background: var(--bg); color: var(--text);
+      width: 100%; -webkit-appearance: none; appearance: none; min-height: 40px;
     }
     input[type=number] { text-align: center; }
     input::placeholder { color: var(--text3); }
@@ -67,16 +44,16 @@
 
     .btn {
       font-size: 15px; padding: 9px 14px;
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
+      border: 1px solid var(--border2); border-radius: var(--radius);
       background: var(--bg); color: var(--text);
       cursor: pointer; display: inline-flex;
-      align-items: center; gap: 5px; white-space: nowrap;
-      min-height: 40px;
+      align-items: center; gap: 5px; white-space: nowrap; min-height: 40px;
     }
     .btn:active { opacity: 0.6; }
     .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
     .btn-sm { font-size: 14px; padding: 7px 12px; min-height: 36px; }
+    .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
+    .btn-outline { background: transparent; color: var(--blue); border-color: var(--blue); }
 
     .del-btn {
       background: none; border: none; cursor: pointer;
@@ -91,22 +68,17 @@
     .project-bar > .title-wrap { flex: 1; min-width: 0; }
 
     .ititle {
-      font-size: 16px; font-weight: 400;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg);
-      cursor: pointer; color: var(--text3);
+      font-size: 16px; font-weight: 400; padding: 8px 10px;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg); cursor: pointer; color: var(--text3);
       display: block; width: 100%;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       min-height: 40px; line-height: 1.4;
     }
     .ititle.has-value { color: var(--text); font-weight: 600; }
     .ititle-input {
-      font-size: 16px; font-weight: 600;
-      padding: 8px 10px;
-      border: 1px solid var(--blue);
-      border-radius: var(--radius);
+      font-size: 16px; font-weight: 600; padding: 8px 10px;
+      border: 1px solid var(--blue); border-radius: var(--radius);
       background: var(--bg); color: var(--text);
       width: 100%; display: none; min-height: 40px;
     }
@@ -115,10 +87,7 @@
       background: var(--bg); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
     }
-    .species-header {
-      display: flex; align-items: center;
-      gap: 8px; margin-bottom: 12px;
-    }
+    .species-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .species-header .title-wrap { flex: 1; min-width: 0; }
     .species-footer {
       display: flex; justify-content: space-between;
@@ -130,24 +99,17 @@
 
     .t-block {
       background: var(--bg2); border-radius: var(--radius);
-      padding: 12px; margin-bottom: 10px;
-      border: 1px solid var(--border);
+      padding: 12px; margin-bottom: 10px; border: 1px solid var(--border);
     }
     .t-meta {
       display: flex; gap: 10px; align-items: center;
-      margin-bottom: 12px; padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
     }
-    .t-meta-field {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 13px; color: var(--text2); flex-shrink: 0;
-    }
+    .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; }
     .t-wrap {
       display: flex; align-items: center;
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      background: var(--bg); overflow: hidden;
-      width: 80px; min-height: 40px;
+      border: 1px solid var(--border2); border-radius: var(--radius);
+      background: var(--bg); overflow: hidden; width: 80px; min-height: 40px;
     }
     .t-wrap input {
       border: none; background: transparent;
@@ -155,21 +117,13 @@
       font-size: 16px; color: var(--text); text-align: right;
     }
     .t-wrap input:focus { outline: none; }
-    .t-suffix {
-      font-size: 15px; color: var(--text2);
-      padding: 0 7px 0 3px; user-select: none;
-    }
+    .t-suffix { font-size: 15px; color: var(--text2); padding: 0 7px 0 3px; user-select: none; }
     .p-wrap {
       display: flex; align-items: center;
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      background: var(--bg); overflow: hidden;
-      min-height: 40px; width: 110px;
+      border: 1px solid var(--border2); border-radius: var(--radius);
+      background: var(--bg); overflow: hidden; min-height: 40px; width: 110px;
     }
-    .p-prefix {
-      padding: 0 3px 0 10px;
-      font-size: 15px; color: var(--text2); flex-shrink: 0;
-    }
+    .p-prefix { padding: 0 3px 0 10px; font-size: 15px; color: var(--text2); flex-shrink: 0; }
     .p-wrap input {
       border: none; background: transparent;
       width: 100%; padding: 9px 8px 9px 0;
@@ -178,39 +132,21 @@
     .p-wrap input:focus { outline: none; }
     .t-meta-spacer { flex: 1; }
 
-    /* Board row: name | ft | in | width | del */
     .b-heads {
       display: grid;
       grid-template-columns: 80px 56px 56px 64px 28px;
       gap: 5px; margin-bottom: 6px;
       font-size: 11px; color: var(--text2); text-align: center;
     }
-    .b-heads > div:first-child { text-align: left; padding-left: 2px; }
-
     .b-row {
       display: grid;
       grid-template-columns: 80px 56px 56px 64px 28px;
       gap: 5px; align-items: start; margin-bottom: 4px;
     }
-    .b-row input { text-align: center; }
-
-    .b-result {
-      grid-column: 1 / -1;
-      font-size: 12px; color: var(--text2); font-weight: 600;
-      padding: 2px 2px 8px;
-      border-bottom: 1px solid var(--border);
-      display: flex; gap: 8px;
-    }
-    .b-result:last-child { border-bottom: none; padding-bottom: 4px; }
-
-    .b-label {
-      font-size: 13px; font-weight: 600; color: var(--text2);
-      display: flex; align-items: center; min-height: 40px;
-      padding: 0 2px;
-    }
-
-    .b-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-
+    .b-label { font-size: 13px; font-weight: 600; color: var(--text2); display: flex; align-items: center; min-height: 40px; padding: 0 2px; }
+    .b-result { font-size: 12px; color: var(--text2); font-weight: 600; padding: 2px 2px 8px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+    .b-result:last-child { border-bottom: none; }
+    .b-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     .t-footer {
       display: flex; justify-content: space-between;
       padding-top: 8px; border-top: 1px solid var(--border);
@@ -222,26 +158,59 @@
       background: var(--bg); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 14px; margin-top: 12px;
     }
-    .totals-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 8px; margin-bottom: 14px;
-    }
+    .totals-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px; }
     .metric { background: var(--bg2); border-radius: var(--radius); padding: 10px 12px; }
     .metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
     .metric-value { font-size: 20px; font-weight: 700; }
 
     .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+    /* Saved projects */
     .saved-item {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 12px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: var(--radius);
-      margin-bottom: 8px; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
     }
+    .saved-summary {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px; gap: 8px; cursor: pointer;
+    }
+    .saved-summary:active { background: var(--bg2); }
     .saved-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
     .saved-meta { font-size: 12px; color: var(--text2); }
+    .saved-chevron { font-size: 18px; color: var(--text3); flex-shrink: 0; transition: transform 0.2s; }
+    .saved-chevron.open { transform: rotate(180deg); }
+    .saved-actions { display: none; flex-wrap: wrap; gap: 8px; padding: 0 12px 12px; }
+    .saved-actions.open { display: flex; }
+    .saved-detail {
+      display: none; padding: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 13px; color: var(--text2);
+    }
+    .saved-detail.open { display: block; }
+    .detail-species { margin-bottom: 10px; }
+    .detail-species-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .detail-thick { margin-bottom: 8px; padding: 8px; background: var(--bg2); border-radius: var(--radius); }
+    .detail-thick-head { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+    .detail-board-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .detail-board-row:last-child { border-bottom: none; }
+
+    /* Save modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 20px; width: 100%; max-width: 340px;
+    }
+    .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: var(--text2); margin-bottom: 16px; }
+    .modal-btns { display: flex; flex-direction: column; gap: 8px; }
+
     .empty { font-size: 14px; color: var(--text2); }
     .actions { margin: 12px 0; }
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -276,15 +245,38 @@
   <div id="saved-list"><p class="empty">No saved projects yet.</p></div>
 
 </div>
+
+<!-- Save options modal -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal">
+    <h3>Save project</h3>
+    <p id="modal-msg">How would you like to save?</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="modal-overwrite">Overwrite original</button>
+      <button class="btn btn-outline" id="modal-new">Save as new project</button>
+      <button class="btn" id="modal-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
-let species=[],projects=[],uc=0,projName='';
+let species=[], projects=[], uc=0, projName='', editingId=null;
 function uid(){return 'x'+(++uc);}
 
-function boardName(i,total){
-  if(total===1) return 'Board';
-  return 'Board '+(i+1);
+function boardName(i,total){return total===1?'Board':'Board '+(i+1);}
+
+// --- localStorage ---
+function persist(){
+  try{localStorage.setItem('wbc_projects',JSON.stringify(projects));}catch(e){}
+}
+function loadPersisted(){
+  try{
+    const d=localStorage.getItem('wbc_projects');
+    if(d) projects=JSON.parse(d);
+  }catch(e){}
 }
 
+// --- Inline title ---
 function makeTitle({ph,val,onSave}){
   const wrap=document.createElement('div');
   const t=document.createElement('div');
@@ -293,13 +285,7 @@ function makeTitle({ph,val,onSave}){
   const inp=document.createElement('input');
   inp.type='text';inp.className='ititle-input';inp.placeholder=ph;inp.value=val||'';
   t.addEventListener('click',()=>{t.style.display='none';inp.style.display='block';inp.focus();inp.select();});
-  function done(){
-    const v=inp.value.trim();
-    t.textContent=v||ph;
-    t.className='ititle'+(v?' has-value':'');
-    inp.style.display='none';t.style.display='block';
-    if(onSave)onSave(v);
-  }
+  function done(){const v=inp.value.trim();t.textContent=v||ph;t.className='ititle'+(v?' has-value':'');inp.style.display='none';t.style.display='block';if(onSave)onSave(v);}
   inp.addEventListener('blur',done);
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
   wrap.appendChild(t);wrap.appendChild(inp);
@@ -310,24 +296,69 @@ const pWrap=makeTitle({ph:'Tap to name this project',onSave:v=>{projName=v;}});
 document.getElementById('proj-wrap').appendChild(pWrap);
 
 function clearProj(){
-  projName='';
+  projName='';editingId=null;
   const t=pWrap.querySelector('.ititle'),i=pWrap.querySelector('input');
   t.textContent='Tap to name this project';t.className='ititle';i.value='';
 }
 
-function doSave(){
+function setProjName(name){
+  projName=name;
+  const t=pWrap.querySelector('.ititle'),i=pWrap.querySelector('input');
+  t.textContent=name;t.className='ititle has-value';i.value=name;
+}
+
+// --- Save flow ---
+function triggerSave(){
   if(!projName){alert('Tap the project name field and enter a name first.');return;}
+  if(editingId){
+    // Editing an existing project — show options
+    document.getElementById('modal-msg').textContent=`Editing "${projName}". How would you like to save?`;
+    document.getElementById('save-modal').classList.add('open');
+  } else {
+    commitSave(null);
+  }
+}
+
+function commitSave(overwriteId){
   const totalBF=species.reduce((s,x)=>s+sBF(x),0);
   const totalCost=species.reduce((s,x)=>s+sCost(x),0);
-  projects.unshift({
-    id:uid(),name:projName,bf:totalBF,cost:totalCost,
-    date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-  });
-  clearProj();renderSaved();
+  const entry={
+    id:overwriteId||uid(), name:projName,
+    bf:totalBF, cost:totalCost,
+    date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    species:JSON.parse(JSON.stringify(species))
+  };
+  if(overwriteId){
+    const idx=projects.findIndex(p=>p.id===overwriteId);
+    if(idx>=0) projects[idx]=entry;
+    else projects.unshift(entry);
+  } else {
+    projects.unshift(entry);
+  }
+  persist();
+  clearProj();
+  species=[];
+  addSpecies();
+  renderSaved();
 }
-document.getElementById('save-btn').addEventListener('click',doSave);
-document.getElementById('save-btn2').addEventListener('click',doSave);
 
+document.getElementById('save-btn').addEventListener('click',triggerSave);
+document.getElementById('save-btn2').addEventListener('click',triggerSave);
+
+document.getElementById('modal-overwrite').addEventListener('click',()=>{
+  document.getElementById('save-modal').classList.remove('open');
+  commitSave(editingId);
+});
+document.getElementById('modal-new').addEventListener('click',()=>{
+  document.getElementById('save-modal').classList.remove('open');
+  editingId=null;
+  commitSave(null);
+});
+document.getElementById('modal-cancel').addEventListener('click',()=>{
+  document.getElementById('save-modal').classList.remove('open');
+});
+
+// --- Math ---
 function linIn(lft,lin){return(parseFloat(lft)||0)*12+(parseFloat(lin)||0);}
 function calcBF(tNum,lft,lin,w){return((parseFloat(tNum)||0)/4)*(parseFloat(w)||0)*linIn(lft,lin)/144;}
 function calcCost(tNum,lft,lin,w,price){return calcBF(tNum,lft,lin,w)*(parseFloat(price)||0);}
@@ -362,17 +393,29 @@ function refreshNums(sid,tid){
   updateTotals();
 }
 
+// --- Data ---
 function addSpecies(){species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});render();}
 function remSpecies(sid){species=species.filter(s=>s.id!==sid);render();updateTotals();}
 function addThick(sid){const s=species.find(x=>x.id===sid);if(s)s.thicknesses.push({id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]});render();}
 function remThick(sid,tid){const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);render();updateTotals();}
 function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});render();}
-function dupBoard(sid,tid){
-  const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);
-  if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}
-  render();
-}
+function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}render();}
 function remBoard(sid,tid,bid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);render();updateTotals();}
+
+function loadProjectIntoCalc(p){
+  // Deep clone species data with fresh IDs so edits don't mutate the saved project
+  species=JSON.parse(JSON.stringify(p.species)).map(s=>({
+    ...s, id:uid(),
+    thicknesses:s.thicknesses.map(t=>({
+      ...t, id:uid(),
+      boards:t.boards.map(b=>({...b,id:uid()}))
+    }))
+  }));
+  editingId=p.id;
+  setProjName(p.name);
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
 document.addEventListener('input',function(e){
   const el=e.target,sid=el.dataset.sid,tid=el.dataset.tid,bid=el.dataset.bid,field=el.dataset.field;
@@ -395,22 +438,19 @@ document.addEventListener('click',function(e){
 
 document.getElementById('add-species').addEventListener('click',addSpecies);
 
+// --- Render calculator ---
 function render(){
   const list=document.getElementById('species-list');
   list.innerHTML='';
   species.forEach(s=>{
     const card=document.createElement('div');card.className='species-card';
-
     const hdr=document.createElement('div');hdr.className='species-header';
     const tw=makeTitle({ph:'Tap to name species',val:s.name,onSave:v=>{s.name=v;updateTotals();}});
-    tw.className='title-wrap';
-    hdr.appendChild(tw);
-    const rb=document.createElement('button');
-    rb.className='del-btn';
+    tw.className='title-wrap';hdr.appendChild(tw);
+    const rb=document.createElement('button');rb.className='del-btn';
     rb.dataset.action='rem-species';rb.dataset.sid=s.id;
     rb.textContent='×';rb.setAttribute('aria-label','Remove species');
-    hdr.appendChild(rb);
-    card.appendChild(hdr);
+    hdr.appendChild(rb);card.appendChild(hdr);
 
     s.thicknesses.forEach(t=>{
       const blk=document.createElement('div');blk.className='t-block';
@@ -437,7 +477,6 @@ function render(){
           <div style="text-align:center;">Width</div>
           <div></div>
         </div>
-
         <div id="bl-${t.id}"></div>
         <div class="b-actions">
           <button class="btn btn-sm" data-action="add-board" data-sid="${s.id}" data-tid="${t.id}">+ Board</button>
@@ -448,7 +487,6 @@ function render(){
           <span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>
         </div>`;
       card.appendChild(blk);
-
       const bl=blk.querySelector('#bl-'+t.id);
       const total=t.boards.length;
       t.boards.forEach((b,i)=>{
@@ -472,7 +510,6 @@ function render(){
     const atb=document.createElement('div');atb.style.marginTop='8px';
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add thickness</button>`;
     card.appendChild(atb);
-
     const sf=document.createElement('div');sf.className='species-footer';
     sf.innerHTML=`<span>Total: <strong id="sbf-${s.id}">${sBF(s).toFixed(2)} bf</strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span>`;
     card.appendChild(sf);
@@ -481,23 +518,98 @@ function render(){
   updateTotals();
 }
 
+// --- Render saved projects ---
 function renderSaved(){
   const el=document.getElementById('saved-list');
   if(!projects.length){el.innerHTML='<p class="empty">No saved projects yet.</p>';return;}
-  el.innerHTML=projects.map(p=>`
-    <div class="saved-item">
-      <div>
+  el.innerHTML='';
+  projects.forEach(p=>{
+    const item=document.createElement('div');item.className='saved-item';
+
+    // Summary row
+    const summary=document.createElement('div');summary.className='saved-summary';
+    summary.innerHTML=`
+      <div style="flex:1;min-width:0">
         <div class="saved-name">${p.name}</div>
         <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}</div>
       </div>
-      <button class="del-btn" data-del="${p.id}" aria-label="Delete" style="flex-shrink:0">×</button>
-    </div>`).join('');
-  el.querySelectorAll('[data-del]').forEach(b=>{
-    b.addEventListener('click',()=>{projects=projects.filter(p=>p.id!==b.dataset.del);renderSaved();});
+      <span class="saved-chevron">&#8964;</span>`;
+    item.appendChild(summary);
+
+    // Action buttons
+    const actions=document.createElement('div');actions.className='saved-actions';
+    actions.innerHTML=`
+      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit project</button>
+      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red)">Delete</button>`;
+    item.appendChild(actions);
+
+    // Detail view
+    const detail=document.createElement('div');detail.className='saved-detail';
+    if(p.species&&p.species.length){
+      p.species.forEach(s=>{
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
+        s.thicknesses.forEach(t=>{
+          const tDiv=document.createElement('div');tDiv.className='detail-thick';
+          const tHead=`${t.tNum||'—'}/4 &nbsp;·&nbsp; $${parseFloat(t.price||0).toFixed(2)}/bf`;
+          let boards='';
+          const total=t.boards.length;
+          t.boards.forEach((b,i)=>{
+            const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
+            const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
+            const lStr=(parseFloat(b.lft)||0)+"' "+(parseFloat(b.lin)||0)+'"';
+            const wStr=(parseFloat(b.w)||0)+'"';
+            boards+=`<div class="detail-board-row">
+              <span>${boardName(i,total)} &nbsp; ${lStr} × ${wStr}</span>
+              <span>${bfVal.toFixed(2)} bf &nbsp; $${costVal.toFixed(2)}</span>
+            </div>`;
+          });
+          tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${boards}`;
+          sDiv.appendChild(tDiv);
+        });
+        detail.appendChild(sDiv);
+      });
+    }
+    item.appendChild(detail);
+
+    // Toggle expand
+    summary.addEventListener('click',()=>{
+      const chevron=summary.querySelector('.saved-chevron');
+      const isOpen=actions.classList.contains('open');
+      if(isOpen){
+        actions.classList.remove('open');
+        detail.classList.remove('open');
+        chevron.classList.remove('open');
+      } else {
+        actions.classList.add('open');
+        detail.classList.add('open');
+        chevron.classList.add('open');
+      }
+    });
+
+    // Edit
+    actions.querySelector('[data-edit]').addEventListener('click',e=>{
+      e.stopPropagation();
+      loadProjectIntoCalc(p);
+    });
+
+    // Delete
+    actions.querySelector('[data-del]').addEventListener('click',e=>{
+      e.stopPropagation();
+      if(confirm(`Delete "${p.name}"?`)){
+        projects=projects.filter(x=>x.id!==p.id);
+        persist();
+        renderSaved();
+      }
+    });
+
+    el.appendChild(item);
   });
 }
 
+loadPersisted();
 addSpecies();
+renderSaved();
 </script>
 </body>
 </html>
