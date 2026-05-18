@@ -221,6 +221,27 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .actions { margin: 12px 0; }
+    .landing {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 80vh; text-align: center; padding: 24px;
+    }
+    .landing h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .landing .tagline { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+    .landing .sub-tagline { font-size: 15px; color: var(--text2); font-style: italic; margin-bottom: 40px; }
+    .landing .btn-create {
+      font-size: 17px; padding: 14px 32px;
+      background: #2c2418; color: #faf7f2;
+      border: none; border-radius: var(--radius);
+      cursor: pointer; font-weight: 600; min-height: 52px;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .landing .btn-create:active { opacity: 0.75; }
+    .landing .saved-link {
+      margin-top: 20px; font-size: 13px; color: var(--text2);
+      cursor: pointer; text-decoration: underline;
+    }
+    .app-screen { display: none; }
     .budget-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .budget-row label { font-size: 12px; color: var(--text2); white-space: nowrap; }
     .budget-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: transparent; overflow: hidden; width: 130px; min-height: 32px; }
@@ -233,10 +254,24 @@
   </style>
 </head>
 <body>
+<!-- Landing screen -->
+<div class="landing" id="landing-screen">
+  <h1>Wild Board Calculator</h1>
+  <p class="tagline">By Wild Board Studio</p>
+  <p class="sub-tagline">Pricing out lumber has never been easier.</p>
+  <button class="btn-create" id="start-btn">+ Create new project</button>
+  <div id="landing-saved-link" class="saved-link" style="display:none" onclick="showSaved()">View saved projects</div>
+</div>
+
+<!-- App screen -->
+<div class="app-screen" id="app-screen">
 <div class="wrap">
 
-  <h1>Wild Board Calculator</h1>
-  <p class="sub">Lumber board foot calculator by Wild Board Studio</p>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+    <button class="btn btn-sm" id="back-btn">&#8592; Back</button>
+    <h1 style="font-size:18px;font-weight:700;flex:1;text-align:center;">Wild Board Calculator</h1>
+    <div style="width:60px"></div>
+  </div>
 
   <div class="project-bar">
     <div class="title-wrap" id="proj-wrap"></div>
@@ -268,9 +303,10 @@
   </div>
 
   <div class="divider"></div>
-  <div style="font-size:15px;font-weight:700;margin-bottom:10px">Saved projects</div>
+  <div id="saved-section" style="font-size:15px;font-weight:700;margin-bottom:10px">Saved projects</div>
   <div id="saved-list"><p class="empty">No saved projects yet.</p></div>
 
+</div>
 </div>
 
 <!-- Budget exceeded modal -->
@@ -618,6 +654,7 @@ function renderSaved(){
   const el=document.getElementById('saved-list');
   if(!projects.length){el.innerHTML='<p class="empty">No saved projects yet.</p>';return;}
   el.innerHTML='';
+  updateLandingLink();
   projects.forEach(p=>{
     const item=document.createElement('div');item.className='saved-item';
 
@@ -703,8 +740,35 @@ function renderSaved(){
 }
 
 loadPersisted();
-addSpecies();
 renderSaved();
+updateLandingLink();
+
+document.getElementById('start-btn').addEventListener('click', function(){
+  document.getElementById('landing-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  if(species.length===0) addSpecies();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+document.getElementById('back-btn').addEventListener('click', function(){
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('landing-screen').style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+function updateLandingLink(){
+  const link=document.getElementById('landing-saved-link');
+  if(link) link.style.display=projects.length?'block':'none';
+}
+
+function showSaved(){
+  document.getElementById('landing-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  setTimeout(()=>{
+    const el=document.getElementById('saved-section');
+    if(el) el.scrollIntoView({behavior:'smooth'});
+  },100);
+}
 </script>
 </body>
 </html>
