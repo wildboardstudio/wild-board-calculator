@@ -433,6 +433,12 @@ function render(){
         </div>
         <div class="b-heads">
           <div></div>
+          <div style="grid-column:2/4;text-align:center;border-bottom:1px solid var(--border2);padding-bottom:3px;margin-bottom:2px;">Length</div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="b-heads" style="margin-bottom:6px;">
+          <div></div>
           <div>ft</div>
           <div>in</div>
           <div>width</div>
@@ -441,7 +447,7 @@ function render(){
         <div id="bl-${t.id}"></div>
         <div class="b-actions">
           <button class="btn btn-sm" data-action="add-board" data-sid="${s.id}" data-tid="${t.id}">+ Board</button>
-          <button class="btn btn-sm" data-action="dup-board" data-sid="${s.id}" data-tid="${t.id}">Dup last</button>
+          <button class="btn btn-sm" data-action="dup-board" data-sid="${s.id}" data-tid="${t.id}">Duplicate last</button>
         </div>
         <div class="t-footer">
           <span>Total: <strong id="tbf-${t.id}">${tBF(t).toFixed(2)} bf</strong></span>
