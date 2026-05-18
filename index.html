@@ -221,6 +221,15 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .actions { margin: 12px 0; }
+    .budget-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .budget-row label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+    .budget-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); overflow: hidden; flex: 1; min-height: 40px; }
+    .budget-prefix { padding: 0 3px 0 10px; font-size: 15px; color: var(--text2); flex-shrink: 0; }
+    .budget-wrap input { border: none; background: transparent; width: 100%; padding: 9px 10px 9px 0; font-size: 16px; color: var(--text); text-align: right; }
+    .budget-wrap input:focus { outline: none; }
+    .budget-alert { display: none; background: #fff3f3; border: 1px solid var(--red); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: var(--red); }
+    .budget-alert.show { display: block; }
+    @media (prefers-color-scheme: dark) { .budget-alert { background: #2a1010; } }
   </style>
 </head>
 <body>
@@ -246,6 +255,11 @@
       <div class="metric"><div class="metric-label">Board feet</div><div class="metric-value" id="t-bf">0.00</div></div>
       <div class="metric"><div class="metric-label">Subtotal</div><div class="metric-value" id="t-cost">$0.00</div></div>
     </div>
+    <div class="budget-row">
+      <label>Project budget</label>
+      <div class="budget-wrap"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="0.00" min="0" step="0.01" /></div>
+    </div>
+    <div class="budget-alert" id="budget-alert"></div>
     <div style="text-align:right">
       <button class="btn btn-primary" id="save-btn2">Save project</button>
     </div>
@@ -255,6 +269,18 @@
   <div style="font-size:15px;font-weight:700;margin-bottom:10px">Saved projects</div>
   <div id="saved-list"><p class="empty">No saved projects yet.</p></div>
 
+</div>
+
+<!-- Budget exceeded modal -->
+<div class="modal-overlay" id="budget-modal">
+  <div class="modal">
+    <h3>Budget exceeded</h3>
+    <p id="budget-modal-msg">This project is over budget. Do you want to proceed and save anyway?</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="budget-proceed">Proceed and save</button>
+      <button class="btn" id="budget-cancel">Go back and adjust</button>
+    </div>
+  </div>
 </div>
 
 <!-- Save options modal -->
@@ -271,7 +297,7 @@
 </div>
 
 <script>
-let species=[], projects=[], uc=0, projName='', editingId=null;
+let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined;
 function uid(){return 'x'+(++uc);}
 
 function boardName(i,total){return total===1?'Board':'Board '+(i+1);}
@@ -308,6 +334,8 @@ document.getElementById('proj-wrap').appendChild(pWrap);
 
 function clearProj(){
   projName='';editingId=null;
+  const budgetEl=document.getElementById('budget-input');if(budgetEl)budgetEl.value='';
+  const alertEl=document.getElementById('budget-alert');if(alertEl)alertEl.classList.remove('show');
   const t=pWrap.querySelector('.ititle'),i=pWrap.querySelector('input');
   t.textContent='Tap to name this project';t.className='ititle';i.value='';
 }
@@ -321,8 +349,21 @@ function setProjName(name){
 // --- Save flow ---
 function triggerSave(){
   if(!projName){alert('Tap the project name field and enter a name first.');return;}
+  const totalCost=species.reduce((s,x)=>s+sCost(x),0);
+  const budget=parseFloat(document.getElementById('budget-input').value)||0;
+  if(budget>0&&totalCost>budget){
+    const over=totalCost-budget;
+    document.getElementById('budget-modal-msg').textContent=
+      'This project is $'+over.toFixed(2)+' over your $'+budget.toFixed(2)+' budget. Proceed and save anyway?';
+    pendingSaveOverwrite=editingId||null;
+    document.getElementById('budget-modal').classList.add('open');
+  } else {
+    proceedSave();
+  }
+}
+
+function proceedSave(){
   if(editingId){
-    // Editing an existing project — show options
     document.getElementById('modal-msg').textContent=`Editing "${projName}". How would you like to save?`;
     document.getElementById('save-modal').classList.add('open');
   } else {
@@ -333,9 +374,10 @@ function triggerSave(){
 function commitSave(overwriteId){
   const totalBF=species.reduce((s,x)=>s+sBF(x),0);
   const totalCost=species.reduce((s,x)=>s+sCost(x),0);
+  const budget=parseFloat(document.getElementById('budget-input').value)||0;
   const entry={
     id:overwriteId||uid(), name:projName,
-    bf:totalBF, cost:totalCost,
+    bf:totalBF, cost:totalCost, budget:budget,
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     species:JSON.parse(JSON.stringify(species))
   };
@@ -353,6 +395,18 @@ function commitSave(overwriteId){
   document.getElementById('edit-bar').style.display='none';
   renderSaved();
 }
+
+document.getElementById('budget-proceed').addEventListener('click',()=>{
+  document.getElementById('budget-modal').classList.remove('open');
+  proceedSave();
+});
+document.getElementById('budget-cancel').addEventListener('click',()=>{
+  document.getElementById('budget-modal').classList.remove('open');
+});
+document.getElementById('budget-input').addEventListener('input',()=>{
+  const totalCost=species.reduce((s,x)=>s+sCost(x),0);
+  checkBudget(totalCost);
+});
 
 document.getElementById('save-btn').addEventListener('click',triggerSave);
 document.getElementById('save-btn2').addEventListener('click',triggerSave);
@@ -392,6 +446,21 @@ function updateTotals(){
   const totalCost=species.reduce((s,x)=>s+sCost(x),0);
   document.getElementById('t-bf').textContent=totalBF.toFixed(2);
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
+  checkBudget(totalCost);
+}
+
+function checkBudget(totalCost){
+  const budgetEl=document.getElementById('budget-input');
+  const alertEl=document.getElementById('budget-alert');
+  if(!budgetEl||!alertEl)return;
+  const budget=parseFloat(budgetEl.value)||0;
+  if(budget>0&&totalCost>budget){
+    const over=totalCost-budget;
+    alertEl.textContent='Over budget by $'+over.toFixed(2);
+    alertEl.classList.add('show');
+  } else {
+    alertEl.classList.remove('show');
+  }
 }
 
 function refreshNums(sid,tid){
@@ -434,6 +503,8 @@ function loadProjectIntoCalc(p){
   editingId=p.id;
   setProjName(p.name);
   render();
+  const budgetEl=document.getElementById('budget-input');
+  if(budgetEl) budgetEl.value=p.budget||'';
   document.getElementById('edit-bar').style.display='flex';
   document.getElementById('edit-label').textContent='Editing: '+p.name;
   window.scrollTo({top:0,behavior:'smooth'});
@@ -553,7 +624,7 @@ function renderSaved(){
     summary.innerHTML=`
       <div style="flex:1;min-width:0">
         <div class="saved-name">${p.name}</div>
-        <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}</div>
+        <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}${p.budget?` &nbsp;·&nbsp; budget: $${parseFloat(p.budget).toFixed(2)}`:''}</div>
       </div>
       <span class="saved-chevron">&#8964;</span>`;
     item.appendChild(summary);
