@@ -8,18 +8,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #ffffff; --bg2: #f2f2f2; --bg3: #e4e4e4;
-      --text: #111111; --text2: #666666; --text3: #aaaaaa;
-      --border: #dddddd; --border2: #bbbbbb;
-      --red: #cc2200; --blue: #007aff; --green: #248a3d;
+      --bg: #ffffff; --bg2: #e8e2d9; --bg3: #d9d2c7;
+      --text: #2c2418; --text2: #6b5e4e; --text3: #a09080;
+      --border: #cec5b8; --border2: #b8ad9e;
+      --red: #8b2500; --blue: #5c4a32; --green: #3a5c2e;
       --radius: 8px;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1c1c1e; --bg2: #2c2c2e; --bg3: #3a3a3c;
-        --text: #f2f2f7; --text2: #aeaeb2; --text3: #6c6c70;
-        --border: #3a3a3c; --border2: #555555;
-        --red: #ff453a; --green: #30d158;
+        --bg: #2a2118; --bg2: #1e1810; --bg3: #332a1e;
+        --text: #ede5d8; --text2: #b8a898; --text3: #7a6a5a;
+        --border: #3d3025; --border2: #52422f;
+        --red: #cc4400; --green: #5a8a40;
       }
     }
 
@@ -40,7 +40,7 @@
     }
     input[type=number] { text-align: center; }
     input::placeholder { color: var(--text3); }
-    input:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+    input:focus { outline: 2px solid #8b6e4a; outline-offset: -1px; }
 
     .btn {
       font-size: 15px; padding: 9px 14px;
@@ -50,10 +50,10 @@
       align-items: center; gap: 5px; white-space: nowrap; min-height: 40px;
     }
     .btn:active { opacity: 0.6; }
-    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary { background: #2c2418; color: #ede5d8; border-color: #2c2418; }
     .btn-sm { font-size: 14px; padding: 7px 12px; min-height: 36px; }
-    .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
-    .btn-outline { background: transparent; color: var(--blue); border-color: var(--blue); }
+    .btn-green { background: #3a5c2e; color: #fff; border-color: #3a5c2e; }
+    .btn-outline { background: transparent; color: #5c4a32; border-color: #5c4a32; }
 
     .del-btn {
       background: none; border: none; cursor: pointer;
@@ -78,7 +78,7 @@
     .ititle.has-value { color: var(--text); font-weight: 600; }
     .ititle-input {
       font-size: 16px; font-weight: 600; padding: 8px 10px;
-      border: 1px solid var(--blue); border-radius: var(--radius);
+      border: 1px solid #8b6e4a; border-radius: var(--radius);
       background: var(--bg); color: var(--text);
       width: 100%; display: none; min-height: 40px;
     }
@@ -227,9 +227,9 @@
     .budget-prefix { padding: 0 2px 0 8px; font-size: 13px; color: var(--text2); flex-shrink: 0; }
     .budget-wrap input { border: none; background: transparent; width: 100%; padding: 6px 8px 6px 0; font-size: 14px; color: var(--text); text-align: right; }
     .budget-wrap input:focus { outline: none; color: var(--text); }
-    .budget-alert { display: none; background: #fff3f3; border: 1px solid var(--red); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: var(--red); }
+    .budget-alert { display: none; background: #f5ece4; border: 1px solid #8b2500; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #8b2500; }
     .budget-alert.show { display: block; }
-    @media (prefers-color-scheme: dark) { .budget-alert { background: #2a1010; } }
+    @media (prefers-color-scheme: dark) { .budget-alert { background: #2a1a0a; } }
   </style>
 </head>
 <body>
