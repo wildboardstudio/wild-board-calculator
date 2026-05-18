@@ -134,15 +134,17 @@
 
     .b-heads {
       display: grid;
-      grid-template-columns: 80px 56px 56px 64px 28px;
+      grid-template-columns: 60px 1fr 1fr 1fr;
       gap: 5px; margin-bottom: 6px;
       font-size: 11px; color: var(--text2); text-align: center;
     }
     .b-row {
       display: grid;
-      grid-template-columns: 80px 56px 56px 64px 28px;
-      gap: 5px; align-items: start; margin-bottom: 4px;
+      grid-template-columns: 60px 1fr 1fr 1fr;
+      gap: 5px; align-items: center; margin-bottom: 4px;
     }
+    .b-row-right { display: flex; align-items: center; gap: 5px; }
+    .b-row-right .suffix-wrap { flex: 1; }
     .b-label { font-size: 13px; font-weight: 600; color: var(--text2); display: flex; align-items: center; min-height: 40px; padding: 0 2px; }
     .suffix-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); overflow: hidden; min-height: 40px; }
     .suffix-wrap input { border: none; background: transparent; padding: 9px 2px 9px 6px; font-size: 16px; color: var(--text); text-align: right; width: 100%; min-width: 0; }
@@ -493,7 +495,6 @@ function render(){
           <div></div>
           <div style="grid-column:2/4;text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div>
           <div style="text-align:center;">Width</div>
-          <div></div>
         </div>
         <div id="bl-${t.id}"></div>
         <div class="b-actions">
@@ -512,10 +513,12 @@ function render(){
         wrap.innerHTML=`
           <div class="b-row">
             <div class="b-label">${boardName(i,total)}</div>
-            <div class="suffix-wrap"><input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lft" placeholder="0" min="0" step="1" value="${b.lft}" /><span class="suffix-mark">'</span></div>
-            <div class="suffix-wrap"><input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lin" placeholder="0" min="0" max="11" step="1" value="${b.lin}" /><span class="suffix-mark">"</span></div>
-            <div class="suffix-wrap"><input type="number" inputmode="decimal" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="w" placeholder="0" min="0" step="0.25" value="${b.w}" /><span class="suffix-mark">"</span></div>
-            <button class="del-btn" data-action="rem-board" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" aria-label="Remove board">×</button>
+            <div class="suffix-wrap"><input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lft" placeholder="ft" min="0" step="1" value="${b.lft}" /><span class="suffix-mark">'</span></div>
+            <div class="suffix-wrap"><input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lin" placeholder="in" min="0" max="11" step="1" value="${b.lin}" /><span class="suffix-mark">"</span></div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <div class="suffix-wrap" style="flex:1"><input type="number" inputmode="decimal" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="w" placeholder="in" min="0" step="0.25" value="${b.w}" /><span class="suffix-mark">"</span></div>
+              <button class="del-btn" data-action="rem-board" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" aria-label="Remove board" style="min-width:28px;flex-shrink:0">×</button>
+            </div>
           </div>
           <div class="b-result">
             <span id="bf-${b.id}">${calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(2)} bf</span>
