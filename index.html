@@ -243,6 +243,12 @@
     <button class="btn btn-primary" id="save-btn">Save</button>
   </div>
 
+  <div class="budget-row">
+    <label>Budget</label>
+    <div class="budget-wrap"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="0.00" min="0" step="0.01" /></div>
+  </div>
+  <div class="budget-alert" id="budget-alert"></div>
+
   <div id="edit-bar" style="display:none" class="edit-bar"><strong id="edit-label">Editing project</strong><button class="btn btn-sm" id="cancel-edit">Cancel</button></div>
   <div id="species-list"></div>
 
@@ -255,11 +261,6 @@
       <div class="metric"><div class="metric-label">Board feet</div><div class="metric-value" id="t-bf">0.00</div></div>
       <div class="metric"><div class="metric-label">Subtotal</div><div class="metric-value" id="t-cost">$0.00</div></div>
     </div>
-    <div class="budget-row">
-      <label>Project budget</label>
-      <div class="budget-wrap"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="0.00" min="0" step="0.01" /></div>
-    </div>
-    <div class="budget-alert" id="budget-alert"></div>
     <div style="text-align:right">
       <button class="btn btn-primary" id="save-btn2">Save project</button>
     </div>
