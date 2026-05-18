@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wild Board Calculator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #eeede9;
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --text-tertiary: #a0a0a0;
+      --border: rgba(0,0,0,0.12);
+      --border-mid: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --danger: #c0392b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --bg-tertiary: #3a3a3c;
+        --text: #f2f2f7;
+        --text-secondary: #aeaeb2;
+        --text-tertiary: #6c6c70;
+        --border: rgba(255,255,255,0.12);
+        --border-mid: rgba(255,255,255,0.22);
+        --danger: #ff453a;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .container { max-width: 780px; margin: 0 auto; }
+
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 2px; }
+    .sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+
+    /* Cards */
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Inline title */
+    .inline-title {
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid transparent;
+      flex: 1;
+      margin-right: 8px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .inline-title:hover { border-color: var(--border-mid); background: var(--bg-secondary); }
+    .inline-title.placeholder { color: var(--text-tertiary); font-weight: 400; font-size: 15px; }
+    .inline-input {
+      flex: 1;
+      margin-right: 8px;
+      padding: 4px 6px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      color: var(--text);
+    }
+
+    /* Project bar */
+    .project-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+
+    /* Tax bar */
+    .tax-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .tax-bar-status { flex: 1; font-size: 12px; color: var(--text-secondary); }
+    .tax-bar-status strong { color: var(--text); }
+    .tax-expand {
+      background: none; border: none; cursor: pointer;
+      font-size: 12px; color: var(--text-secondary);
+      display: inline-flex; align-items: center; gap: 4px;
+      white-space: nowrap; padding: 2px 6px;
+      border-radius: var(--radius-md);
+    }
+    .tax-expand:hover { background: var(--bg); }
+    .tax-panel {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 1rem;
+    }
+    .tax-options { display: flex; gap: 8px; margin-bottom: 4px; }
+    .zip-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .zip-row input { width: 140px; }
+    .tax-note { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; }
+
+    /* Species card */
+    .species-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .species-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .species-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 10px; border-top: 0.5px solid var(--border); margin-top: 4px;
+    }
+    .species-totals { font-size: 13px; color: var(--text-secondary); }
+    .species-totals strong { color: var(--text); }
+
+    /* Thickness block */
+    .thickness-block {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .thickness-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px; padding-bottom: 10px;
+      border-bottom: 0.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .thickness-wrap {
+      display: flex; align-items: center;
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      overflow: hidden; width: 90px;
+    }
+    .thickness-wrap input {
+      border: none; background: transparent;
+      width: 38px; padding: 6px 4px 6px 8px;
+      font-size: 14px; color: var(--text); text-align: right;
+    }
+    .thickness-wrap input:focus { outline: none; }
+    .thickness-suffix {
+      font-size: 14px; color: var(--text-secondary);
+      padding-left: 4px; padding-right: 8px;
+      white-space: nowrap; user-select: none;
+    }
+    .price-wrap { display: flex; align-items: center; gap: 4px; }
+    .price-wrap input {
+      width: 80px; padding: 6px 8px; font-size: 14px;
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      background: var(--bg); color: var(--text); text-align: right;
+    }
+    .thickness-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 8px; border-top: 0.5px solid var(--border); margin-top: 4px;
+    }
+    .thickness-totals { font-size: 12px; color: var(--text-secondary); }
+    .thickness-totals strong { color: var(--text); }
+
+    /* Board rows */
+    .board-col-heads {
+      display: grid;
+      grid-template-columns: 1.6fr 152px 1fr 64px 72px 32px;
+      gap: 6px; margin-bottom: 4px; padding: 0 2px;
+    }
+    .board-row {
+      display: grid;
+      grid-template-columns: 1.6fr 152px 1fr 64px 72px 32px;
+      gap: 6px; align-items: center; margin-bottom: 6px;
+    }
+    .col-head { font-size: 11px; color: var(--text-secondary); }
+    .length-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .bf-display, .cost-display {
+      font-size: 13px; font-weight: 500;
+      text-align: right; color: var(--text-secondary);
+    }
+
+    /* Totals panel */
+    .totals-panel {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 1rem;
+    }
+    .metric {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+    .metric-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .metric-value { font-size: 22px; font-weight: 600; }
+
+    /* Saved projects */
+    .divider { height: 0.5px; background: var(--border); margin: 1.5rem 0; }
+    .saved-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; background: var(--bg-secondary);
+      border-radius: var(--radius-md); margin-bottom: 6px; font-size: 13px;
+    }
+    .saved-item-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .empty { font-size: 13px; color: var(--text-secondary); }
+
+    /* Buttons */
+    .btn {
+      background: transparent;
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      padding: 6px 12px; font-size: 13px;
+      cursor: pointer; color: var(--text);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .btn:hover { background: var(--bg-secondary); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-primary {
+      background: var(--text); color: var(--bg);
+      border: none; padding: 7px 14px;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-icon {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 4px; border-radius: var(--radius-md);
+    }
+    .btn-icon:hover { background: var(--border); }
+    .btn-danger { color: var(--danger); }
+
+    /* Inputs */
+    input[type=text], input[type=number] {
+      width: 100%; padding: 6px 8px; font-size: 14px;
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary); color: var(--text);
+    }
+    input[type=number] { text-align: right; }
+    input::placeholder { color: var(--text-tertiary); }
+
+    .field-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .actions { margin-bottom: 1rem; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      .board-col-heads, .board-row {
+        grid-template-columns: 1fr 120px 64px 56px 64px 28px;
+      }
+      .totals-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Wild Board Calculator</h1>
+  <p class="sub">Lumber board foot calculator by Wild Board Studio</p>
+
+  <div class="project-bar">
+    <div id="project-name-wrapper" style="flex:1;margin-right:0"></div>
+    <button class="btn btn-primary" id="save-btn"><i class="ti ti-device-floppy"></i> Save</button>
+  </div>
+
+  <div class="tax-bar">
+    <span style="white-space:nowrap">Sales tax</span>
+    <span class="tax-bar-status" id="tax-bar-status">Not set</span>
+    <button class="tax-expand" id="tax-toggle"><i class="ti ti-chevron-down"></i> Set rate</button>
+  </div>
+
+  <div class="tax-panel hidden" id="tax-panel">
+    <div class="tax-options">
+      <button class="btn btn-primary" id="locate-btn"><i class="ti ti-current-location"></i> Use my location</button>
+      <button class="btn" id="zip-toggle"><i class="ti ti-hash"></i> Enter ZIP</button>
+    </div>
+    <div class="zip-row hidden" id="zip-row">
+      <input type="text" id="zip-input" placeholder="e.g. 84084" maxlength="5" />
+      <button class="btn btn-primary" id="zip-btn">Look up</button>
+    </div>
+    <div class="tax-note">State base rate only. Local rates may vary.</div>
+  </div>
+
+  <div id="species-container"></div>
+
+  <div class="actions">
+    <button class="btn" id="add-species-btn"><i class="ti ti-plus"></i> Add species</button>
+  </div>
+
+  <div class="totals-panel">
+    <div class="totals-grid">
+      <div class="metric"><div class="metric-label">Total board feet</div><div class="metric-value" id="s-bf">0.00</div></div>
+      <div class="metric"><div class="metric-label">Subtotal</div><div class="metric-value" id="s-cost">$0.00</div></div>
+      <div class="metric"><div class="metric-label">Est. total with tax</div><div class="metric-value" id="s-total">$0.00</div></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" id="save-btn-bot"><i class="ti ti-device-floppy"></i> Save project</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div style="font-size:15px;font-weight:600;margin-bottom:10px">Saved projects</div>
+  <div id="saved-container"><p class="empty">No saved projects yet.</p></div>
+
+</div>
+
+<script>
+  let species = [];
+  let projects = [];
+  let uidc = 0;
+  let taxRate = 0;
+  let projectName = '';
+
+  function uid() { return 'id' + (++uidc); }
+
+  const stateTaxes = {
+    AL:4,AK:0,AZ:5.6,AR:6.5,CA:7.25,CO:2.9,CT:6.35,DE:0,FL:6,GA:4,
+    HI:4,ID:6,IL:6.25,IN:7,IA:6,KS:6.5,KY:6,LA:4.45,ME:5.5,MD:6,
+    MA:6.25,MI:6,MN:6.875,MS:7,MO:4.225,MT:0,NE:5.5,NV:6.85,NH:0,
+    NJ:6.625,NM:5,NY:4,NC:4.75,ND:5,OH:5.75,OK:4.5,OR:0,PA:6,RI:7,
+    SC:6,SD:4.5,TN:7,TX:6.25,UT:4.85,VT:6,VA:5.3,WA:6.5,WV:6,WI:5,WY:4,DC:6
+  };
+
+  // --- Inline title builder ---
+  function buildInlineTitle({ placeholder, titleSize, fontWeight, initialValue, onCommit }) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'flex:1;display:flex;align-items:center;';
+    const title = document.createElement('div');
+    title.className = 'inline-title' + (initialValue ? '' : ' placeholder');
+    title.style.fontSize = titleSize || '16px';
+    title.style.fontWeight = fontWeight || '600';
+    title.textContent = initialValue || placeholder;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'inline-input hidden';
+    input.placeholder = placeholder;
+    input.value = initialValue || '';
+    input.style.fontSize = titleSize || '16px';
+    input.style.fontWeight = fontWeight || '600';
+    title.addEventListener('click', function () {
+      title.classList.add('hidden');
+      input.classList.remove('hidden');
+      input.focus(); input.select();
+    });
+    function commit() {
+      const val = input.value.trim();
+      title.textContent = val || placeholder;
+      title.className = 'inline-title' + (val ? '' : ' placeholder');
+      input.classList.add('hidden');
+      title.classList.remove('hidden');
+      if (onCommit) onCommit(val);
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') input.blur(); });
+    wrap.appendChild(title);
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  // Project name
+  const projNameEl = buildInlineTitle({
+    placeholder: 'Click to name this project',
+    titleSize: '15px',
+    fontWeight: '400',
+    onCommit: function (val) { projectName = val; }
+  });
+  document.getElementById('project-name-wrapper').appendChild(projNameEl);
+
+  function saveProject() {
+    if (!projectName) { alert('Click the project name field at the top and enter a name first.'); return; }
+    const totalBF = species.reduce((sum, s) => sum + speciesBF(s), 0);
+    const totalCost = species.reduce((sum, s) => sum + speciesCost(s), 0);
+    const withTax = totalCost * (1 + taxRate);
+    projects.unshift({
+      id: uid(), name: projectName, totalBF, totalCost, withTax,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+    projectName = '';
+    const titleEl = projNameEl.querySelector('.inline-title');
+    const inputEl = projNameEl.querySelector('input');
+    titleEl.textContent = 'Click to name this project';
+    titleEl.className = 'inline-title placeholder';
+    inputEl.value = '';
+    renderSaved();
+  }
+  document.getElementById('save-btn').addEventListener('click', saveProject);
+  document.getElementById('save-btn-bot').addEventListener('click', saveProject);
+
+  // --- Tax ---
+  document.getElementById('tax-toggle').addEventListener('click', function () {
+    const panel = document.getElementById('tax-panel');
+    panel.classList.toggle('hidden');
+    this.innerHTML = panel.classList.contains('hidden')
+      ? '<i class="ti ti-chevron-down"></i> Set rate'
+      : '<i class="ti ti-chevron-up"></i> Close';
+  });
+  function setTaxBar(msg) { document.getElementById('tax-bar-status').innerHTML = msg; }
+  function applyRate(rate, location) {
+    taxRate = rate / 100;
+    setTaxBar(`<strong>${location}</strong> — ${rate}%`);
+    updateSummary();
+    document.getElementById('tax-panel').classList.add('hidden');
+    document.getElementById('tax-toggle').innerHTML = '<i class="ti ti-chevron-down"></i> Change';
+  }
+  document.getElementById('locate-btn').addEventListener('click', function () {
+    if (!navigator.geolocation) { setTaxBar('Not supported'); return; }
+    setTaxBar('Detecting...');
+    navigator.geolocation.getCurrentPosition(async function (pos) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+        const data = await res.json();
+        const state = data.address['ISO3166-2-lvl4']?.split('-')[1] || data.address.state_code;
+        const city = data.address.city || data.address.town || data.address.county || '';
+        if (state && stateTaxes[state] !== undefined) applyRate(stateTaxes[state], `${city}, ${state}`);
+        else setTaxBar('Could not determine state');
+      } catch (e) { setTaxBar('Lookup failed'); }
+    }, function (err) { setTaxBar(err.code === 1 ? 'Access denied' : 'Location unavailable'); });
+  });
+  document.getElementById('zip-toggle').addEventListener('click', function () {
+    const row = document.getElementById('zip-row');
+    row.classList.toggle('hidden');
+    if (!row.classList.contains('hidden')) document.getElementById('zip-input').focus();
+  });
+  async function lookupZip() {
+    const zip = document.getElementById('zip-input').value.trim();
+    if (!/^\d{5}$/.test(zip)) { setTaxBar('Invalid ZIP'); return; }
+    setTaxBar('Looking up...');
+    try {
+      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (!res.ok) { setTaxBar('ZIP not found'); return; }
+      const data = await res.json();
+      const state = data.places[0]['state abbreviation'];
+      const city = data.places[0]['place name'];
+      if (stateTaxes[state] !== undefined) applyRate(stateTaxes[state], `${city}, ${state}`);
+      else setTaxBar('State not found');
+    } catch (e) { setTaxBar('Lookup failed'); }
+  }
+  document.getElementById('zip-btn').addEventListener('click', lookupZip);
+  document.getElementById('zip-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') lookupZip(); });
+
+  // --- Math ---
+  function totalLengthInches(lft, lin) { return (parseFloat(lft) || 0) * 12 + (parseFloat(lin) || 0); }
+  function calcBF(tNum, lft, lin, w) { return ((parseFloat(tNum) || 0) / 4) * (parseFloat(w) || 0) * totalLengthInches(lft, lin) / 144; }
+  function boardCost(tNum, lft, lin, w, price) { return calcBF(tNum, lft, lin, w) * (parseFloat(price) || 0); }
+  function thicknessBF(t) { return t.boards.reduce((sum, b) => sum + calcBF(t.tNum, b.lft, b.lin, b.w), 0); }
+  function thicknessCost(t) { return t.boards.reduce((sum, b) => sum + boardCost(t.tNum, b.lft, b.lin, b.w, t.price), 0); }
+  function speciesBF(s) { return s.thicknesses.reduce((sum, t) => sum + thicknessBF(t), 0); }
+  function speciesCost(s) { return s.thicknesses.reduce((sum, t) => sum + thicknessCost(t), 0); }
+
+  function updateSummary() {
+    const totalBF = species.reduce((sum, s) => sum + speciesBF(s), 0);
+    const totalCost = species.reduce((sum, s) => sum + speciesCost(s), 0);
+    document.getElementById('s-bf').textContent = totalBF.toFixed(2);
+    document.getElementById('s-cost').textContent = '$' + totalCost.toFixed(2);
+    document.getElementById('s-total').textContent = '$' + (totalCost * (1 + taxRate)).toFixed(2);
+  }
+
+  function updateTotals(sid, tid) {
+    const s = species.find(s => s.id === sid);
+    if (!s) return;
+    if (tid) {
+      const t = s.thicknesses.find(t => t.id === tid);
+      if (t) {
+        t.boards.forEach(b => {
+          const bfEl = document.getElementById('bfd-' + b.id);
+          const bcEl = document.getElementById('bcd-' + b.id);
+          if (bfEl) bfEl.textContent = calcBF(t.tNum, b.lft, b.lin, b.w).toFixed(2);
+          if (bcEl) bcEl.textContent = '$' + boardCost(t.tNum, b.lft, b.lin, b.w, t.price).toFixed(2);
+        });
+        const ttEl = document.getElementById('tbf-' + tid);
+        const tcEl = document.getElementById('tcost-' + tid);
+        if (ttEl) ttEl.textContent = thicknessBF(t).toFixed(2) + ' bf';
+        if (tcEl) tcEl.textContent = '$' + thicknessCost(t).toFixed(2);
+      }
+    }
+    const sbfEl = document.getElementById('sbf-' + sid);
+    const scEl = document.getElementById('scost-' + sid);
+    if (sbfEl) sbfEl.textContent = speciesBF(s).toFixed(2) + ' bf';
+    if (scEl) scEl.textContent = '$' + speciesCost(s).toFixed(2);
+    updateSummary();
+  }
+
+  // --- Data mutations ---
+  function addSpecies() {
+    species.push({ id: uid(), name: '', thicknesses: [{ id: uid(), tNum: '4', price: '', boards: [{ id: uid(), label: '', lft: '', lin: '', w: '' }] }] });
+    renderSpecies(); updateSummary();
+  }
+  function removeSpecies(sid) { species = species.filter(s => s.id !== sid); renderSpecies(); updateSummary(); }
+  function addThickness(sid) {
+    const s = species.find(s => s.id === sid);
+    if (s) s.thicknesses.push({ id: uid(), tNum: '4', price: '', boards: [{ id: uid(), label: '', lft: '', lin: '', w: '' }] });
+    renderSpecies(); updateSummary();
+  }
+  function removeThickness(sid, tid) {
+    const s = species.find(s => s.id === sid);
+    if (s) s.thicknesses = s.thicknesses.filter(t => t.id !== tid);
+    renderSpecies(); updateSummary();
+  }
+  function addBoard(sid, tid) {
+    const s = species.find(s => s.id === sid);
+    const t = s && s.thicknesses.find(t => t.id === tid);
+    if (t) t.boards.push({ id: uid(), label: '', lft: '', lin: '', w: '' });
+    renderSpecies(); updateSummary();
+  }
+  function dupLastBoard(sid, tid) {
+    const s = species.find(s => s.id === sid);
+    const t = s && s.thicknesses.find(t => t.id === tid);
+    if (t && t.boards.length > 0) {
+      const b = t.boards[t.boards.length - 1];
+      t.boards.push({ ...b, id: uid(), label: b.label ? b.label + ' (copy)' : '' });
+    }
+    renderSpecies(); updateSummary();
+  }
+  function removeBoard(sid, tid, bid) {
+    const s = species.find(s => s.id === sid);
+    const t = s && s.thicknesses.find(t => t.id === tid);
+    if (t) t.boards = t.boards.filter(b => b.id !== bid);
+    renderSpecies(); updateSummary();
+  }
+
+  // --- Render ---
+  function renderSpecies() {
+    const container = document.getElementById('species-container');
+    container.innerHTML = '';
+    species.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'species-card';
+
+      const header = document.createElement('div');
+      header.className = 'species-header';
+      const titleWrap = buildInlineTitle({
+        placeholder: 'Click to name species',
+        titleSize: '16px', fontWeight: '600',
+        initialValue: s.name,
+        onCommit: function (val) { s.name = val; updateSummary(); }
+      });
+      header.appendChild(titleWrap);
+      const trashBtn = document.createElement('button');
+      trashBtn.className = 'btn-icon btn-danger';
+      trashBtn.setAttribute('aria-label', 'Remove species');
+      trashBtn.innerHTML = '<i class="ti ti-trash"></i>';
+      trashBtn.addEventListener('click', () => removeSpecies(s.id));
+      header.appendChild(trashBtn);
+      card.appendChild(header);
+
+      const tcont = document.createElement('div');
+      tcont.id = 'thickness-container-' + s.id;
+      card.appendChild(tcont);
+
+      const addThDiv = document.createElement('div');
+      addThDiv.style.marginTop = '8px';
+      addThDiv.innerHTML = `<button class="btn btn-sm" data-add-thickness="${s.id}"><i class="ti ti-plus"></i> Add thickness</button>`;
+      card.appendChild(addThDiv);
+
+      const footer = document.createElement('div');
+      footer.className = 'species-footer';
+      footer.style.marginTop = '10px';
+      footer.innerHTML = `<div class="species-totals">Species total: <strong id="sbf-${s.id}">${speciesBF(s).toFixed(2)} bf</strong></div><div class="species-totals">Species cost: <strong id="scost-${s.id}">$${speciesCost(s).toFixed(2)}</strong></div>`;
+      card.appendChild(footer);
+      container.appendChild(card);
+
+      s.thicknesses.forEach(t => {
+        const block = document.createElement('div');
+        block.className = 'thickness-block';
+        block.innerHTML = `
+          <div class="thickness-header">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="field-label" style="margin-bottom:0;white-space:nowrap">Thickness</div>
+              <div class="thickness-wrap">
+                <input type="number" data-sid="${s.id}" data-tid="${t.id}" data-field="tNum" placeholder="4" min="1" step="1" value="${t.tNum}" />
+                <span class="thickness-suffix">/4</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="field-label" style="margin-bottom:0;white-space:nowrap">Price / bf</div>
+              <div class="price-wrap">
+                <span style="font-size:14px;color:var(--text-secondary)">$</span>
+                <input type="number" data-sid="${s.id}" data-tid="${t.id}" data-field="price" placeholder="0.00" min="0" step="0.01" value="${t.price}" style="width:80px" />
+              </div>
+            </div>
+            <div style="flex:1"></div>
+            <button class="btn-icon btn-danger" data-remove-thickness="${s.id}" data-tid="${t.id}" aria-label="Remove thickness"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="board-col-heads">
+            <div class="col-head">Board label</div>
+            <div class="col-head" style="text-align:center;border-bottom:0.5px solid var(--border);padding-bottom:2px;">Length</div>
+            <div class="col-head" style="text-align:right">Width</div>
+            <div class="col-head" style="text-align:right">Bd ft</div>
+            <div class="col-head" style="text-align:right">Cost</div>
+            <div></div>
+          </div>
+          <div id="boards-${t.id}"></div>
+          <div style="margin-top:6px;display:flex;gap:6px;">
+            <button class="btn btn-sm" data-add-board="${s.id}" data-tid="${t.id}"><i class="ti ti-plus"></i> Add board</button>
+            <button class="btn btn-sm" data-dup-last="${s.id}" data-tid="${t.id}"><i class="ti ti-copy"></i> Duplicate last</button>
+          </div>
+          <div class="thickness-footer" style="margin-top:8px">
+            <div class="thickness-totals">Thickness total: <strong id="tbf-${t.id}">${thicknessBF(t).toFixed(2)} bf</strong></div>
+            <div class="thickness-totals">Cost: <strong id="tcost-${t.id}">$${thicknessCost(t).toFixed(2)}</strong></div>
+          </div>`;
+        tcont.appendChild(block);
+
+        const boardsEl = document.getElementById('boards-' + t.id);
+        t.boards.forEach((b, i) => {
+          const row = document.createElement('div');
+          row.className = 'board-row';
+          row.innerHTML = `
+            <input type="text" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="label" placeholder="Board ${i + 1}" value="${b.label}" />
+            <div class="length-pair">
+              <input type="number" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lft" placeholder="ft" min="0" step="1" value="${b.lft}" style="text-align:center;" />
+              <input type="number" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="lin" placeholder="in" min="0" max="11" step="1" value="${b.lin}" style="text-align:center;" />
+            </div>
+            <input type="number" data-sid="${s.id}" data-tid="${t.id}" data-bid="${b.id}" data-field="w" placeholder="in" min="0" step="0.25" value="${b.w}" />
+            <div class="bf-display" id="bfd-${b.id}">${calcBF(t.tNum, b.lft, b.lin, b.w).toFixed(2)}</div>
+            <div class="cost-display" id="bcd-${b.id}">$${boardCost(t.tNum, b.lft, b.lin, b.w, t.price).toFixed(2)}</div>
+            <button class="btn-icon btn-danger" data-remove-board="${s.id}" data-tid="${t.id}" data-bid="${b.id}" aria-label="Remove board"><i class="ti ti-x"></i></button>`;
+          boardsEl.appendChild(row);
+        });
+      });
+    });
+  }
+
+  document.addEventListener('input', function (e) {
+    const el = e.target;
+    const sid = el.dataset.sid, tid = el.dataset.tid, bid = el.dataset.bid, field = el.dataset.field;
+    if (!sid || !field) return;
+    const s = species.find(s => s.id === sid);
+    if (!s) return;
+    if (bid) {
+      const t = s.thicknesses.find(t => t.id === tid);
+      const b = t && t.boards.find(b => b.id === bid);
+      if (b) b[field] = el.value;
+      updateTotals(sid, tid);
+    } else if (tid) {
+      const t = s.thicknesses.find(t => t.id === tid);
+      if (t) t[field] = el.value;
+      updateTotals(sid, tid);
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.addThickness) { addThickness(btn.dataset.addThickness); return; }
+    if (btn.dataset.removeThickness) { removeThickness(btn.dataset.removeThickness, btn.dataset.tid); return; }
+    if (btn.dataset.addBoard) { addBoard(btn.dataset.addBoard, btn.dataset.tid); return; }
+    if (btn.dataset.dupLast) { dupLastBoard(btn.dataset.dupLast, btn.dataset.tid); return; }
+    if (btn.dataset.removeBoard) { removeBoard(btn.dataset.removeBoard, btn.dataset.tid, btn.dataset.bid); return; }
+  });
+
+  document.getElementById('add-species-btn').addEventListener('click', addSpecies);
+
+  function renderSaved() {
+    const el = document.getElementById('saved-container');
+    if (projects.length === 0) { el.innerHTML = '<p class="empty">No saved projects yet.</p>'; return; }
+    el.innerHTML = projects.map(p => `
+      <div class="saved-item">
+        <div>
+          <div style="font-weight:600">${p.name}</div>
+          <div class="saved-item-meta">${p.date} &nbsp;·&nbsp; ${p.totalBF.toFixed(2)} bf &nbsp;·&nbsp; $${p.totalCost.toFixed(2)} subtotal &nbsp;·&nbsp; $${p.withTax.toFixed(2)} with tax</div>
+        </div>
+        <button class="btn-icon btn-danger" data-delete-project="${p.id}" aria-label="Delete project"><i class="ti ti-trash"></i></button>
+      </div>`).join('');
+    el.querySelectorAll('[data-delete-project]').forEach(btn => {
+      btn.addEventListener('click', () => { projects = projects.filter(p => p.id !== btn.dataset.deleteProject); renderSaved(); });
+    });
+  }
+
+  addSpecies();
+</script>
+</body>
+</html>
