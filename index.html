@@ -242,6 +242,10 @@
       cursor: pointer; text-decoration: underline;
     }
     .app-screen { display: none; }
+    .saved-screen { display: none; }
+    .saved-screen-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
     .budget-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .budget-row label { font-size: 12px; color: var(--text2); white-space: nowrap; }
     .budget-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: transparent; overflow: hidden; width: 130px; min-height: 32px; }
@@ -260,7 +264,7 @@
   <p class="tagline">By Wild Board Studio</p>
   <p class="sub-tagline">Pricing out lumber has never been easier.</p>
   <button class="btn-create" id="start-btn">+ Create new project</button>
-  <div id="landing-saved-link" class="saved-link" style="display:none" onclick="showSaved()">View saved projects</div>
+  <div class="saved-link" id="landing-saved-link">View saved projects</div>
 </div>
 
 <!-- App screen -->
@@ -306,6 +310,18 @@
   <div id="saved-section" style="font-size:15px;font-weight:700;margin-bottom:10px">Saved projects</div>
   <div id="saved-list"><p class="empty">No saved projects yet.</p></div>
 
+</div>
+</div>
+
+<!-- Saved projects screen -->
+<div class="saved-screen" id="saved-screen">
+<div class="wrap">
+  <div class="saved-screen-header">
+    <button class="btn btn-sm" id="saved-back-btn">&#8592; Back</button>
+    <h1 style="font-size:18px;font-weight:700;flex:1;text-align:center;">Saved Projects</h1>
+    <div style="width:60px"></div>
+  </div>
+  <div id="saved-list-screen"><p class="empty">No saved projects yet.</p></div>
 </div>
 </div>
 
@@ -756,18 +772,108 @@ document.getElementById('back-btn').addEventListener('click', function(){
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
-function updateLandingLink(){
-  const link=document.getElementById('landing-saved-link');
-  if(link) link.style.display=projects.length?'block':'none';
-}
+document.getElementById('saved-back-btn').addEventListener('click', function(){
+  document.getElementById('saved-screen').style.display='none';
+  document.getElementById('landing-screen').style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+document.getElementById('landing-saved-link').addEventListener('click', showSaved);
+
+function updateLandingLink(){}
 
 function showSaved(){
+  if(!projects.length){
+    if(confirm('You have no saved projects. Would you like to create one?')){
+      document.getElementById('landing-screen').style.display='none';
+      document.getElementById('app-screen').style.display='block';
+      if(species.length===0) addSpecies();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    return;
+  }
   document.getElementById('landing-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  setTimeout(()=>{
-    const el=document.getElementById('saved-section');
-    if(el) el.scrollIntoView({behavior:'smooth'});
-  },100);
+  document.getElementById('saved-screen').style.display='block';
+  renderSavedScreen();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderSavedScreen(){
+  const el=document.getElementById('saved-list-screen');
+  if(!el) return;
+  if(!projects.length){el.innerHTML='<p class="empty">No saved projects yet.</p>';return;}
+  el.innerHTML='';
+  projects.forEach(p=>{
+    const item=document.createElement('div');item.className='saved-item';
+    const summary=document.createElement('div');summary.className='saved-summary';
+    summary.innerHTML=`
+      <div style="flex:1;min-width:0">
+        <div class="saved-name">${p.name}</div>
+        <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}${p.budget?' &nbsp;·&nbsp; budget: $'+parseFloat(p.budget).toFixed(2):''}</div>
+      </div>
+      <span class="saved-chevron">&#8964;</span>`;
+    item.appendChild(summary);
+
+    const actions=document.createElement('div');actions.className='saved-actions';
+    actions.innerHTML=`
+      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit project</button>
+      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red)">Delete</button>`;
+    item.appendChild(actions);
+
+    const detail=document.createElement('div');detail.className='saved-detail';
+    if(p.species&&p.species.length){
+      p.species.forEach(s=>{
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
+        s.thicknesses.forEach(t=>{
+          const tDiv=document.createElement('div');tDiv.className='detail-thick';
+          const tHead=`${t.tNum||'—'}/4 &nbsp;·&nbsp; $${parseFloat(t.price||0).toFixed(2)}/bf`;
+          let boards='';
+          const total=t.boards.length;
+          t.boards.forEach((b,i)=>{
+            const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
+            const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
+            const lStr=(parseFloat(b.lft)||0)+"' "+(parseFloat(b.lin)||0)+'"';
+            const wStr=(parseFloat(b.w)||0)+'"';
+            boards+=`<div class="detail-board-row">
+              <span>${boardName(i,total)} &nbsp; ${lStr} × ${wStr}</span>
+              <span>${bfVal.toFixed(2)} bf &nbsp; $${costVal.toFixed(2)}</span>
+            </div>`;
+          });
+          tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${boards}`;
+          sDiv.appendChild(tDiv);
+        });
+        detail.appendChild(sDiv);
+      });
+    }
+    item.appendChild(detail);
+
+    summary.addEventListener('click',()=>{
+      const chevron=summary.querySelector('.saved-chevron');
+      const isOpen=actions.classList.contains('open');
+      if(isOpen){actions.classList.remove('open');detail.classList.remove('open');chevron.classList.remove('open');}
+      else{actions.classList.add('open');detail.classList.add('open');chevron.classList.add('open');}
+    });
+
+    actions.querySelector('[data-edit]').addEventListener('click',e=>{
+      e.stopPropagation();
+      document.getElementById('saved-screen').style.display='none';
+      document.getElementById('app-screen').style.display='block';
+      loadProjectIntoCalc(p);
+    });
+
+    actions.querySelector('[data-del]').addEventListener('click',e=>{
+      e.stopPropagation();
+      if(confirm(`Delete "${p.name}"?`)){
+        projects=projects.filter(x=>x.id!==p.id);
+        persist();
+        updateLandingLink();
+        renderSavedScreen();
+      }
+    });
+
+    el.appendChild(item);
+  });
 }
 </script>
 </body>
