@@ -592,7 +592,7 @@ function render(){
   species.forEach(s=>{
     const card=document.createElement('div');card.className='species-card';
     const hdr=document.createElement('div');hdr.className='species-header';
-    const tw=makeTitle({ph:'Tap to name species',val:s.name,onSave:v=>{s.name=v;updateTotals();}});
+    const tw=makeTitle({ph:'Tap to add species',val:s.name,onSave:v=>{s.name=v;updateTotals();}});
     tw.className='title-wrap';hdr.appendChild(tw);
     const rb=document.createElement('button');rb.className='del-btn';
     rb.dataset.action='rem-species';rb.dataset.sid=s.id;
