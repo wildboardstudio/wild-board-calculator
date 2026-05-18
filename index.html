@@ -102,9 +102,11 @@
       padding: 12px; margin-bottom: 10px; border: 1px solid var(--border);
     }
     .t-meta {
-      display: flex; gap: 10px; align-items: center;
+      display: flex; gap: 8px; align-items: center;
       margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
     }
+    .t-meta-del { margin-left: auto; flex-shrink: 0; }
     .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; }
     .t-wrap {
       display: flex; align-items: center;
@@ -130,7 +132,7 @@
       font-size: 16px; color: var(--text); text-align: right;
     }
     .p-wrap input:focus { outline: none; }
-    .t-meta-spacer { flex: 1; }
+    .t-meta-spacer { flex: 1; display: none; }
 
     .b-heads {
       display: grid;
@@ -488,8 +490,7 @@ function render(){
               <input type="number" inputmode="decimal" data-sid="${s.id}" data-tid="${t.id}" data-field="price" value="${t.price}" placeholder="0.00" min="0" step="0.01" />
             </div>
           </div>
-          <div class="t-meta-spacer"></div>
-          <button class="del-btn" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
+          <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
         </div>
         <div class="b-heads" style="margin-bottom:2px;">
           <div></div>
