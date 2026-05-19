@@ -70,7 +70,7 @@
     }
     .del-btn:active { opacity: 0.5; }
 
-    .project-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .project-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 0; }
     .project-bar > .title-wrap { flex: 1; min-width: 0; }
 
     .ititle {
@@ -160,7 +160,7 @@
     .suffix-wrap input:focus { outline: none; }
     .suffix-mark { font-size: 13px; color: var(--text2); padding: 0 5px 0 1px; user-select: none; flex-shrink: 0; }
     .edit-bar { display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--bg3); border-radius: var(--radius); margin-bottom: 14px; font-size: 13px; color: var(--text2); }
-    .edit-bar strong { color: var(--text); flex: 1; }
+    .edit-bar strong { color: #3a5c2e; flex: 1; font-size: 14px; }
     .b-result { font-size: 12px; color: var(--text2); font-weight: 600; padding: 2px 2px 8px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
     .b-result:last-child { border-bottom: none; }
     .b-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -196,7 +196,7 @@
     .saved-meta { font-size: 12px; color: var(--text2); }
     .saved-chevron { font-size: 18px; color: var(--text3); flex-shrink: 0; transition: transform 0.2s; }
     .saved-chevron.open { transform: rotate(180deg); }
-    .saved-actions { display: none; flex-wrap: wrap; gap: 8px; padding: 0 12px 12px; }
+    .saved-actions { display: none; gap: 8px; padding: 0 12px 12px; justify-content: space-between; align-items: center; }
     .saved-actions.open { display: flex; }
     .saved-detail {
       display: none; padding: 12px;
@@ -342,16 +342,13 @@
     <div style="width:60px"></div>
   </div>
 
-  <div class="project-bar">
-    <div class="title-wrap" id="proj-wrap"></div>
-    <button class="btn btn-primary" id="save-btn">Save</button>
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Project Name</div>
+    <div id="proj-wrap" style="margin-bottom:12px;"></div>
+    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Budget</div>
+    <div class="budget-wrap" style="width:100%;max-width:100%;"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="0.00" min="0" step="10" style="width:100%;" /></div>
+    <div class="budget-alert" id="budget-alert" style="margin-top:8px;margin-bottom:0;"></div>
   </div>
-
-  <div class="budget-row" style="justify-content:flex-end;">
-    <label>Budget</label>
-    <div class="budget-wrap"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="0.00" min="0" step="10" /></div>
-  </div>
-  <div class="budget-alert" id="budget-alert"></div>
 
   <div id="edit-bar" style="display:none" class="edit-bar"><strong id="edit-label">Editing project</strong><button class="btn btn-sm" id="cancel-edit">Cancel</button></div>
   <div class="tabs">
@@ -380,12 +377,14 @@
       <div class="metric"><div class="metric-label">Board feet</div><div class="metric-value" id="t-bf">0.00</div></div>
       <div class="metric"><div class="metric-label">Subtotal</div><div class="metric-value" id="t-cost">$0.00</div></div>
     </div>
-    <div id="birds-eye" class="birds-eye"></div>
-    <div style="text-align:right;margin-top:12px;">
-      <button class="btn btn-primary" id="save-btn2">Save Project</button>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+      <div id="save-confirmation" style="font-size:13px;color:var(--text2);font-style:italic;display:none;">Saved ✓</div>
+      <button class="btn btn-primary" id="save-btn">Save Project</button>
     </div>
   </div>
 
+  <div id="birds-eye-card" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;"></div>
 
 
 </div>
@@ -555,7 +554,7 @@ document.getElementById('budget-input').addEventListener('input',()=>{
 });
 
 document.getElementById('save-btn').addEventListener('click',triggerSave);
-document.getElementById('save-btn2').addEventListener('click',triggerSave);
+// save-btn2 removed - single save button at top
 
 document.getElementById('cancel-edit').addEventListener('click',()=>{
   editingId=null;
@@ -598,6 +597,7 @@ function updateTotals(){
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
   checkBudget(totalCost);
   if(typeof renderBirdsEye==='function') renderBirdsEye();
+  saveSession();
 }
 
 function checkBudget(totalCost){
@@ -923,8 +923,8 @@ function renderSaved(){
     // Action buttons
     const actions=document.createElement('div');actions.className='saved-actions';
     actions.innerHTML=`
-      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit Project</button>
-      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red)">Delete</button>`;
+      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red);">Delete</button>
+      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit Project</button>`;
     item.appendChild(actions);
 
     // Detail view
@@ -990,6 +990,49 @@ function renderSaved(){
 
     el.appendChild(item);
   });
+}
+
+// Session recovery
+function saveSession(){
+  try{
+    const session={
+      species:JSON.parse(JSON.stringify(species)),
+      slabSpecies:JSON.parse(JSON.stringify(slabSpecies)),
+      projName:projName,
+      budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:''
+    };
+    localStorage.setItem('wbc_session', JSON.stringify(session));
+  }catch(e){}
+}
+
+function loadSession(){
+  try{
+    const raw=localStorage.getItem('wbc_session');
+    if(!raw) return false;
+    const session=JSON.parse(raw);
+    if(session.species&&session.species.length>0){
+      species=session.species.map(s=>({...s,id:uid(),thicknesses:s.thicknesses.map(t=>({...t,id:uid(),boards:t.boards.map(b=>({...b,id:uid()}))}))}));
+      if(session.slabSpecies&&session.slabSpecies.length>0){
+        slabSpecies=session.slabSpecies.map(s=>({...s,id:uid(),thicknesses:s.thicknesses.map(t=>({...t,id:uid(),slabs:t.slabs.map(b=>({...b,id:uid(),measurements:[...b.measurements]}))}))}));
+      }
+      if(session.projName){
+        projName=session.projName;
+        const t=pWrap.querySelector('.ititle'),inp=pWrap.querySelector('input');
+        if(t){t.textContent=session.projName;t.className='ititle has-value';}
+        if(inp) inp.value=session.projName;
+      }
+      if(session.budget){
+        const bEl=document.getElementById('budget-input');
+        if(bEl) bEl.value=session.budget;
+      }
+      return true;
+    }
+    return false;
+  }catch(e){return false;}
+}
+
+function clearSession(){
+  try{localStorage.removeItem('wbc_session');}catch(e){}
 }
 
 // ============ SLAB TAB ============
@@ -1339,13 +1382,14 @@ function renderSlabSpecies(){
 
 // Birds eye view
 function renderBirdsEye(){
-  const el=document.getElementById('birds-eye');
+  const el=document.getElementById('birds-eye-card');
   if(!el) return;
 
   const hasLumber=species.some(s=>s.thicknesses.some(t=>t.boards.some(b=>calcBF(t.tNum,b.lft,b.lin,b.w)>0)));
   const hasSlabs=slabSpecies.some(s=>s.thicknesses.some(t=>t.slabs.some(b=>calcSlabBF(t.tNum,b.lft,b.lin,b.measurements)>0)));
 
-  if(!hasLumber&&!hasSlabs){el.innerHTML='';return;}
+  if(!hasLumber&&!hasSlabs){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='block';
 
   let beHtml='<div class="birds-eye-title">Project Summary</div>';
 
@@ -1415,6 +1459,7 @@ function renderBirdsEye(){
   el.innerHTML=beHtml;
 }
 
+
 // Tab switching
 document.getElementById('tab-lumber-btn').addEventListener('click',function(){
   this.classList.add('active');
@@ -1432,10 +1477,20 @@ document.getElementById('tab-slab-btn').addEventListener('click',function(){
 
 loadPersisted();
 updateLandingLink();
+// Restore session if one exists
+const hadSession=loadSession();
+if(hadSession){
+  render();
+  renderSlabSpecies();
+  updateTotals();
+} else {
+  addSpecies();
+}
 
 document.getElementById('start-btn').addEventListener('click', function(){
   // Clear calculator for a fresh project
   clearProj();
+  clearSession();
   species=[];
   slabSpecies=[];
   addSpecies();
@@ -1498,8 +1553,8 @@ function renderSavedScreen(){
 
     const actions=document.createElement('div');actions.className='saved-actions';
     actions.innerHTML=`
-      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit Project</button>
-      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red)">Delete</button>`;
+      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red);">Delete</button>
+      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit Project</button>`;
     item.appendChild(actions);
 
     const detail=document.createElement('div');detail.className='saved-detail';
