@@ -1187,13 +1187,18 @@ function exportPDF(p) {
   doc.setFillColor(242, 238, 230);
   doc.rect(0, 0, pageW, pageH, 'F');
 
-  // Logo - maintain aspect ratio
+  // Logo - smaller, centered, with rounded rect clip
   try {
     const imgProps = doc.getImageProperties(LOGO_B64);
-    const logoW = 100;
+    const logoW = 52;
     const logoH = (imgProps.height * logoW) / imgProps.width;
-    doc.addImage(LOGO_B64, 'PNG', pageW/2 - logoW/2, y, logoW, logoH);
-    y += logoH + 6;
+    const logoX = pageW/2 - logoW/2;
+    const r = 3;
+    // Draw rounded rect as clipping mask effect (filled background, then image)
+    doc.setFillColor(242,238,230);
+    doc.roundedRect(logoX, y, logoW, logoH, r, r, 'F');
+    doc.addImage(LOGO_B64, 'PNG', logoX, y, logoW, logoH, '', 'FAST');
+    y += logoH + 5;
   } catch(e) { y += 4; }
 
   // Divider
@@ -1561,15 +1566,15 @@ function renderLFSpecies(){
 
     // Column heads
     const bHeads=document.createElement('div');
-    bHeads.style.cssText='display:grid;grid-template-columns:80px 152px 1fr 64px 28px;gap:5px;margin-bottom:6px;font-size:11px;color:var(--text2);';
-    bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">Cost</div><div style="text-align:right">LF</div><div></div>`;
+    bHeads.style.cssText='display:grid;grid-template-columns:72px 1fr auto 24px;gap:6px;margin-bottom:6px;font-size:11px;color:var(--text2);padding:0 2px;';
+    bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">LF &nbsp;·&nbsp; Cost</div><div></div>`;
     sContent.appendChild(bHeads);
 
     // Pieces
     const total=s.pieces.length;
     s.pieces.forEach((p,i)=>{
       const row=document.createElement('div');
-      row.style.cssText='display:grid;grid-template-columns:80px 152px 1fr 64px 28px;gap:5px;align-items:start;margin-bottom:4px;';
+      row.style.cssText='display:grid;grid-template-columns:72px 1fr auto 24px;gap:6px;align-items:center;margin-bottom:4px;padding:0 2px;';
       const lf=(parseFloat(p.lft)||0)+((parseFloat(p.lin)||0)/12);
       const cost=lf*(parseFloat(s.price)||0);
       row.innerHTML=`
@@ -1578,12 +1583,11 @@ function renderLFSpecies(){
           <div class="suffix-wrap"><input type="number" inputmode="numeric" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lffield="lft" placeholder="ft" min="0" step="1" value="${p.lft}" /><span class="suffix-mark">'</span></div>
           <div class="suffix-wrap"><input type="number" inputmode="numeric" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lffield="lin" placeholder="in" min="0" max="11" step="1" value="${p.lin}" /><span class="suffix-mark">"</span></div>
         </div>
-        <div class="b-result" style="flex-direction:column;gap:0;padding-bottom:4px;">
+        <div class="b-result" style="flex-direction:column;gap:0;text-align:right;min-width:80px;">
           <span id="lf-${p.id}">${lf.toFixed(2)} lf</span>
           <span id="lc-${p.id}">$${cost.toFixed(2)}</span>
         </div>
-        <div></div>
-        <button class="del-btn" aria-label="Remove piece" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lfaction="rem-piece">×</button>`;
+        <button class="del-btn" style="justify-self:center;" aria-label="Remove piece" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lfaction="rem-piece">×</button>`;
       sContent.appendChild(row);
     });
 
