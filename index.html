@@ -410,7 +410,8 @@
 
   <div id="edit-bar" style="display:none" class="edit-bar"><strong id="edit-label">Editing project</strong><button class="btn btn-sm" id="cancel-edit">Cancel</button></div>
   <div class="tabs">
-    <button class="tab-btn active" id="tab-lumber-btn">Lumber</button>
+    <button class="tab-btn active" id="tab-lumber-btn">Lumber - BF</button>
+    <button class="tab-btn" id="tab-lf-btn">Lumber - LF</button>
     <button class="tab-btn" id="tab-slab-btn">Slab</button>
   </div>
   <div class="tab-panel" id="tab-lumber">
@@ -421,6 +422,15 @@
       </div>
     </div>
   </div>
+  <div class="tab-panel hidden" id="tab-lf">
+    <div class="tab-panel-inner">
+      <div id="lf-species-list"></div>
+      <div class="actions" style="margin-bottom:0">
+        <button class="btn" id="add-lf-species">+ Add Species</button>
+      </div>
+    </div>
+  </div>
+
   <div class="tab-panel hidden" id="tab-slab">
     <div class="tab-panel-inner">
       <div id="slab-species-list"></div>
@@ -569,15 +579,17 @@ function commitSave(overwriteId){
   const lumberCost=species.reduce((s,x)=>s+sCost(x),0);
   const slabBF=slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
   const slabCost=slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
+  const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
   const totalBF=lumberBF+slabBF;
-  const totalCost=lumberCost+slabCost;
+  const totalCost=lumberCost+slabCost+lfCost;
   const budget=parseFloat(document.getElementById('budget-input').value)||0;
   const entry={
     id:overwriteId||uid(), name:projName,
     bf:totalBF, cost:totalCost, budget:budget,
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     species:JSON.parse(JSON.stringify(species)),
-    slabSpecies:JSON.parse(JSON.stringify(slabSpecies))
+    slabSpecies:JSON.parse(JSON.stringify(slabSpecies)),
+    lfSpecies:JSON.parse(JSON.stringify(lfSpecies))
   };
   if(overwriteId){
     const idx=projects.findIndex(p=>p.id===overwriteId);
@@ -653,8 +665,9 @@ function updateTotals(){
   const lumberCost=species.reduce((s,x)=>s+sCost(x),0);
   const slabBF=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSBF(x),0):0;
   const slabCost=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSCost(x),0):0;
+  const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
   const totalBF=lumberBF+slabBF;
-  const totalCost=lumberCost+slabCost;
+  const totalCost=lumberCost+slabCost+lfCost;
   document.getElementById('t-bf').textContent=totalBF.toFixed(2);
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
   checkBudget(totalCost);
@@ -730,6 +743,10 @@ function loadProjectIntoCalc(p){
       ...t, id:uid(),
       slabs:t.slabs.map(b=>({...b,id:uid(),measurements:[...b.measurements]}))
     }))
+  }));
+  lfSpecies=JSON.parse(JSON.stringify(p.lfSpecies||[])).map(s=>({
+    ...s, id:uid(),
+    pieces:s.pieces.map(p=>({...p,id:uid()}))
   }));
   editingId=p.id;
   setProjName(p.name);
@@ -1324,12 +1341,217 @@ function shareProject(p) {
   }
 }
 
+// ============ LINEAR FOOT TAB ============
+let lfSpecies = [];
+
+function lfSTotal(s){ return s.pieces.reduce((sum,p)=>sum+(parseFloat(p.lft)||0)*12+(parseFloat(p.lin)||0),0)/12; }
+function lfSCost(s){ return lfSTotal(s)*(parseFloat(s.price)||0); }
+
+function updateLFTotals(){
+  const totalLF=lfSpecies.reduce((s,x)=>s+lfSTotal(x),0);
+  const totalCost=lfSpecies.reduce((s,x)=>s+lfSCost(x),0);
+  const lumberBF=species.reduce((s,x)=>s+sBF(x),0);
+  const lumberBFCost=species.reduce((s,x)=>s+sCost(x),0);
+  const slabBF=slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
+  const slabBFCost=slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
+  const grandBF=lumberBF+slabBF;
+  const grandCost=lumberBFCost+slabBFCost+totalCost;
+  document.getElementById('t-bf').textContent=grandBF.toFixed(2);
+  document.getElementById('t-cost').textContent='$'+grandCost.toFixed(2);
+  checkBudget(grandCost);
+  if(typeof renderBirdsEye==='function') renderBirdsEye();
+  saveSession();
+}
+
+function pieceName(i,total){ return total===1?'Piece':'Piece '+(i+1); }
+
+function addLFSpecies(){
+  lfSpecies.forEach(s=>{s._collapsed=true;});
+  lfSpecies.push({id:uid(),name:'',price:'',pieces:[{id:uid(),lft:'',lin:''}]});
+  renderLFSpecies();updateLFTotals();
+}
+function remLFSpecies(sid){lfSpecies=lfSpecies.filter(s=>s.id!==sid);renderLFSpeciesNoScroll();updateLFTotals();}
+function addLFPiece(sid){
+  const s=lfSpecies.find(x=>x.id===sid);
+  if(s) s.pieces.push({id:uid(),lft:'',lin:''});
+  renderLFSpeciesNoScroll();updateLFTotals();
+}
+function dupLFPiece(sid){
+  const s=lfSpecies.find(x=>x.id===sid);
+  if(s&&s.pieces.length>0){const p=s.pieces[s.pieces.length-1];s.pieces.push({...p,id:uid()});}
+  renderLFSpeciesNoScroll();updateLFTotals();
+}
+function remLFPiece(sid,pid){
+  const s=lfSpecies.find(x=>x.id===sid);
+  if(s) s.pieces=s.pieces.filter(p=>p.id!==pid);
+  renderLFSpeciesNoScroll();updateLFTotals();
+}
+
+function refreshLFNums(sid){
+  const s=lfSpecies.find(x=>x.id===sid);if(!s)return;
+  s.pieces.forEach(p=>{
+    const lfEl=document.getElementById('lf-'+p.id),lcEl=document.getElementById('lc-'+p.id);
+    const lf=(parseFloat(p.lft)||0)+((parseFloat(p.lin)||0)/12);
+    const cost=lf*(parseFloat(s.price)||0);
+    if(lfEl) lfEl.textContent=lf.toFixed(2)+' lf';
+    if(lcEl) lcEl.textContent='$'+cost.toFixed(2);
+  });
+  const stEl=document.getElementById('lf-stotal-'+sid),scEl=document.getElementById('lf-scost-'+sid);
+  if(stEl) stEl.textContent=lfSTotal(s).toFixed(2)+' lf';
+  if(scEl) scEl.textContent='$'+lfSCost(s).toFixed(2);
+  updateLFTotals();
+}
+
+function renderLFSpeciesNoScroll(){
+  const scrollY=window.scrollY;
+  renderLFSpecies();
+  window.scrollTo(0,scrollY);
+}
+
+function renderLFSpecies(){
+  const list=document.getElementById('lf-species-list');
+  if(!list) return;
+  list.innerHTML='';
+  lfSpecies.forEach(s=>{
+    const card=document.createElement('div');card.className='species-card';
+
+    // Header
+    const hdr=document.createElement('div');hdr.className='species-header';
+    const tw=makeTitle({ph:'Tap to add species / type',val:s.name,onSave:v=>{s.name=v;updateLFTotals();}});
+    tw.className='title-wrap';
+    const titleEl=tw.querySelector('.ititle');
+    if(titleEl&&s._collapsed) titleEl.classList.add('locked');
+    hdr.appendChild(tw);
+    const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
+    const scBtn=document.createElement('button');scBtn.className='species-collapse-btn';
+    scBtn.innerHTML=s._collapsed?'&#8964; Expand':'&#8963; Collapse';
+    sRightBtns.appendChild(scBtn);
+    const rb=document.createElement('button');rb.className='del-btn';
+    rb.setAttribute('aria-label','Remove');rb.textContent='×';
+    rb.addEventListener('click',()=>remLFSpecies(s.id));
+    sRightBtns.appendChild(rb);
+    hdr.appendChild(sRightBtns);card.appendChild(hdr);
+
+    // Summary
+    const sSummary=document.createElement('div');sSummary.style.cssText='font-size:12px;color:var(--text2);padding:4px 2px 8px;';
+    if(s._collapsed){
+      sSummary.innerHTML=`<span style="font-weight:600;color:var(--text)">${lfSTotal(s).toFixed(2)} lf</span> &nbsp;·&nbsp; <span style="font-weight:600;color:var(--text)">$${lfSCost(s).toFixed(2)}</span> &nbsp;·&nbsp; <span style="color:var(--text2)">${s.pieces.length} ${s.pieces.length===1?'piece':'pieces'}</span>`;
+    }
+    card.appendChild(sSummary);
+
+    // Content
+    const sContent=document.createElement('div');
+    if(s._collapsed) sContent.style.display='none';
+
+    scBtn.addEventListener('click',function(){
+      s._collapsed=!s._collapsed;
+      sContent.style.display=s._collapsed?'none':'';
+      scBtn.innerHTML=s._collapsed?'&#8964; Expand':'&#8963; Collapse';
+      const tEl=tw.querySelector('.ititle');
+      if(tEl){if(s._collapsed)tEl.classList.add('locked');else tEl.classList.remove('locked');}
+      if(s._collapsed){
+        sSummary.innerHTML=`<span style="font-weight:600;color:var(--text)">${lfSTotal(s).toFixed(2)} lf</span> &nbsp;·&nbsp; <span style="font-weight:600;color:var(--text)">$${lfSCost(s).toFixed(2)}</span> &nbsp;·&nbsp; <span style="color:var(--text2)">${s.pieces.length} ${s.pieces.length===1?'piece':'pieces'}</span>`;
+      } else { sSummary.innerHTML=''; }
+    });
+
+    // Price field
+    const priceDiv=document.createElement('div');
+    priceDiv.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);';
+    priceDiv.innerHTML=`
+      <div class="t-meta-field" style="font-size:13px;color:var(--text2);">Price/lf
+        <div class="p-wrap">
+          <span class="p-prefix">$</span>
+          <input type="number" inputmode="decimal" data-lfsid="${s.id}" data-lffield="price" value="${s.price}" placeholder="0.00" min="0" step="0.01" />
+        </div>
+      </div>`;
+    sContent.appendChild(priceDiv);
+
+    // Column heads
+    const bHeads=document.createElement('div');
+    bHeads.style.cssText='display:grid;grid-template-columns:80px 152px 1fr 64px 28px;gap:5px;margin-bottom:6px;font-size:11px;color:var(--text2);';
+    bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">Cost</div><div style="text-align:right">LF</div><div></div>`;
+    sContent.appendChild(bHeads);
+
+    // Pieces
+    const total=s.pieces.length;
+    s.pieces.forEach((p,i)=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:grid;grid-template-columns:80px 152px 1fr 64px 28px;gap:5px;align-items:start;margin-bottom:4px;';
+      const lf=(parseFloat(p.lft)||0)+((parseFloat(p.lin)||0)/12);
+      const cost=lf*(parseFloat(s.price)||0);
+      row.innerHTML=`
+        <div class="b-label">${pieceName(i,total)}</div>
+        <div class="length-pair">
+          <div class="suffix-wrap"><input type="number" inputmode="numeric" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lffield="lft" placeholder="ft" min="0" step="1" value="${p.lft}" /><span class="suffix-mark">'</span></div>
+          <div class="suffix-wrap"><input type="number" inputmode="numeric" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lffield="lin" placeholder="in" min="0" max="11" step="1" value="${p.lin}" /><span class="suffix-mark">"</span></div>
+        </div>
+        <div class="b-result" style="flex-direction:column;gap:0;padding-bottom:4px;">
+          <span id="lf-${p.id}">${lf.toFixed(2)} lf</span>
+          <span id="lc-${p.id}">$${cost.toFixed(2)}</span>
+        </div>
+        <div></div>
+        <button class="del-btn" aria-label="Remove piece" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lfaction="rem-piece">×</button>`;
+      sContent.appendChild(row);
+    });
+
+    // Actions
+    const bAct=document.createElement('div');bAct.className='b-actions';bAct.style.marginTop='8px';
+    bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Piece</button>
+      <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Piece</button>`;
+    sContent.appendChild(bAct);
+
+    // Footer
+    const sf=document.createElement('div');sf.className='species-footer';sf.style.marginTop='10px';
+    sf.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
+    sContent.appendChild(sf);
+    card.appendChild(sContent);
+    list.appendChild(card);
+  });
+}
+
+// LF input handler
+document.addEventListener('input',function(e){
+  const el=e.target;
+  const sid=el.dataset.lfsid, pid=el.dataset.lfpid, field=el.dataset.lffield;
+  if(!sid||!field) return;
+  const s=lfSpecies.find(x=>x.id===sid);if(!s)return;
+  if(pid){const p=s.pieces.find(x=>x.id===pid);if(p)p[field]=el.value;}
+  else s[field]=el.value;
+  refreshLFNums(sid);
+});
+
+// LF click handler
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('[data-lfaction]');if(!btn)return;
+  const a=btn.dataset.lfaction, sid=btn.dataset.lfsid, pid=btn.dataset.lfpid;
+  if(a==='rem-piece') remLFPiece(sid,pid);
+  else if(a==='add-piece') addLFPiece(sid);
+  else if(a==='dup-piece') dupLFPiece(sid);
+});
+
+document.getElementById('add-lf-species').addEventListener('click',addLFSpecies);
+
+// LF tab switch
+document.getElementById('tab-lf-btn').addEventListener('click',function(){
+  this.classList.add('active');
+  document.getElementById('tab-lumber-btn').classList.remove('active');
+  document.getElementById('tab-slab-btn').classList.remove('active');
+  document.getElementById('tab-lf').classList.remove('hidden');
+  document.getElementById('tab-lumber').classList.add('hidden');
+  document.getElementById('tab-slab').classList.add('hidden');
+  if(lfSpecies.length===0) addLFSpecies();
+});
+
+// Update lumber tab switch to also deactivate lf tab
+const origLumberTabClick = document.getElementById('tab-lumber-btn').onclick;
+
 // Session recovery
 function saveSession(){
   try{
     const session={
       species:JSON.parse(JSON.stringify(species)),
       slabSpecies:JSON.parse(JSON.stringify(slabSpecies)),
+      lfSpecies:JSON.parse(JSON.stringify(lfSpecies)),
       projName:projName,
       budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:''
     };
@@ -1346,6 +1568,9 @@ function loadSession(){
       species=session.species.map(s=>({...s,id:uid(),thicknesses:s.thicknesses.map(t=>({...t,id:uid(),boards:t.boards.map(b=>({...b,id:uid()}))}))}));
       if(session.slabSpecies&&session.slabSpecies.length>0){
         slabSpecies=session.slabSpecies.map(s=>({...s,id:uid(),thicknesses:s.thicknesses.map(t=>({...t,id:uid(),slabs:t.slabs.map(b=>({...b,id:uid(),measurements:[...b.measurements]}))}))}));
+      }
+      if(session.lfSpecies&&session.lfSpecies.length>0){
+        lfSpecies=session.lfSpecies.map(s=>({...s,id:uid(),pieces:s.pieces.map(p=>({...p,id:uid()}))}));
       }
       if(session.projName){
         projName=session.projName;
@@ -1719,8 +1944,9 @@ function renderBirdsEye(){
 
   const hasLumber=species.some(s=>s.thicknesses.some(t=>t.boards.some(b=>calcBF(t.tNum,b.lft,b.lin,b.w)>0)));
   const hasSlabs=slabSpecies.some(s=>s.thicknesses.some(t=>t.slabs.some(b=>calcSlabBF(t.tNum,b.lft,b.lin,b.measurements)>0)));
+  const hasLF=lfSpecies.some(s=>s.pieces.some(p=>(parseFloat(p.lft)||0)+(parseFloat(p.lin)||0)>0));
 
-  if(!hasLumber&&!hasSlabs){el.innerHTML='';el.style.display='none';
+  if(!hasLumber&&!hasSlabs&&!hasLF){el.innerHTML='';el.style.display='none';
   const expBtns2=document.getElementById('export-btns');
   if(expBtns2) expBtns2.style.display='none';
   return;}
@@ -1793,6 +2019,28 @@ function renderBirdsEye(){
     });
   }
 
+  if(hasLF){
+    beHtml+='<div class="birds-eye-type-label">Lumber - LF</div>';
+    lfSpecies.forEach(s=>{
+      const stotal=lfSTotal(s);
+      if(stotal<=0) return;
+      const scost=lfSCost(s);
+      beHtml+=`<div class="birds-eye-species-group">`;
+      beHtml+=`<div class="birds-eye-species-label">${s.name||'Unnamed'} <span style="font-weight:400;color:var(--text2);font-size:11px;">— ${stotal.toFixed(2)} lf · $${scost.toFixed(2)}</span></div>`;
+      const pCount=s.pieces.filter(p=>(parseFloat(p.lft)||0)+(parseFloat(p.lin)||0)>0).length;
+      beHtml+=`<div class="birds-eye-thick-label">$${parseFloat(s.price||0).toFixed(2)}/lf · ${pCount} ${pCount===1?'piece':'pieces'}</div>`;
+      const total=s.pieces.length;
+      s.pieces.forEach((p,i)=>{
+        const lf=(parseFloat(p.lft)||0)+((parseFloat(p.lin)||0)/12);
+        if(lf<=0) return;
+        const cost=lf*(parseFloat(s.price)||0);
+        const lStr=(parseFloat(p.lft)||0)+"' "+(parseFloat(p.lin)||0)+'"';
+        beHtml+=`<div class="birds-eye-row"><span>${pieceName(i,total)} · ${lStr}</span><span>${lf.toFixed(2)} lf · $${cost.toFixed(2)}</span></div>`;
+      });
+      beHtml+='</div>';
+    });
+  }
+
   el.innerHTML=beHtml;
 }
 
@@ -1801,14 +2049,18 @@ function renderBirdsEye(){
 document.getElementById('tab-lumber-btn').addEventListener('click',function(){
   this.classList.add('active');
   document.getElementById('tab-slab-btn').classList.remove('active');
+  document.getElementById('tab-lf-btn').classList.remove('active');
   document.getElementById('tab-lumber').classList.remove('hidden');
   document.getElementById('tab-slab').classList.add('hidden');
+  document.getElementById('tab-lf').classList.add('hidden');
 });
 document.getElementById('tab-slab-btn').addEventListener('click',function(){
   this.classList.add('active');
   document.getElementById('tab-lumber-btn').classList.remove('active');
+  document.getElementById('tab-lf-btn').classList.remove('active');
   document.getElementById('tab-slab').classList.remove('hidden');
   document.getElementById('tab-lumber').classList.add('hidden');
+  document.getElementById('tab-lf').classList.add('hidden');
   if(slabSpecies.length===0) addSlabSpecies();
 });
 
@@ -1837,8 +2089,10 @@ document.getElementById('start-btn').addEventListener('click', function(){
   clearSession();
   species=[];
   slabSpecies=[];
+  lfSpecies=[];
   addSpecies();
   renderSlabSpecies();
+  renderLFSpecies();
   document.getElementById('edit-bar').style.display='none';
   document.getElementById('budget-input').value='';
   document.getElementById('budget-alert').classList.remove('show');
