@@ -452,7 +452,7 @@
     </div>
   </div>
 
-  <div id="birds-eye-card" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;"></div>
+  <div id="birds-eye-card" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px;margin-bottom:12px;display:none;"></div>
   <div id="export-btns" style="display:none;margin-top:10px;display:none;gap:8px;flex-wrap:wrap;">
     <button class="btn btn-sm" id="export-pdf-btn" style="flex:1;">&#128196; Export PDF</button>
     <button class="btn btn-sm" id="share-btn" style="flex:1;">&#8679; Share Summary</button>
@@ -1571,27 +1571,56 @@ function renderLFSpecies(){
       } else { sSummary.innerHTML=''; }
     });
 
-    // Inner card (mirrors t-block in BF)
+    // Inner card (mirrors t-block in BF) — with full collapse
+    // Each species in LF has one "price block" (like a thickness block in BF)
+    // Default: not collapsed (first one open)
+    if(typeof s._blkCollapsed==='undefined') s._blkCollapsed=false;
+
     const blk=document.createElement('div');blk.className='t-block';
 
-    // Card header — Price/lf
+    // Card header — Price/lf + collapse indicator
     const tMeta=document.createElement('div');tMeta.className='t-meta t-block-header';
+    const priceLabel='$'+(parseFloat(s.price||0).toFixed(2))+'/lf';
     tMeta.innerHTML=`
-      <div class="t-meta-fields">
+      <div class="t-meta-fields" id="lf-fields-${s.id}" style="${s._blkCollapsed?'display:none':''}">
         <div class="t-meta-field">Price/lf
           <div class="p-wrap">
             <span class="p-prefix">$</span>
             <input type="number" inputmode="decimal" data-lfsid="${s.id}" data-lffield="price" value="${s.price}" placeholder="0.00" min="0" step="0.01" />
           </div>
         </div>
-      </div>`;
+      </div>
+      <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
+      </div>
+      <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#8964; Expand':'&#8963; Collapse'}</span>`;
     blk.appendChild(tMeta);
+
+    // Summary row shown when collapsed
+    const tSummary=document.createElement('div');tSummary.id='lf-blk-summary-'+s.id;
+    tSummary.className=s._blkCollapsed?'':'t-block-collapsed';
+    if(s._blkCollapsed){
+      let sumHtml='<div class="t-block-summary">';
+      s.pieces.forEach((pc2,i2)=>{
+        const lf2=(parseFloat(pc2.lft)||0)+((parseFloat(pc2.lin)||0)/12);if(lf2<=0)return;
+        const c2=lf2*(parseFloat(s.price)||0);
+        const l2=(parseFloat(pc2.lft)||0)+"' "+(parseFloat(pc2.lin)||0)+'"';
+        sumHtml+=`<div class="t-block-summary-row"><span>${pieceName(i2,s.pieces.length)} · ${l2}</span><span>${lf2.toFixed(2)} lf · $${c2.toFixed(2)}</span></div>`;
+      });
+      sumHtml+='</div>';
+      tSummary.innerHTML=sumHtml;
+    }
+    blk.appendChild(tSummary);
+
+    // Collapsible content
+    const tContent=document.createElement('div');tContent.id='lf-content-'+s.id;
+    if(s._blkCollapsed) tContent.style.display='none';
 
     // Column heads
     const bHeads=document.createElement('div');
     bHeads.style.cssText='display:grid;grid-template-columns:72px 1fr auto 24px;gap:6px;margin-bottom:6px;font-size:11px;color:var(--text2);padding:0 2px;margin-top:8px;';
     bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">LF &nbsp;·&nbsp; Cost</div><div></div>`;
-    blk.appendChild(bHeads);
+    tContent.appendChild(bHeads);
 
     // Pieces
     const total=s.pieces.length;
@@ -1611,19 +1640,46 @@ function renderLFSpecies(){
           <span id="lc-${p.id}">$${cost.toFixed(2)}</span>
         </div>
         <button class="del-btn" style="justify-self:center;" aria-label="Remove piece" data-lfsid="${s.id}" data-lfpid="${p.id}" data-lfaction="rem-piece">×</button>`;
-      blk.appendChild(row);
+      tContent.appendChild(row);
     });
 
     // Actions
     const bAct=document.createElement('div');bAct.className='b-actions';bAct.style.marginTop='8px';
     bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Piece</button>
       <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Piece</button>`;
-    blk.appendChild(bAct);
+    tContent.appendChild(bAct);
 
-    // Running total inside card (mirrors t-block footer in BF)
-    const tFoot=document.createElement('div');tFoot.className='species-footer';tFoot.style.marginTop='10px';
+    // Running total inside card
+    const tFoot=document.createElement('div');tFoot.className='t-footer';
     tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
-    blk.appendChild(tFoot);
+    tContent.appendChild(tFoot);
+    blk.appendChild(tContent);
+
+    // Collapse toggle — click header (but not input or del-btn)
+    tMeta.addEventListener('click',function(e){
+      if(e.target.closest('input')||e.target.closest('.del-btn')) return;
+      s._blkCollapsed=!s._blkCollapsed;
+      tContent.style.display=s._blkCollapsed?'none':'';
+      const chev=document.getElementById('lf-chev-'+s.id);
+      if(chev) chev.innerHTML=s._blkCollapsed?'&#8964; Expand':'&#8963; Collapse';
+      const lfFields=document.getElementById('lf-fields-'+s.id);
+      const lfLabel=document.getElementById('lf-label-'+s.id);
+      if(lfFields) lfFields.style.display=s._blkCollapsed?'none':'';
+      if(lfLabel) lfLabel.style.display=s._blkCollapsed?'':'none';
+      if(s._blkCollapsed){
+        let sumHtml='<div class="t-block-summary">';
+        s.pieces.forEach((pc2,i2)=>{
+          const lf2=(parseFloat(pc2.lft)||0)+((parseFloat(pc2.lin)||0)/12);if(lf2<=0)return;
+          const c2=lf2*(parseFloat(s.price)||0);
+          const l2=(parseFloat(pc2.lft)||0)+"' "+(parseFloat(pc2.lin)||0)+'"';
+          sumHtml+=`<div class="t-block-summary-row"><span>${pieceName(i2,s.pieces.length)} · ${l2}</span><span>${lf2.toFixed(2)} lf · $${c2.toFixed(2)}</span></div>`;
+        });
+        sumHtml+='</div>';
+        tSummary.innerHTML=sumHtml;tSummary.classList.remove('t-block-collapsed');
+      } else {
+        tSummary.innerHTML='';tSummary.classList.add('t-block-collapsed');
+      }
+    });
 
     sContent.appendChild(blk);
     card.appendChild(sContent);
