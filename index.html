@@ -1189,37 +1189,14 @@ function exportPDF(p) {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageW, pageH, 'F');
 
-  // Logo - smaller, centered, with aggressive rounded corners
+  // Logo - clean stamp, no border, no corners
   try {
     const imgProps = doc.getImageProperties(LOGO_B64);
-    const logoW = 52;
+    const logoW = 48;
     const logoH = (imgProps.height * logoW) / imgProps.width;
-    const logoX = pageW/2 - logoW/2;
-    const r = 6; // aggressive corner radius
-
-    // Save graphics state, draw clipping rounded rect, draw image, restore
-    // jsPDF supports save/restore via internal canvas context on newer versions
-    // Approach: draw image first, then overlay rounded rect with page bg color
-    // to fake corner masking — clean look on linen background
-    doc.addImage(LOGO_B64, 'PNG', logoX, y, logoW, logoH, '', 'FAST');
-
-    // Mask corners by drawing page-colored triangles over each corner
-    const bgC = [242, 238, 230]; // linen bg
-    doc.setFillColor(...bgC);
-    doc.setDrawColor(...bgC);
-    // Top-left corner
-    doc.triangle(logoX, y, logoX+r, y, logoX, y+r, 'F');
-    // Top-right corner
-    doc.triangle(logoX+logoW, y, logoX+logoW-r, y, logoX+logoW, y+r, 'F');
-    // Bottom-left corner
-    doc.triangle(logoX, y+logoH, logoX+r, y+logoH, logoX, y+logoH-r, 'F');
-    // Bottom-right corner
-    doc.triangle(logoX+logoW, y+logoH, logoX+logoW-r, y+logoH, logoX+logoW, y+logoH-r, 'F');
-    // Draw rounded rect border outline to clean up edges
-    doc.setLineWidth(0.3);
-    doc.roundedRect(logoX, y, logoW, logoH, r, r, 'S');
-
-    y += logoH + 5;
+    const logoX = (pageW - logoW) / 2;
+    doc.addImage(LOGO_B64, 'PNG', logoX, y, logoW, logoH);
+    y += logoH + 4;
   } catch(e) { y += 4; }
 
   // Divider
