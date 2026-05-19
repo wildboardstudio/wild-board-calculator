@@ -1139,10 +1139,33 @@ function buildSummaryText(p) {
     lines.push('');
   }
 
+  // LF
+  const lfSp = p ? (p.lfSpecies||[]) : lfSpecies;
+  const lfItems = [];
+  lfSp.forEach(s => {
+    s.pieces.forEach((pc,i) => {
+      const lf = (parseFloat(pc.lft)||0) + ((parseFloat(pc.lin)||0)/12);
+      if(lf<=0) return;
+      const cost = lf * (parseFloat(s.price)||0);
+      const lStr = (parseFloat(pc.lft)||0)+"' "+(parseFloat(pc.lin)||0)+'"';
+      lfItems.push({name:s.name||'Unnamed', price:parseFloat(s.price||0).toFixed(2), label:pieceName(i,s.pieces.length), dims:lStr, lf:lf, cost:cost});
+    });
+  });
+  if(lfItems.length) {
+    lines.push('--- LUMBER - LF ---');
+    lfItems.forEach(item => {
+      lines.push(item.name + ' | $' + item.price + '/lf | ' + item.label + ' | ' + item.dims);
+      lines.push('  ' + item.lf.toFixed(2) + ' lf  $' + item.cost.toFixed(2));
+    });
+    lines.push('');
+  }
+
   // Totals
   const totalBF = lumberItems.reduce((s,x)=>s+x.bf,0) + slabItems.reduce((s,x)=>s+x.bf,0);
-  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0) + slabItems.reduce((s,x)=>s+x.cost,0);
+  const lfTotalCost = lfItems.reduce((s,x)=>s+x.cost,0);
+  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0) + slabItems.reduce((s,x)=>s+x.cost,0) + lfTotalCost;
   lines.push('TOTAL: ' + totalBF.toFixed(2) + ' bf');
+  if(lfItems.length) lines.push('TOTAL LF: ' + lfItems.reduce((s,x)=>s+x.lf,0).toFixed(2) + ' lf');
   lines.push('SUBTOTAL: $' + totalCost.toFixed(2));
   if(budget && totalCost > budget) lines.push('OVER BUDGET BY: $' + (totalCost-budget).toFixed(2));
   lines.push('');
@@ -1164,10 +1187,13 @@ function exportPDF(p) {
   doc.setFillColor(242, 238, 230);
   doc.rect(0, 0, pageW, pageH, 'F');
 
-  // Logo
+  // Logo - maintain aspect ratio
   try {
-    doc.addImage(LOGO_B64, 'PNG', pageW/2-45, y, 90, 22);
-    y += 28;
+    const imgProps = doc.getImageProperties(LOGO_B64);
+    const logoW = 100;
+    const logoH = (imgProps.height * logoW) / imgProps.width;
+    doc.addImage(LOGO_B64, 'PNG', pageW/2 - logoW/2, y, logoW, logoH);
+    y += logoH + 6;
   } catch(e) { y += 4; }
 
   // Divider
@@ -1292,12 +1318,73 @@ function exportPDF(p) {
     });
   });
 
+  // Build LF items
+  const lfSp2 = p ? (p.lfSpecies||[]) : lfSpecies;
+  const lfItems2 = [];
+  lfSp2.forEach(s => {
+    s.pieces.forEach((pc,i) => {
+      const lf = (parseFloat(pc.lft)||0)+((parseFloat(pc.lin)||0)/12);
+      if(lf<=0) return;
+      const cost = lf*(parseFloat(s.price)||0);
+      const lStr = (parseFloat(pc.lft)||0)+"' "+(parseFloat(pc.lin)||0)+'"';
+      lfItems2.push({name:s.name||'Unnamed',price:parseFloat(s.price||0).toFixed(2),label:pieceName(i,s.pieces.length),dims:lStr,lf,cost});
+    });
+  });
+
+  // Draw LF section — custom renderer since LF uses lf not bf
+  function drawLFSection(items) {
+    if(!items.length) return;
+    checkPage();
+    doc.setFillColor(200,190,176);
+    doc.rect(margin, y-4, contentW, 7, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(44,36,24);
+    doc.text('LUMBER - LF', margin+2, y+1);
+    y += 7;
+
+    const grouped = {};
+    items.forEach(item => {
+      if(!grouped[item.name]) grouped[item.name] = [];
+      grouped[item.name].push(item);
+    });
+
+    Object.entries(grouped).forEach(([sName, pieces]) => {
+      checkPage();
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(10);
+      doc.setTextColor(44,36,24);
+      doc.text(sName, margin+2, y);
+      y += 5;
+      checkPage();
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(8);
+      doc.setTextColor(100,90,75);
+      doc.text('$'+pieces[0].price+'/lf · '+pieces.length+' '+(pieces.length===1?'piece':'pieces'), margin+4, y);
+      y += 4;
+      pieces.forEach(pc => {
+        checkPage();
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9);
+        doc.setTextColor(60,50,40);
+        doc.text(pc.label+'  '+pc.dims, margin+6, y);
+        doc.setFont('helvetica','bold');
+        doc.text(pc.lf.toFixed(2)+' lf  $'+pc.cost.toFixed(2), pageW-margin, y, {align:'right'});
+        doc.setFont('helvetica','normal');
+        y += 4.5;
+      });
+      y += 2;
+    });
+  }
+
   drawSection('Lumber', lumberItems);
   drawSection('Slabs', slabItems);
+  drawLFSection(lfItems2);
 
   // Totals footer
   const totalBF = lumberItems.reduce((s,x)=>s+x.bf,0)+slabItems.reduce((s,x)=>s+x.bf,0);
-  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0)+slabItems.reduce((s,x)=>s+x.cost,0);
+  const lfTotal = lfItems2.reduce((s,x)=>s+x.lf,0);
+  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0)+slabItems.reduce((s,x)=>s+x.cost,0)+lfItems2.reduce((s,x)=>s+x.cost,0);
   checkPage();
   y += 2;
   doc.setDrawColor(180,168,150);
@@ -1308,6 +1395,12 @@ function exportPDF(p) {
   doc.setTextColor(44,36,24);
   doc.text('Total Board Feet: '+totalBF.toFixed(2)+' bf', margin, y);
   doc.text('Subtotal: $'+totalCost.toFixed(2), pageW-margin, y, {align:'right'});
+  if(lfTotal > 0) {
+    y += 5;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.text('Total Linear Feet: '+lfTotal.toFixed(2)+' lf', margin, y);
+  }
   y += 5;
   if(budget && totalCost > budget) {
     doc.setTextColor(180,40,20);
