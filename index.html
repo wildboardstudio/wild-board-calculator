@@ -527,13 +527,19 @@ function commitSave(overwriteId){
   }
   persist();
   updateLandingLink();
-  document.getElementById('edit-bar').style.display='none';
-  editingId=null;
-  // Update project name field to show saved state without clearing
-  const t=pWrap.querySelector('.ititle'),inp=pWrap.querySelector('input');
-  if(t){ t.textContent='Tap to name this project'; t.className='ititle'; }
-  if(inp) inp.value='';
-  projName='';
+  // Show brief saved confirmation without clearing anything
+  const saveBtn=document.getElementById('save-btn');
+  const saveBtn2=document.getElementById('save-btn2');
+  const origText='Save';
+  const origText2='Save Project';
+  if(saveBtn){ saveBtn.textContent='Saved ✓'; saveBtn.disabled=true; setTimeout(()=>{ saveBtn.textContent=origText; saveBtn.disabled=false; },1500); }
+  if(saveBtn2){ saveBtn2.textContent='Saved ✓'; saveBtn2.disabled=true; setTimeout(()=>{ saveBtn2.textContent=origText2; saveBtn2.disabled=false; },1500); }
+  // If editing, update the edit bar to reflect saved state
+  if(editingId){
+    const editLabel=document.getElementById('edit-label');
+    if(editLabel) editLabel.textContent='Saved: '+projName;
+    setTimeout(()=>{ if(editLabel) editLabel.textContent='Editing: '+projName; },1500);
+  }
 }
 
 document.getElementById('budget-proceed').addEventListener('click',()=>{
