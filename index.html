@@ -468,7 +468,8 @@ function commitSave(overwriteId){
   species=[];
   addSpecies();
   document.getElementById('edit-bar').style.display='none';
-  renderSaved();
+  persist();
+  updateLandingLink();
 }
 
 document.getElementById('budget-proceed').addEventListener('click',()=>{
@@ -820,6 +821,7 @@ function showSaved(){
 }
 
 function renderSavedScreen(){
+  renderSavedList();
   const el=document.getElementById('saved-list-screen');
   if(!el) return;
   if(!projects.length){el.innerHTML='<p class="empty">No saved projects yet.</p>';return;}
