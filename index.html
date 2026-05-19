@@ -114,7 +114,7 @@
       flex-wrap: wrap;
     }
     .t-meta-del { margin-left: auto; flex-shrink: 0; }
-    .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; }
+    .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; min-width: 0; }
     .t-wrap {
       display: flex; align-items: center;
       border: 1px solid var(--border2); border-radius: var(--radius);
@@ -228,13 +228,13 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; }
+    .t-meta-fields { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; min-width: 0; }
     .species-collapse-btn { font-size: 12px; font-weight: 600; color: var(--text2); padding: 4px 8px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 90px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
     .species-right-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
     .t-block-header:active { opacity: 0.7; }
     .t-block-collapsed { display: none; }
-    .t-collapse-indicator { font-size: 12px; font-weight: 600; color: var(--text2); margin-left: auto; padding: 4px 8px; border: 1px solid var(--border2); border-radius: var(--radius); flex-shrink: 0; background: var(--bg3); cursor: pointer; min-width: 90px; text-align: center; }
+    .t-collapse-indicator { font-size: 12px; font-weight: 600; color: var(--text2); padding: 4px 8px; border: 1px solid var(--border2); border-radius: var(--radius); flex-shrink: 0; background: var(--bg3); cursor: pointer; min-width: 90px; text-align: center; margin-left: auto; }
     .t-block-summary { font-size: 12px; color: var(--text2); padding: 6px 0 2px; }
     .t-block-summary-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
     .t-block-summary-row:last-child { border-bottom: none; }
@@ -631,21 +631,21 @@ function refreshNums(sid,tid){
 function addSpecies(){
   species.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
   species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
-  render();updateTotals();
+  renderNoScroll();updateTotals();
 }
-function remSpecies(sid){species=species.filter(s=>s.id!==sid);render();updateTotals();}
+function remSpecies(sid){species=species.filter(s=>s.id!==sid);renderNoScroll();updateTotals();}
 function addThick(sid){
   const s=species.find(x=>x.id===sid);
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
     s.thicknesses.push({id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]});
   }
-  render();
+  renderNoScroll();
 }
-function remThick(sid,tid){const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);render();updateTotals();}
-function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});render();}
-function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}render();}
-function remBoard(sid,tid,bid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);render();updateTotals();}
+function remThick(sid,tid){const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();}
+function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
+function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();}
+function remBoard(sid,tid,bid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();}
 
 function loadProjectIntoCalc(p){
   // Deep clone species data with fresh IDs so edits don't mutate the saved project
@@ -696,6 +696,12 @@ document.addEventListener('click',function(e){
 document.getElementById('add-species').addEventListener('click',addSpecies);
 
 // --- Render calculator ---
+function renderNoScroll(){
+  const scrollY=window.scrollY;
+  render();
+  window.scrollTo(0,scrollY);
+}
+
 function render(){
   const list=document.getElementById('species-list');
   list.innerHTML='';
@@ -1010,21 +1016,22 @@ function updateSlabTotals(){
   document.getElementById('t-bf').textContent=(totalBF+lumberBF).toFixed(2);
   document.getElementById('t-cost').textContent='$'+(totalCost+lumberCost).toFixed(2);
   checkBudget(totalCost+lumberCost);
+  if(typeof renderBirdsEye==='function') renderBirdsEye();
 }
 
 function addSlabSpecies(){
   slabSpecies.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
   slabSpecies.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]}]});
-  renderSlabSpecies();updateSlabTotals();
+  renderSlabSpeciesNoScroll();updateSlabTotals();
 }
-function remSlabSpecies(sid){ slabSpecies=slabSpecies.filter(s=>s.id!==sid); renderSlabSpecies(); updateSlabTotals(); }
+function remSlabSpecies(sid){ slabSpecies=slabSpecies.filter(s=>s.id!==sid); renderSlabSpeciesNoScroll(); updateSlabTotals(); }
 function addSlabThick(sid){
   const s=slabSpecies.find(x=>x.id===sid);
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
     s.thicknesses.push({id:uid(),tNum:'',price:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]});
   }
-  renderSlabSpecies();updateSlabTotals();
+  renderSlabSpeciesNoScroll();updateSlabTotals();
 }
 function remSlabThick(sid,tid){
   const s=slabSpecies.find(x=>x.id===sid);
@@ -1049,12 +1056,12 @@ function remSlab(sid,tid,bid){
 function addMeasurement(sid,tid,bid){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid), b=t&&t.slabs.find(x=>x.id===bid);
   if(b) b.measurements.push('');
-  renderSlabSpecies();updateSlabTotals();
+  renderSlabSpeciesNoScroll();updateSlabTotals();
 }
 function remMeasurement(sid,tid,bid,mi){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid), b=t&&t.slabs.find(x=>x.id===bid);
   if(b&&b.measurements.length>1) b.measurements.splice(mi,1);
-  renderSlabSpecies();updateSlabTotals();
+  renderSlabSpeciesNoScroll();updateSlabTotals();
 }
 
 function refreshSlabNums(sid,tid){
@@ -1120,6 +1127,12 @@ document.addEventListener('click',function(e){
 });
 
 document.getElementById('add-slab-species').addEventListener('click', addSlabSpecies);
+
+function renderSlabSpeciesNoScroll(){
+  const scrollY=window.scrollY;
+  renderSlabSpecies();
+  window.scrollTo(0,scrollY);
+}
 
 function renderSlabSpecies(){
   const list=document.getElementById('slab-species-list');
@@ -1292,7 +1305,7 @@ function renderSlabSpecies(){
               <button class="btn btn-sm" style="margin-top:4px;font-size:12px;" data-slabaction="add-meas" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabbid="${b.id}">+ Add Measurement</button>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:6px;margin-bottom:4px;font-style:italic;text-align:right;">&#9432; More measurements at irregular points means a more accurate average. Focus on curves, flares, and narrow spots along the live edge.</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:6px;margin-bottom:4px;font-style:italic;text-align:right;">&#9432; More measurements at irregular points means a more accurate average.<br>Focus on curves, flares, and narrow spots along the slab edges.</div>
           <div class="meas-avg" id="savg-${b.id}">${avg>0?'Avg width: '+avg.toFixed(2)+'"':''}</div>
           <div class="b-result">
             <span id="sbf-slab-${b.id}">${calcSlabBF(t.tNum,b.lft,b.lin,b.measurements).toFixed(2)} bf</span>
@@ -1328,7 +1341,7 @@ function renderBirdsEye(){
 
   if(!hasLumber&&!hasSlabs){el.innerHTML='';return;}
 
-  let beHtml='<div class="birds-eye-title">Birds Eye View</div>';
+  let beHtml='<div class="birds-eye-title">Project Summary</div>';
 
   if(hasLumber){
     beHtml+='<div class="birds-eye-type-label">Lumber</div>';
@@ -1548,6 +1561,12 @@ function renderSavedScreen(){
       });
     }
     item.appendChild(detail);
+
+    // Project Summary label inside detail
+    const projSumLabel=document.createElement('div');
+    projSumLabel.style.cssText='font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:8px;text-align:center;';
+    projSumLabel.textContent='Project Summary';
+    detail.insertBefore(projSumLabel, detail.firstChild);
 
     summary.addEventListener('click',()=>{
       const chevron=summary.querySelector('.saved-chevron');
