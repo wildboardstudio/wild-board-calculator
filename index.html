@@ -276,7 +276,7 @@
 
     /* CTA buttons */
     .landing-cta {
-      width: 100%; padding: 10px 20px 20px;
+      width: 100%; padding: 18px 20px 20px;
       display: flex; flex-direction: column; gap: 8px; align-items: center;
     }
     .landing .btn-create {
@@ -615,11 +615,11 @@ function commitSave(overwriteId){
   }
 }
 
-document.getElementById('budget-proceed').addEventListener('click',()=>{
+const _bp=document.getElementById('budget-proceed');if(_bp)_bp.addEventListener('click',()=>{
   document.getElementById('budget-modal').classList.remove('open');
   proceedSave();
 });
-document.getElementById('budget-cancel').addEventListener('click',()=>{
+const _bc=document.getElementById('budget-cancel');if(_bc)_bc.addEventListener('click',()=>{
   document.getElementById('budget-modal').classList.remove('open');
 });
 document.getElementById('budget-input').addEventListener('input',()=>{
@@ -630,7 +630,7 @@ document.getElementById('budget-input').addEventListener('input',()=>{
 document.getElementById('save-btn').addEventListener('click',triggerSave);
 // save-btn2 removed - single save button at top
 
-document.getElementById('cancel-edit').addEventListener('click',()=>{
+const _ce=document.getElementById('cancel-edit');if(_ce)_ce.addEventListener('click',()=>{
   editingId=null;
   clearProj();
   species=[];
@@ -638,16 +638,16 @@ document.getElementById('cancel-edit').addEventListener('click',()=>{
   document.getElementById('edit-bar').style.display='none';
 });
 
-document.getElementById('modal-overwrite').addEventListener('click',()=>{
+const _mo=document.getElementById('modal-overwrite');if(_mo)_mo.addEventListener('click',()=>{
   document.getElementById('save-modal').classList.remove('open');
   commitSave(editingId);
 });
-document.getElementById('modal-new').addEventListener('click',()=>{
+const _mn=document.getElementById('modal-new');if(_mn)_mn.addEventListener('click',()=>{
   document.getElementById('save-modal').classList.remove('open');
   editingId=null;
   commitSave(null);
 });
-document.getElementById('modal-cancel').addEventListener('click',()=>{
+const _mc=document.getElementById('modal-cancel');if(_mc)_mc.addEventListener('click',()=>{
   document.getElementById('save-modal').classList.remove('open');
 });
 
@@ -1052,13 +1052,15 @@ function renderSaved(){
     });
 
     // Edit
-    actions.querySelector('[data-edit]').addEventListener('click',e=>{
+    const _rEdit=actions.querySelector('[data-edit]');
+    if(_rEdit)_rEdit.addEventListener('click',e=>{
       e.stopPropagation();
       loadProjectIntoCalc(p);
     });
 
     // Delete
-    actions.querySelector('[data-del]').addEventListener('click',e=>{
+    const _rDel=actions.querySelector('[data-del]');
+    if(_rDel)_rDel.addEventListener('click',e=>{
       e.stopPropagation();
       if(confirm(`Delete "${p.name}"?`)){
         projects=projects.filter(x=>x.id!==p.id);
@@ -2255,8 +2257,8 @@ if(hadSession){
 }
 
 // Export/share for active project
-document.getElementById('export-pdf-btn').addEventListener('click',()=>exportPDF(null));
-document.getElementById('share-btn').addEventListener('click',()=>shareProject(null));
+const _epdf=document.getElementById('export-pdf-btn');if(_epdf)_epdf.addEventListener('click',()=>exportPDF(null));
+const _shr=document.getElementById('share-btn');if(_shr)_shr.addEventListener('click',()=>shareProject(null));
 
 // Show/hide export buttons when birds-eye-card is shown
 const origRenderBirdsEye = renderBirdsEye;
@@ -2291,9 +2293,17 @@ document.getElementById('saved-back-btn').addEventListener('click', function(){
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
-document.getElementById('landing-saved-link').addEventListener('click', showSaved);
+// landing-saved-link wired below after showSaved is defined
 
-function updateLandingLink(){}
+function updateLandingLink(){
+  const btn=document.getElementById('landing-saved-link');
+  if(!btn) return;
+  if(projects.length>0){
+    btn.textContent='View Saved Projects ('+projects.length+')';
+  } else {
+    btn.textContent='View Saved Projects';
+  }
+}
 
 function showSaved(){
   if(!projects.length){
@@ -2310,6 +2320,12 @@ function showSaved(){
   renderSavedScreen();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+// Wire landing saved link after showSaved is defined
+(function(){
+  const btn=document.getElementById('landing-saved-link');
+  if(btn) btn.addEventListener('click', showSaved);
+})();
 
 function renderSavedScreen(){
   const el=document.getElementById('saved-list-screen');
@@ -2330,6 +2346,8 @@ function renderSavedScreen(){
     const actions=document.createElement('div');actions.className='saved-actions';
     actions.innerHTML=`
       <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red);">Delete</button>
+      <button class="btn btn-sm" data-pdf="${p.id}">&#128196; PDF</button>
+      <button class="btn btn-sm" data-share="${p.id}">&#128257; Share</button>
       <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit Project</button>`;
     item.appendChild(actions);
 
@@ -2412,22 +2430,25 @@ function renderSavedScreen(){
       else{actions.classList.add('open');detail.classList.add('open');chevron.classList.add('open');}
     });
 
-    actions.querySelector('[data-edit]').addEventListener('click',e=>{
+    const _qEdit=actions.querySelector('[data-edit]');
+    if(_qEdit)_qEdit.addEventListener('click',e=>{
       e.stopPropagation();
       document.getElementById('saved-screen').style.display='none';
       document.getElementById('app-screen').style.display='block';
       loadProjectIntoCalc(p);
     });
-    actions.querySelector('[data-pdf]').addEventListener('click',e=>{
+    const _qPdf=actions.querySelector('[data-pdf]');
+    if(_qPdf)_qPdf.addEventListener('click',e=>{
       e.stopPropagation();
       exportPDF(p);
     });
-    actions.querySelector('[data-share]').addEventListener('click',e=>{
+    const _qShare=actions.querySelector('[data-share]');
+    if(_qShare)_qShare.addEventListener('click',e=>{
       e.stopPropagation();
       shareProject(p);
     });
-
-    actions.querySelector('[data-del]').addEventListener('click',e=>{
+    const _qDel=actions.querySelector('[data-del]');
+    if(_qDel)_qDel.addEventListener('click',e=>{
       e.stopPropagation();
       if(confirm(`Delete "${p.name}"?`)){
         projects=projects.filter(x=>x.id!==p.id);
