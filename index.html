@@ -525,14 +525,14 @@
   <!-- Tape / History -->
   <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0;">
     <div id="calc-tape" style="min-height:52px;max-height:100px;overflow-y:auto;padding:6px 8px 6px 16px;font-size:12px;color:var(--text2);font-family:monospace;line-height:1.7;text-align:right;flex:1;"></div>
-    <button id="calc-clear-all" onclick="calcHistory=[];calcDisplay='0';calcExpr='';calcOp=null;calcPrev=null;calcFresh=false;calcRender();if(typeof saveSession==='function')saveSession();" style="flex-shrink:0;background:rgba(139,37,0,0.10);border:1px solid rgba(139,37,0,0.25);border-radius:6px;font-size:12px;font-weight:600;color:#8b2500;cursor:pointer;padding:5px 10px;white-space:nowrap;align-self:center;margin-right:10px;">Clear All</button>
+    <button id="calc-clear-all" onclick="calcHistory=[];calcDisplay='0';calcExpr='';calcOp=null;calcPrev=null;calcFresh=false;calcRender();if(typeof saveSession==='function')saveSession();" style="flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;padding:4px 9px;white-space:nowrap;align-self:center;margin-right:10px;">Clear All</button>
   </div>
 
   <!-- Display -->
   <div style="padding:8px 16px 4px;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div id="calc-expr" style="font-size:12px;color:var(--text2);min-height:18px;font-family:monospace;flex:1;"></div>
-      <button data-calc="back" style="background:none;border:none;font-size:20px;color:var(--text2);cursor:pointer;padding:0 0 0 8px;line-height:1;">⌫</button>
+      <button data-calc="back" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;padding:3px 8px;line-height:1;">&#9668;</button>
     </div>
     <div id="calc-display" style="font-size:32px;font-weight:700;color:var(--text);font-family:monospace;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">0</div>
   </div>
@@ -577,6 +577,18 @@
 
 let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined;
 let calcHistory=[];
+// ── CUSTOM CONFIRM ───────────────────────────────────────────────
+function appConfirm(msg, onYes) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;';
+  ov.innerHTML = `<div style="background:var(--bg);border-radius:14px;padding:22px 20px 18px;max-width:300px;width:100%;box-shadow:0 4px 32px rgba(0,0,0,0.25);"><p style="font-size:15px;color:var(--text);margin-bottom:18px;line-height:1.4;">${msg}</p><div style="display:flex;gap:10px;justify-content:flex-end;"><button id="ac-cancel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;">Cancel</button><button id="ac-ok" style="background:var(--red);border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;">Remove</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#ac-cancel').addEventListener('click', () => document.body.removeChild(ov));
+  ov.querySelector('#ac-ok').addEventListener('click', () => { document.body.removeChild(ov); onYes(); });
+  ov.addEventListener('click', e => { if(e.target===ov) document.body.removeChild(ov); });
+}
+// ── END CUSTOM CONFIRM ───────────────────────────────────────────
+
 
 // ── CALCULATOR ───────────────────────────────────────────────────
 let calcDisplay = '0';
@@ -867,7 +879,7 @@ function addSpecies(){
   species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
   renderNoScroll();updateTotals();
 }
-function remSpecies(sid){if(!confirm("Remove this species and all its boards?"))return;species=species.filter(s=>s.id!==sid);renderNoScroll();updateTotals();}
+function remSpecies(sid){appConfirm("Remove this species and all its boards?",()=>{species=species.filter(s=>s.id!==sid);renderNoScroll();updateTotals();});}
 function addThick(sid){
   const s=species.find(x=>x.id===sid);
   if(s){
@@ -876,7 +888,7 @@ function addThick(sid){
   }
   renderNoScroll();
 }
-function remThick(sid,tid){if(!confirm("Remove this thickness block and all its boards?"))return;const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();}
+function remThick(sid,tid){appConfirm("Remove this thickness block and all its boards?",()=>{const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();});}
 function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
 function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();}
 function remBoard(sid,tid,bid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();}
@@ -2249,8 +2261,7 @@ function renderSlabSpecies(){
 
       // + Slab button inside the thickness card
       const addSlabBtn=document.createElement('div');addSlabBtn.style.marginTop='8px';
-      addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Slab</button>
-        <button class="btn btn-sm" data-slabaction="dup-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">&#10697; Last Slab</button>`;
+      addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Slab</button>`;
       stContent.appendChild(addSlabBtn);
 
       // Append blk to ssContent
