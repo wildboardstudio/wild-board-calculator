@@ -106,7 +106,7 @@
     .species-footer strong { color: var(--text); }
 
     .t-block {
-      background: #d4cabf; border-radius: var(--radius);
+      background: #ede8e0; border-radius: var(--radius);
       padding: 12px; margin-bottom: 10px; border: 1px solid var(--border2);
     }
     .t-meta {
@@ -314,12 +314,29 @@
     }
     .tab-btn.active .tab-sub { color: var(--text2); }
     .tab-btn.active { background: #ede8e0; color: var(--text); border-color: var(--border2); border-bottom: 1px solid #ede8e0; }
+    /* Per-tab active colors — match inner card */
+    .tab-btn.active.tab-lumber    { background: #e8ddd0; border-color: var(--border2); border-bottom-color: #e8ddd0; }
+    .tab-btn.active.tab-lf        { background: #d8e0e8; border-color: var(--border2); border-bottom-color: #d8e0e8; }
+    .tab-btn.active.tab-slab      { background: #ecddd8; border-color: var(--border2); border-bottom-color: #ecddd8; }
+    .tab-btn.active.tab-sg        { background: #eee8d0; border-color: var(--border2); border-bottom-color: #eee8d0; }
+
+    /* Tab panel back card colors */
+
+
+    /* Inner card — neutral across all tabs */
+    .inner-card-lumber,.inner-card-lf,.inner-card-slab,.inner-card-sg { background: #ede8e0 !important; border-color: var(--border2) !important; }
     .tab-panel {
       border: 1px solid var(--border2);
       border-radius: 0 8px 8px 8px;
-      background: #ede8e0; margin-bottom: 12px;
+      background: var(--tab-back, #ede8e0); margin-bottom: 12px;
     }
     .tab-panel-inner { padding: 12px; }
+    /* Tab color themes */
+    .tab-theme-bf   { --tab-back: #e8ddd0; }
+    .tab-theme-lf   { --tab-back: #d8e0e8; }
+    .tab-theme-slab { --tab-back: #ecddd8; }
+    .tab-theme-sg   { --tab-back: #eee8d0; }
+
     .tab-panel.hidden { display: none; }
     .meas-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .meas-row .suffix-wrap { flex: 1; }
@@ -441,11 +458,12 @@
 
   <div id="edit-bar" style="display:none" class="edit-bar"><strong id="edit-label">Editing project</strong><button class="btn btn-sm" id="cancel-edit">Cancel</button></div>
   <div class="tabs">
-    <button class="tab-btn active" id="tab-lumber-btn">Lumber<span class="tab-sub">board foot</span></button>
-    <button class="tab-btn" id="tab-lf-btn">Lumber<span class="tab-sub">linear foot</span></button>
-    <button class="tab-btn" id="tab-slab-btn">Slab</button>
+    <button class="tab-btn active tab-lumber" id="tab-lumber-btn">Lumber<span class="tab-sub">board foot</span></button>
+    <button class="tab-btn tab-lf" id="tab-lf-btn">Lumber<span class="tab-sub">linear foot</span></button>
+    <button class="tab-btn tab-slab" id="tab-slab-btn">Slab</button>
+    <button class="tab-btn tab-sg" id="tab-sg-btn">Sheet</button>
   </div>
-  <div class="tab-panel" id="tab-lumber">
+  <div class="tab-panel tab-theme-bf" id="tab-lumber">
     <div class="tab-panel-inner">
       <div id="species-list"></div>
       <div class="actions" style="margin-bottom:0">
@@ -453,7 +471,7 @@
       </div>
     </div>
   </div>
-  <div class="tab-panel hidden" id="tab-lf">
+  <div class="tab-panel hidden tab-theme-lf" id="tab-lf">
     <div class="tab-panel-inner">
       <div id="lf-species-list"></div>
       <div class="actions" style="margin-bottom:0">
@@ -462,12 +480,20 @@
     </div>
   </div>
 
-  <div class="tab-panel hidden" id="tab-slab">
+  <div class="tab-panel hidden tab-theme-slab" id="tab-slab">
     <div class="tab-panel-inner">
       <div id="slab-species-list"></div>
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-slab-species">+ Add Species</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Sheet Goods Tab -->
+  <div class="tab-panel hidden tab-theme-sg" id="tab-sg">
+    <div class="tab-panel-inner">
+      <div id="sg-list"></div>
+      <button class="btn btn-sm" id="add-sg-material" style="margin-top:6px;">+ Sheet</button>
     </div>
   </div>
 
@@ -822,8 +848,9 @@ function commitSave(overwriteId){
   const slabBF=slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
   const slabCost=slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
   const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
+  const sgCost=typeof sgMaterials!=='undefined'?sgMaterials.reduce((s,m)=>s+m.price*m.qty,0):0;
   const totalBF=lumberBF+slabBF;
-  const totalCost=lumberCost+slabCost+lfCost;
+  const totalCost=lumberCost+slabCost+lfCost+sgCost;
   const budget=parseFloat(document.getElementById('budget-input').value)||0;
   const entry={
     id:overwriteId||uid(), name:projName,
@@ -908,8 +935,9 @@ function updateTotals(){
   const slabBF=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSBF(x),0):0;
   const slabCost=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSCost(x),0):0;
   const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
+  const sgCost=typeof sgMaterials!=='undefined'?sgMaterials.reduce((s,m)=>s+m.price*m.qty,0):0;
   const totalBF=lumberBF+slabBF;
-  const totalCost=lumberCost+slabCost+lfCost;
+  const totalCost=lumberCost+slabCost+lfCost+sgCost;
   document.getElementById('t-bf').textContent=totalBF.toFixed(2);
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
   checkBudget(totalCost);
@@ -1021,6 +1049,7 @@ document.addEventListener('click',function(e){
 });
 
 document.getElementById('add-species').addEventListener('click',addSpecies);
+const _addSG=document.getElementById('add-sg-material');if(_addSG)_addSG.addEventListener('click',addSGMaterial);
 
 // --- Render calculator ---
 function renderNoScroll(){
@@ -1091,7 +1120,7 @@ function render(){
     });
 
     s.thicknesses.forEach(t=>{
-      const blk=document.createElement('div');blk.className='t-block';
+      const blk=document.createElement('div');blk.className='t-block inner-card-slab';
 
       // Header
       const tMeta=document.createElement('div');tMeta.className='t-meta t-block-header';tMeta.id='t-header-'+t.id;
@@ -1797,7 +1826,7 @@ function renderLFSpecies(){
     // Default: not collapsed (first one open)
     if(typeof s._blkCollapsed==='undefined') s._blkCollapsed=false;
 
-    const blk=document.createElement('div');blk.className='t-block';
+    const blk=document.createElement('div');blk.className='t-block inner-card-slab';
 
     // Card header — Price/lf + collapse indicator
     const tMeta=document.createElement('div');tMeta.className='t-meta t-block-header';
@@ -1935,11 +1964,20 @@ document.getElementById('add-lf-species').addEventListener('click',addLFSpecies)
 // LF tab switch
 document.getElementById('tab-lf-btn').addEventListener('click',function(){
   this.classList.add('active');
+  this.style.background='#d8e0e8'; this.style.borderBottomColor='#d8e0e8';
+  document.getElementById('tab-lumber-btn').style.background='';
+  document.getElementById('tab-lumber-btn').style.borderBottomColor='';
   document.getElementById('tab-lumber-btn').classList.remove('active');
+  document.getElementById('tab-slab-btn').style.background='';
+  document.getElementById('tab-slab-btn').style.borderBottomColor='';
   document.getElementById('tab-slab-btn').classList.remove('active');
+  document.getElementById('tab-sg-btn').style.background='';
+  document.getElementById('tab-sg-btn').style.borderBottomColor='';
+  document.getElementById('tab-sg-btn').classList.remove('active');
   document.getElementById('tab-lf').classList.remove('hidden');
   document.getElementById('tab-lumber').classList.add('hidden');
   document.getElementById('tab-slab').classList.add('hidden');
+  document.getElementById('tab-sg').classList.add('hidden');
   if(lfSpecies.length===0) addLFSpecies();
 });
 
@@ -2205,7 +2243,7 @@ function renderSlabSpecies(){
     });
 
     s.thicknesses.forEach(t=>{
-      const blk=document.createElement('div'); blk.className='t-block';
+      const blk=document.createElement('div'); blk.className='t-block inner-card-slab';
       const stThickLabel=(t.tNum?t.tNum+'/4':'—')+' · $'+(parseFloat(t.price||0).toFixed(2))+'/bf';
       blk.innerHTML=`
         <div class="t-meta t-block-header" id="st-header-${t.id}">
@@ -2367,7 +2405,8 @@ function renderBirdsEye(){
   const hasSlabs=slabSpecies.some(s=>s.thicknesses.some(t=>t.slabs.some(b=>calcSlabBF(t.tNum,b.lft,b.lin,b.measurements)>0)));
   const hasLF=lfSpecies.some(s=>s.pieces.some(p=>(parseFloat(p.lft)||0)+(parseFloat(p.lin)||0)>0));
 
-  if(!hasLumber&&!hasSlabs&&!hasLF){el.innerHTML='';el.style.display='none';
+  const hasSGCheck=typeof sgMaterials!=='undefined'&&sgMaterials.some(m=>m.qty>0&&m.price>0);
+  if(!hasLumber&&!hasSlabs&&!hasLF&&!hasSGCheck){el.innerHTML='';el.style.display='none';
   const expBtns2=document.getElementById('export-btns');
   if(expBtns2) expBtns2.style.display='none';
   return;}
@@ -2462,36 +2501,297 @@ function renderBirdsEye(){
     });
   }
 
+
+  // Sheet Goods section
+  const hasSG=typeof sgMaterials!=='undefined'&&sgMaterials.some(m=>m.qty>0&&m.price>0);
+  if(hasSG){
+    beHtml+='<div class="birds-eye-type-label">Sheet Goods</div>';
+    sgMaterials.forEach(m=>{
+      if(m.qty<=0&&m.price<=0) return;
+      const name=m.name&&m.name.trim()?m.name:'Unnamed Material';
+      const size=m.size==='Custom'?m.customSize:m.size;
+      const thick=m.thick==='Custom'?m.customThick:m.thick;
+      const lineTotal=(m.price*m.qty).toFixed(2);
+      beHtml+=`<div class="birds-eye-species-group">
+        <div class="birds-eye-species-label">${name} <span style="font-weight:400;color:var(--text2);font-size:11px;">— $${lineTotal}</span></div>
+        <div class="birds-eye-row"><span>${size} / ${thick}</span><span>${m.qty} sheet${m.qty!==1?'s':''} · $${parseFloat(m.price).toFixed(2)}/sheet</span></div>
+      </div>`;
+    });
+  }
+
   el.innerHTML=beHtml;
 }
 
 
+
+// ── SHEET GOODS ──────────────────────────────────────────────────
+let sgMaterials = [];
+
+const SG_SIZES = ['4×8','4×10','4×12','5×5','5×10','Custom'];
+const SG_THICK = ['⅛"','¼"','⅜"','½"','⅝"','¾"','1"','1-¼"','1-½"','Custom'];
+
+function addSGMaterial(){
+  sgMaterials.forEach(m=>{m._collapsed=true;});
+  sgMaterials.push({id:uid(),name:'',size:'',thick:'',customSize:'',customThick:'',price:0,qty:1,_collapsed:false});
+  renderSG();saveSession();
+}
+
+function remSGMaterial(mid){
+  appConfirm('Remove this material and all its sheets?',()=>{
+    sgMaterials=sgMaterials.filter(m=>m.id!==mid);
+    renderSG();updateSGTotals();saveSession();
+  });
+}
+
+function updateSGTotals(){
+  let total=0;
+  sgMaterials.forEach(m=>{ total+=m.price*m.qty; });
+  const el=document.getElementById('sg-total');
+  if(el) el.textContent='Total: $'+total.toFixed(2);
+  updateTotals();
+}
+
+function refreshSG(mid){
+  const m=sgMaterials.find(x=>x.id===mid);if(!m)return;
+  const el=document.getElementById('sg-line-'+mid);
+  if(el) el.textContent='$'+(m.price*m.qty).toFixed(2);
+  let t=0;sgMaterials.forEach(x=>t+=x.price*x.qty);
+  const tot=document.getElementById('sg-total');
+  if(tot) tot.textContent='Total: $'+t.toFixed(2);
+  updateTotals();saveSession();
+}
+
+function sgCollapseSummary(m){
+  const size=m.size==='Custom'?m.customSize:m.size;
+  const thick=m.thick==='Custom'?m.customThick:m.thick;
+  const total=(m.price*m.qty).toFixed(2);
+  return `<span style="font-weight:600;color:var(--text)">${size} / ${thick}</span> &nbsp;·&nbsp; <span style="font-weight:600;color:var(--text)">$${total}</span> &nbsp;·&nbsp; <span style="color:var(--text2)">${m.qty} sheet${m.qty!==1?'s':''}</span>`;
+}
+
+function renderSG(){
+  const list=document.getElementById('sg-list');
+  if(!list)return;
+  list.innerHTML='';
+  sgMaterials.forEach(m=>{
+    // Outer white card — matches species-card pattern
+    const card=document.createElement('div');
+    card.className='species-card';
+
+    // Header row — name | collapse btn | delete btn
+    const hdr=document.createElement('div');
+    hdr.className='species-header';
+    const nameW=makeTitle({ph:'Tap to name material',val:m.name,onSave:v=>{m.name=v;saveSession();}});
+    nameW.className='title-wrap';
+    if(m._collapsed) nameW.querySelector('.ititle')&&nameW.querySelector('.ititle').classList.add('locked');
+    hdr.appendChild(nameW);
+
+    // Right-side buttons
+    const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
+    const colBtn=document.createElement('button');
+    colBtn.className='species-collapse-btn';
+    colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+    sRightBtns.appendChild(colBtn);
+    const rb=document.createElement('button');
+    rb.className='del-btn';rb.innerHTML='&times;';rb.title='Remove material';
+    rb.addEventListener('click',()=>remSGMaterial(m.id));
+    sRightBtns.appendChild(rb);
+    hdr.appendChild(sRightBtns);
+    card.appendChild(hdr);
+
+    // Collapsed summary
+    const summary=document.createElement('div');
+    summary.style.cssText='font-size:12px;color:var(--text2);padding:4px 2px 8px;';
+    if(m._collapsed) summary.innerHTML=sgCollapseSummary(m);
+    card.appendChild(summary);
+
+    // Inner darker content block — matches thickness-block style
+    const content=document.createElement('div');
+    content.className='inner-card-sg';
+    content.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;'+(m._collapsed?'display:none;':'');
+
+    // Size row
+    const sizeRow=document.createElement('div');
+    sizeRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    const sizeLabel=document.createElement('span');
+    sizeLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    sizeLabel.textContent='Size (ft)';
+    const sizeSelect=document.createElement('select');
+    sizeSelect.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;';
+    sizeSelect.addEventListener('change',()=>{sizeSelect.style.color=sizeSelect.value?'var(--text)':'var(--text3)';});
+    const sPlaceholder=document.createElement('option');sPlaceholder.value='';sPlaceholder.textContent='Select size...';sPlaceholder.disabled=false;sPlaceholder.style.color='var(--text3)';if(!m.size)sPlaceholder.selected=true;sizeSelect.appendChild(sPlaceholder);
+    SG_SIZES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===m.size)o.selected=true;sizeSelect.appendChild(o);});
+    const customSizeWrap=document.createElement('div');
+    customSizeWrap.style.display=m.size==='Custom'?'block':'none';customSizeWrap.style.flex='1';
+    const customSizeInput=document.createElement('input');
+    customSizeInput.type='text';customSizeInput.placeholder='e.g. 4×8';
+    customSizeInput.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
+    customSizeInput.value=m.customSize||'';
+    customSizeInput.addEventListener('change',()=>{m.customSize=customSizeInput.value;saveSession();});
+    customSizeWrap.appendChild(customSizeInput);
+    sizeSelect.addEventListener('change',()=>{m.size=sizeSelect.value;customSizeWrap.style.display=m.size==='Custom'?'block':'none';saveSession();});
+    sizeRow.appendChild(sizeLabel);sizeRow.appendChild(sizeSelect);sizeRow.appendChild(customSizeWrap);
+    content.appendChild(sizeRow);
+
+    // Thickness row
+    const thickRow=document.createElement('div');
+    thickRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    const thickLabel=document.createElement('span');
+    thickLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    thickLabel.textContent='Thickness';
+    const thickSelect=document.createElement('select');
+    thickSelect.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.thick?'var(--text)':'var(--text3)')+';flex:1;';
+    thickSelect.addEventListener('change',()=>{thickSelect.style.color=thickSelect.value?'var(--text)':'var(--text3)';});
+    const tPlaceholder=document.createElement('option');tPlaceholder.value='';tPlaceholder.textContent='Select thickness...';tPlaceholder.disabled=false;tPlaceholder.style.color='var(--text3)';if(!m.thick)tPlaceholder.selected=true;thickSelect.appendChild(tPlaceholder);
+    SG_THICK.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===m.thick)o.selected=true;thickSelect.appendChild(o);});
+    const customThickWrap=document.createElement('div');
+    customThickWrap.style.display=m.thick==='Custom'?'block':'none';customThickWrap.style.flex='1';
+    const customThickInput=document.createElement('input');
+    customThickInput.type='text';customThickInput.placeholder='e.g. 1"';
+    customThickInput.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
+    customThickInput.value=m.customThick||'';
+    customThickInput.addEventListener('change',()=>{m.customThick=customThickInput.value;saveSession();});
+    customThickWrap.appendChild(customThickInput);
+    thickSelect.addEventListener('change',()=>{m.thick=thickSelect.value;customThickWrap.style.display=m.thick==='Custom'?'block':'none';saveSession();});
+    thickRow.appendChild(thickLabel);thickRow.appendChild(thickSelect);thickRow.appendChild(customThickWrap);
+    content.appendChild(thickRow);
+
+    // Price/sheet row
+    const priceRow=document.createElement('div');
+    priceRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    const priceLabel=document.createElement('span');
+    priceLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    priceLabel.textContent='Price/sheet';
+    const priceWrap=document.createElement('div');
+    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;';
+    const pPrefix=document.createElement('span');
+    pPrefix.style.cssText='padding:0 4px 0 10px;font-size:14px;color:var(--text2);';
+    pPrefix.textContent='$';
+    const priceInput=document.createElement('input');
+    priceInput.type='number';priceInput.min='0';priceInput.step='0.01';
+    priceInput.value=m.price||'';priceInput.placeholder='0.00';
+    priceInput.style.cssText='border:none;background:transparent;width:100px;padding:8px 8px 8px 2px;font-size:14px;color:var(--text);text-align:right;-webkit-appearance:none;';
+    priceInput.addEventListener('input',()=>{m.price=parseFloat(priceInput.value)||0;refreshSG(m.id);});
+    priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
+    priceRow.appendChild(priceLabel);priceRow.appendChild(priceWrap);
+    content.appendChild(priceRow);
+
+    // Qty row
+    const qtyRow=document.createElement('div');
+    qtyRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+    const qtyLabel=document.createElement('span');
+    qtyLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    qtyLabel.textContent='Qty (sheets)';
+    const qtyInput=document.createElement('input');
+    qtyInput.type='number';qtyInput.min='1';qtyInput.step='1';
+    qtyInput.value=m.qty||1;
+    qtyInput.style.cssText='font-size:14px;padding:8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:80px;text-align:center;-webkit-appearance:none;';
+    qtyInput.addEventListener('input',()=>{m.qty=parseInt(qtyInput.value)||1;refreshSG(m.id);});
+    qtyRow.appendChild(qtyLabel);qtyRow.appendChild(qtyInput);
+    content.appendChild(qtyRow);
+
+    // Line total
+    const lineTotal=document.createElement('div');
+    lineTotal.id='sg-line-'+m.id;
+    lineTotal.style.cssText='font-size:13px;font-weight:600;color:var(--text2);text-align:right;padding-top:4px;border-top:1px solid var(--border);';
+    lineTotal.textContent='$'+(m.price*m.qty).toFixed(2);
+    content.appendChild(lineTotal);
+
+    card.appendChild(content);
+
+    // Collapse toggle
+    colBtn.addEventListener('click',()=>{
+      m._collapsed=!m._collapsed;
+      content.style.display=m._collapsed?'none':'';
+      colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+      const titleEl=nameW.querySelector('.ititle');
+      if(titleEl){ m._collapsed?titleEl.classList.add('locked'):titleEl.classList.remove('locked'); }
+      summary.innerHTML=m._collapsed?sgCollapseSummary(m):'';
+      saveSession();
+    });
+
+    list.appendChild(card);
+  });
+
+  // Section total
+  const totDiv=document.createElement('div');
+  totDiv.id='sg-total';
+  totDiv.style.cssText='font-size:13px;font-weight:700;color:var(--text);text-align:right;margin-top:4px;';
+  let t=0;sgMaterials.forEach(m=>t+=m.price*m.qty);
+  totDiv.textContent='Total: $'+t.toFixed(2);
+  list.appendChild(totDiv);
+}
+// ── END SHEET GOODS ───────────────────────────────────────────────
+
 // Tab switching
 document.getElementById('tab-lumber-btn').addEventListener('click',function(){
   this.classList.add('active');
-  document.getElementById('tab-slab-btn').classList.remove('active');
+  this.style.background='#e8ddd0'; this.style.borderBottomColor='#e8ddd0';
+  document.getElementById('tab-lf-btn').style.background='';
+  document.getElementById('tab-lf-btn').style.borderBottomColor='';
   document.getElementById('tab-lf-btn').classList.remove('active');
+  document.getElementById('tab-slab-btn').style.background='';
+  document.getElementById('tab-slab-btn').style.borderBottomColor='';
+  document.getElementById('tab-slab-btn').classList.remove('active');
+  document.getElementById('tab-sg-btn').style.background='';
+  document.getElementById('tab-sg-btn').style.borderBottomColor='';
+  document.getElementById('tab-sg-btn').classList.remove('active');
   document.getElementById('tab-lumber').classList.remove('hidden');
-  document.getElementById('tab-slab').classList.add('hidden');
   document.getElementById('tab-lf').classList.add('hidden');
+  document.getElementById('tab-slab').classList.add('hidden');
+  document.getElementById('tab-sg').classList.add('hidden');
 });
 document.getElementById('tab-slab-btn').addEventListener('click',function(){
   this.classList.add('active');
+  this.style.background='#ecddd8'; this.style.borderBottomColor='#ecddd8';
+  document.getElementById('tab-lumber-btn').style.background='';
+  document.getElementById('tab-lumber-btn').style.borderBottomColor='';
   document.getElementById('tab-lumber-btn').classList.remove('active');
+  document.getElementById('tab-lf-btn').style.background='';
+  document.getElementById('tab-lf-btn').style.borderBottomColor='';
   document.getElementById('tab-lf-btn').classList.remove('active');
+  document.getElementById('tab-sg-btn').style.background='';
+  document.getElementById('tab-sg-btn').style.borderBottomColor='';
+  document.getElementById('tab-sg-btn').classList.remove('active');
   document.getElementById('tab-slab').classList.remove('hidden');
   document.getElementById('tab-lumber').classList.add('hidden');
   document.getElementById('tab-lf').classList.add('hidden');
+  document.getElementById('tab-sg').classList.add('hidden');
   if(slabSpecies.length===0) addSlabSpecies();
+});
+document.getElementById('tab-sg-btn').addEventListener('click',function(){
+  this.classList.add('active');
+  this.style.background='#eee8d0'; this.style.borderBottomColor='#eee8d0';
+  document.getElementById('tab-lumber-btn').style.background='';
+  document.getElementById('tab-lumber-btn').style.borderBottomColor='';
+  document.getElementById('tab-lumber-btn').classList.remove('active');
+  document.getElementById('tab-lf-btn').style.background='';
+  document.getElementById('tab-lf-btn').style.borderBottomColor='';
+  document.getElementById('tab-lf-btn').classList.remove('active');
+  document.getElementById('tab-slab-btn').style.background='';
+  document.getElementById('tab-slab-btn').style.borderBottomColor='';
+  document.getElementById('tab-slab-btn').classList.remove('active');
+  document.getElementById('tab-sg').classList.remove('hidden');
+  document.getElementById('tab-lumber').classList.add('hidden');
+  document.getElementById('tab-lf').classList.add('hidden');
+  document.getElementById('tab-slab').classList.add('hidden');
+  if(sgMaterials.length===0) addSGMaterial();
 });
 
 loadPersisted();
 updateLandingLink();
+// Set initial active tab color
+document.getElementById('tab-lumber-btn').style.background='#e8d5d0';
+document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8d5d0';
 // Restore session if one exists
+// Set initial active tab inline color to match back card
+document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
+document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
+
 const hadSession=loadSession();
 if(hadSession){
   render();
   renderSlabSpecies();
+  renderSG();
   updateTotals();
 } else {
   addSpecies();
@@ -2511,6 +2811,7 @@ document.getElementById('start-btn').addEventListener('click', function(){
   species=[];
   slabSpecies=[];
   lfSpecies=[];
+  sgMaterials=[];
   addSpecies();
   renderSlabSpecies();
   renderLFSpecies();
@@ -2519,6 +2820,9 @@ document.getElementById('start-btn').addEventListener('click', function(){
   document.getElementById('budget-alert').classList.remove('show');
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
+  // Ensure active tab color matches back card on fresh load
+  document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
+  document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
