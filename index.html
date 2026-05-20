@@ -530,8 +530,7 @@
 
   <!-- Display -->
   <div style="padding:8px 16px 4px;">
-    <div id="calc-expr" style="font-size:12px;color:var(--text2);min-height:18px;font-family:monospace;text-align:right;"></div>
-    <div id="calc-display" style="font-size:32px;font-weight:700;color:var(--text);font-family:monospace;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">0</div>
+    <div id="calc-display" style="font-size:28px;font-weight:700;color:var(--text);font-family:monospace;letter-spacing:-0.02em;text-align:right;word-break:break-all;line-height:1.2;min-height:36px;">0</div>
   </div>
 
   <!-- Keypad -->
@@ -618,10 +617,8 @@ function calcClose() {
 
 function calcRender() {
   const d = document.getElementById('calc-display');
-  const e = document.getElementById('calc-expr');
   const t = document.getElementById('calc-tape');
-  if(d) d.textContent = calcDisplay;
-  if(e) e.textContent = calcExpr;
+  if(d) d.textContent = calcExpr ? (calcExpr + (calcFresh ? '' : calcDisplay)) : calcDisplay;
   if(t) { t.innerHTML = calcHistory.map(h => `<div>${h}</div>`).join(''); t.scrollTop = t.scrollHeight; }
 }
 
