@@ -593,11 +593,13 @@ function appConfirm(msg, onYes) {
 
 
 // ── CALCULATOR ───────────────────────────────────────────────────
-let calcDisplay = '0';
-let calcExpr = '';
-let calcOp = null;
-let calcPrev = null;
-let calcFresh = false;
+let calcDisplay = '0';   // current number being entered
+let calcExpr = '';       // full running expression string e.g. "8+9+5+6+"
+let calcOp = null;       // pending operator key
+let calcPrev = null;     // accumulated value so far
+let calcFresh = false;   // next digit replaces display
+
+const calcOps = {'op-add':'+','op-sub':'−','op-mul':'×','op-div':'÷'};
 
 function calcOpen() {
   const sheet = document.getElementById('calc-sheet');
@@ -629,40 +631,99 @@ function calcTape(entry) {
 }
 
 function calcInput(key) {
-  if(key === 'clear') { calcDisplay='0';calcExpr='';calcOp=null;calcPrev=null;calcFresh=false; }
-  else if(key === 'sign') { const n=parseFloat(calcDisplay); calcDisplay=isNaN(n)?'0':String(-n); }
-  else if(key === 'pct') { const n=parseFloat(calcDisplay); calcDisplay=isNaN(n)?'0':String(n/100); }
-  else if(key === 'back') {
-    if(calcFresh||calcDisplay==='0'||calcDisplay==='-0'){calcDisplay='0';calcFresh=false;}
-    else{calcDisplay=calcDisplay.length>1?calcDisplay.slice(0,-1):'0';}
-  }
-  else if(key === 'dot') { if(calcFresh){calcDisplay='0.';calcFresh=false;return calcRender();} if(!calcDisplay.includes('.')) calcDisplay+='.'; }
-  else if(key.startsWith('op-')) {
-    const ops={'op-add':'+','op-sub':'−','op-mul':'×','op-div':'÷'};
-    if(calcOp && !calcFresh) calcDisplay=calcEval(calcPrev,parseFloat(calcDisplay),calcOp);
-    calcPrev=parseFloat(calcDisplay); calcOp=key;
-    calcExpr=calcDisplay+' '+ops[key]; calcFresh=true;
-  } else if(key === 'eq') {
-    if(calcOp && calcPrev!==null) {
-      const ops={'op-add':'+','op-sub':'−','op-mul':'×','op-div':'÷'};
-      const b=parseFloat(calcDisplay);
-      const result=calcEval(calcPrev,b,calcOp);
-      calcTape(fmtCalc(calcPrev)+' '+ops[calcOp]+' '+fmtCalc(b)+' = '+result);
-      calcExpr=''; calcDisplay=result; calcOp=null; calcPrev=null; calcFresh=true;
+  if(key === 'clear') {
+    calcDisplay='0'; calcExpr=''; calcOp=null; calcPrev=null; calcFresh=false;
+
+  } else if(key === 'back') {
+    if(calcFresh || calcDisplay==='0' || calcDisplay==='-0') { calcDisplay='0'; calcFresh=false; }
+    else { calcDisplay = calcDisplay.length>1 ? calcDisplay.slice(0,-1) : '0'; }
+
+  } else if(key === 'sign') {
+    const n=parseFloat(calcDisplay);
+    if(!isNaN(n)) { calcDisplay=String(-n); }
+
+  } else if(key === 'pct') {
+    const n=parseFloat(calcDisplay);
+    if(!isNaN(n)) { calcDisplay=String(n/100); }
+
+  } else if(key === 'dot') {
+    if(calcFresh) { calcDisplay='0.'; calcFresh=false; }
+    else if(!calcDisplay.includes('.')) { calcDisplay+='.'; }
+
+  } else if(key.startsWith('op-')) {
+    // Pressing an operator: commit current number into expr, store op, await next number
+    const sym = calcOps[key];
+    const cur = calcDisplay;
+    if(calcFresh && calcOp) {
+      // Replace last operator in expr (user changed their mind)
+      calcExpr = calcExpr.slice(0, -1) + sym;
+      calcOp = key;
+    } else {
+      calcExpr = (calcExpr || '') + cur + sym;
+      calcOp = key;
+      calcFresh = true;
     }
+
+  } else if(key === 'eq') {
+    if(calcOp && calcExpr) {
+      // Build full expression string for tape, then evaluate left-to-right
+      const fullExpr = calcExpr + calcDisplay;
+      const result = calcEvalExpr(fullExpr);
+      calcTape(fullExpr + ' = ' + result);
+      calcDisplay = result;
+      calcExpr = '';
+      calcOp = null;
+      calcPrev = null;
+      calcFresh = true;
+    }
+
   } else {
-    if(calcFresh||calcDisplay==='0'){calcDisplay=key;calcFresh=false;}
+    // Digit
+    if(calcFresh || calcDisplay==='0') { calcDisplay=key; calcFresh=false; }
     else { if(calcDisplay.replace('-','').replace('.','').length<12) calcDisplay+=key; }
   }
   calcRender();
 }
 
-function calcEval(a,b,op) {
-  let r;
-  if(op==='op-add') r=a+b; else if(op==='op-sub') r=a-b;
-  else if(op==='op-mul') r=a*b; else if(op==='op-div') r=b===0?'Error':a/b;
-  if(typeof r==='number'){r=parseFloat(r.toFixed(10));r=String(r);}
-  return r;
+// Evaluate a flat expression string like "8+9+5−6×3÷2"
+// Respects operator precedence via two-pass (× ÷ first, then + −)
+function calcEvalExpr(expr) {
+  // Tokenise: split into numbers and operators
+  // Operators: + − × ÷  (use unicode chars matching calcOps)
+  const tokens = [];
+  let cur = '';
+  for(let i=0; i<expr.length; i++) {
+    const c = expr[i];
+    if(c==='+' || c==='−' || c==='×' || c==='÷') {
+      if(cur !== '') { tokens.push(parseFloat(cur)); cur=''; }
+      tokens.push(c);
+    } else {
+      cur += c;
+    }
+  }
+  if(cur !== '') tokens.push(parseFloat(cur));
+
+  if(tokens.length === 0) return '0';
+  if(tokens.length === 1) return String(tokens[0]);
+
+  // First pass: × and ÷
+  let t = [...tokens];
+  let i = 1;
+  while(i < t.length) {
+    if(t[i]==='×' || t[i]==='÷') {
+      const a = t[i-1], op = t[i], b = t[i+1];
+      let r = op==='×' ? a*b : (b===0 ? NaN : a/b);
+      t.splice(i-1, 3, r);
+    } else { i+=2; }
+  }
+  // Second pass: + and −
+  let result = t[0];
+  for(let j=1; j<t.length; j+=2) {
+    const op=t[j], b=t[j+1];
+    if(op==='+') result+=b; else result-=b;
+  }
+  if(isNaN(result) || !isFinite(result)) return 'Error';
+  return String(parseFloat(result.toFixed(10)));
 }
 
 function fmtCalc(n){ const s=String(n); return s.length>10?parseFloat(n.toFixed(6)).toString():s; }
