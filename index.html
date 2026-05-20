@@ -389,7 +389,7 @@
     /* Sticky bottom bar */
     .sticky-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; position: fixed;
-      background: var(--bg2); border-top: 1px solid var(--border); box-shadow: none;
+      background: #c4b8a8; border-top: 1px solid var(--border2); box-shadow: none;
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px calc(20px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
       gap: 12px;
@@ -539,9 +539,12 @@
 
   <!-- Sticky bottom bar -->
   <div class="sticky-bar" id="sticky-bar" style="display:none;">
-    <div id="summary-trigger" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;">
-      <span class="sb-label">Subtotal &nbsp;·&nbsp; View Summary &#9650;</span>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <span class="sb-label">Subtotal</span>
       <span class="sb-value" id="t-cost">$0.00</span>
+    </div>
+    <div id="summary-trigger" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;">
+      <span class="sb-label">View Summary &#9650;</span>
     </div>
     <span class="save-confirm" id="save-confirmation" style="position:absolute;top:6px;right:calc(20px + env(safe-area-inset-right));font-size:11px;color:var(--green);font-weight:600;opacity:0;transition:opacity 0.3s;"></span>
   </div>
