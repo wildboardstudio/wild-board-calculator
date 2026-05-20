@@ -339,6 +339,8 @@
 
     .tab-panel.hidden { display: none; }
     .meas-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .length-pair { display: flex; gap: 6px; align-items: center; }
+    .length-pair .suffix-wrap { flex: 1; }
     .meas-row .suffix-wrap { flex: 1; }
     .meas-avg { font-size: 12px; color: var(--text2); font-weight: 600; padding: 2px 2px 4px; }
     .tab-label {
@@ -383,6 +385,23 @@
     .calc-key-op { background: var(--border2); color: var(--text); font-size:22px; }
     .calc-key-eq { background: var(--green); color: #fff; font-size:22px; }
 
+
+    /* Sticky bottom bar */
+    .sticky-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+      background: var(--bg2); border-top: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      gap: 12px;
+    }
+    .sticky-bar .sb-total { display: flex; flex-direction: column; gap: 1px; }
+    .sticky-bar .sb-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); font-weight: 600; }
+    .sticky-bar .sb-value { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
+    .sticky-bar .sb-bf { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .sticky-bar .btn-save { background: var(--text); color: var(--bg); border: none; border-radius: 10px; padding: 10px 22px; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .sticky-bar .btn-save:active { opacity: 0.8; }
+    .sticky-bar .save-confirm { font-size: 12px; color: var(--green); font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+    .sticky-bar .save-confirm.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -440,7 +459,7 @@
 
 <!-- App screen -->
 <div class="app-screen" id="app-screen">
-<div class="wrap" style="padding-top:64px;">
+<div class="wrap" style="padding-top:64px;padding-bottom:80px;">
 
   <div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);">
     <button class="btn btn-sm" id="back-btn">&#8592; Back</button>
@@ -483,6 +502,9 @@
   <div class="tab-panel hidden tab-theme-slab" id="tab-slab">
     <div class="tab-panel-inner">
       <div id="slab-species-list"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 2px 4px;font-size:13px;font-weight:600;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;">
+        <span>Total</span><span id="t-slab-bf" style="font-weight:700;color:var(--text)">0.00 bf</span>
+      </div>
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-slab-species">+ Add Species</button>
       </div>
@@ -497,15 +519,16 @@
     </div>
   </div>
 
-  <div class="totals-panel">
-    <div class="totals-grid">
-      <div class="metric"><div class="metric-label">Board feet</div><div class="metric-value" id="t-bf">0.00</div></div>
-      <div class="metric"><div class="metric-label">Subtotal</div><div class="metric-value" id="t-cost">$0.00</div></div>
+  <!-- Sticky bottom bar -->
+  <div class="sticky-bar" id="sticky-bar" style="display:none;">
+    <div class="sb-total">
+      <span class="sb-label">Subtotal</span>
+      <span class="sb-value" id="t-cost">$0.00</span>
+      <span class="sb-bf" id="t-bf-bar" style="display:none;"></span>
     </div>
-
-    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
-      <div id="save-confirmation" style="font-size:13px;color:var(--text2);font-style:italic;display:none;">Saved ✓</div>
-      <button class="btn btn-primary" id="save-btn">Save Project</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="save-confirm" id="save-confirmation">Saved ✓</span>
+      <button class="btn-save" id="save-btn">Save Project</button>
     </div>
   </div>
 
@@ -521,7 +544,7 @@
 
 <!-- Saved projects screen -->
 <div class="saved-screen" id="saved-screen">
-<div class="wrap" style="padding-top:64px;">
+<div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="saved-screen-header">
     <button class="btn btn-sm" id="saved-back-btn">&#8592; Back</button>
     <h1 style="font-size:18px;font-weight:700;flex:1;text-align:center;">Saved Projects</h1>
@@ -622,10 +645,12 @@
 let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined;
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
-function appConfirm(msg, onYes) {
+function appConfirm(msg, onYes, okLabel, okColor) {
+  const label = okLabel || 'Remove';
+  const color = okColor || 'var(--red)';
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;';
-  ov.innerHTML = `<div style="background:var(--bg);border-radius:14px;padding:22px 20px 18px;max-width:300px;width:100%;box-shadow:0 4px 32px rgba(0,0,0,0.25);"><p style="font-size:15px;color:var(--text);margin-bottom:18px;line-height:1.4;">${msg}</p><div style="display:flex;gap:10px;justify-content:flex-end;"><button id="ac-cancel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;">Cancel</button><button id="ac-ok" style="background:var(--red);border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;">Remove</button></div></div>`;
+  ov.innerHTML = `<div style="background:var(--bg);border-radius:14px;padding:22px 20px 18px;max-width:300px;width:100%;box-shadow:0 4px 32px rgba(0,0,0,0.25);"><p style="font-size:15px;color:var(--text);margin-bottom:18px;line-height:1.4;">${msg}</p><div style="display:flex;gap:10px;justify-content:flex-end;"><button id="ac-cancel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;">Cancel</button><button id="ac-ok" style="background:${color};border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;">${label}</button></div></div>`;
   document.body.appendChild(ov);
   ov.querySelector('#ac-cancel').addEventListener('click', () => document.body.removeChild(ov));
   ov.querySelector('#ac-ok').addEventListener('click', () => { document.body.removeChild(ov); onYes(); });
@@ -874,7 +899,7 @@ function commitSave(overwriteId){
   const saveBtn2=document.getElementById('save-btn2');
   const origText='Save';
   const origText2='Save Project';
-  if(saveBtn){ saveBtn.textContent='Saved ✓'; saveBtn.disabled=true; setTimeout(()=>{ saveBtn.textContent=origText; saveBtn.disabled=false; },1500); }
+  if(saveBtn){ saveBtn.textContent='Saved ✓'; saveBtn.disabled=true; const sc=document.getElementById('save-confirmation'); if(sc){sc.classList.add('show');setTimeout(()=>sc.classList.remove('show'),1500);} setTimeout(()=>{ saveBtn.textContent=origText; saveBtn.disabled=false; },1500); }
   if(saveBtn2){ saveBtn2.textContent='Saved ✓'; saveBtn2.disabled=true; setTimeout(()=>{ saveBtn2.textContent=origText2; saveBtn2.disabled=false; },1500); }
   // If editing, update the edit bar to reflect saved state
   if(editingId){
@@ -938,8 +963,11 @@ function updateTotals(){
   const sgCost=typeof sgMaterials!=='undefined'?sgMaterials.reduce((s,m)=>s+m.price*m.qty,0):0;
   const totalBF=lumberBF+slabBF;
   const totalCost=lumberCost+slabCost+lfCost+sgCost;
-  document.getElementById('t-bf').textContent=totalBF.toFixed(2);
+  const bfEl=document.getElementById('t-bf'); if(bfEl) bfEl.innerHTML=`<span style="font-weight:700;color:var(--text)">${(lumberBF).toFixed(2)} bf</span>`;
+  const slabBfEl=document.getElementById('t-slab-bf'); if(slabBfEl) slabBfEl.textContent=slabBF.toFixed(2)+' bf';
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
+  const bfBar=document.getElementById('t-bf-bar');
+  if(bfBar){if(totalBF>0){bfBar.textContent=totalBF.toFixed(2)+' bf';bfBar.style.display='block';}else{bfBar.style.display='none';}}
   checkBudget(totalCost);
   if(typeof renderBirdsEye==='function') renderBirdsEye();
   saveSession();
@@ -1220,16 +1248,11 @@ function render(){
         if(tLabel) tLabel.style.display=t._collapsed?'':'none';
         if(t._collapsed){
           const tot2=t.boards.length;
-          let sumHtml='<div class="t-block-summary">';
-          t.boards.forEach((b2,i2)=>{
-            const bf2=calcBF(t.tNum,b2.lft,b2.lin,b2.w);if(bf2<=0)return;
-            const c2=calcCost(t.tNum,b2.lft,b2.lin,b2.w,t.price);
-            const l2=(parseFloat(b2.lft)||0)+"' "+(parseFloat(b2.lin)||0)+'"';
-            const w2=(parseFloat(b2.w)||0)+'"';
-            sumHtml+=`<div class="t-block-summary-row"><span>${boardName(i2,tot2)} · ${l2} × ${w2}</span><span>${bf2.toFixed(2)} bf · $${c2.toFixed(2)}</span></div>`;
-          });
-          sumHtml+='</div>';
-          tSummary.innerHTML=sumHtml;tSummary.classList.remove('t-block-collapsed');
+          const tBF2=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
+          const tCost2=t.boards.reduce((s,b)=>s+calcCost(t.tNum,b.lft,b.lin,b.w,t.price),0);
+          const tot2b=t.boards.length;
+          tSummary.innerHTML=`<div style="font-size:12px;color:var(--text2);padding:4px 2px 8px;">${tot2b} board${tot2b!==1?'s':''} &nbsp;·&nbsp; <strong>${tBF2.toFixed(2)} bf</strong> &nbsp;·&nbsp; <strong>$${tCost2.toFixed(2)}</strong></div>`;
+          tSummary.classList.remove('t-block-collapsed');
         } else {
           tSummary.innerHTML='';tSummary.classList.add('t-block-collapsed');
         }
@@ -1717,17 +1740,7 @@ function lfSCost(s){ return lfSTotal(s)*(parseFloat(s.price)||0); }
 function updateLFTotals(){
   const totalLF=lfSpecies.reduce((s,x)=>s+lfSTotal(x),0);
   const totalCost=lfSpecies.reduce((s,x)=>s+lfSCost(x),0);
-  const lumberBF=species.reduce((s,x)=>s+sBF(x),0);
-  const lumberBFCost=species.reduce((s,x)=>s+sCost(x),0);
-  const slabBF=slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
-  const slabBFCost=slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
-  const grandBF=lumberBF+slabBF;
-  const grandCost=lumberBFCost+slabBFCost+totalCost;
-  document.getElementById('t-bf').textContent=grandBF.toFixed(2);
-  document.getElementById('t-cost').textContent='$'+grandCost.toFixed(2);
-  checkBudget(grandCost);
-  if(typeof renderBirdsEye==='function') renderBirdsEye();
-  saveSession();
+  updateTotals();
 }
 
 function pieceName(i,total){ return total===1?'Piece':'Piece '+(i+1); }
@@ -2060,13 +2073,7 @@ function slabSCost(s){ return s.thicknesses.reduce((a,t)=>a+slabTCost(t),0); }
 function updateSlabTotals(){
   const totalBF = slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
   const totalCost = slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
-  // Combine with lumber totals for grand total
-  const lumberBF = species.reduce((s,x)=>s+sBF(x),0);
-  const lumberCost = species.reduce((s,x)=>s+sCost(x),0);
-  document.getElementById('t-bf').textContent=(totalBF+lumberBF).toFixed(2);
-  document.getElementById('t-cost').textContent='$'+(totalCost+lumberCost).toFixed(2);
-  checkBudget(totalCost+lumberCost);
-  if(typeof renderBirdsEye==='function') renderBirdsEye();
+  updateTotals();
 }
 
 function addSlabSpecies(){
@@ -2527,7 +2534,7 @@ function renderBirdsEye(){
 // ── SHEET GOODS ──────────────────────────────────────────────────
 let sgMaterials = [];
 
-const SG_SIZES = ['4×8','4×10','4×12','5×5','5×10','Custom'];
+const SG_SIZES = ['4×2','4×8','4×10','4×12','5×5','5×10','Custom'];
 const SG_THICK = ['⅛"','¼"','⅜"','½"','⅝"','¾"','1"','1-¼"','1-½"','Custom'];
 
 function addSGMaterial(){
@@ -2787,6 +2794,9 @@ document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8d5d0';
 document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
 document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
 
+if(document.getElementById('app-screen').style.display==='block'||document.getElementById('app-screen').style.display===''){
+  const sb=document.getElementById('sticky-bar');if(sb)sb.style.display='flex';
+}
 const hadSession=loadSession();
 if(hadSession){
   render();
@@ -2820,6 +2830,7 @@ document.getElementById('start-btn').addEventListener('click', function(){
   document.getElementById('budget-alert').classList.remove('show');
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
+  document.getElementById('sticky-bar').style.display='flex';
   // Ensure active tab color matches back card on fresh load
   document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
   document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
@@ -2829,6 +2840,7 @@ document.getElementById('start-btn').addEventListener('click', function(){
 document.getElementById('back-btn').addEventListener('click', function(){
   document.getElementById('app-screen').style.display='none';
   document.getElementById('landing-screen').style.display='flex';
+  document.getElementById('sticky-bar').style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
@@ -2852,12 +2864,15 @@ function updateLandingLink(){
 
 function showSaved(){
   if(!projects.length){
-    appConfirm('No saved projects yet. Create one now?',()=>{
+    appConfirm('No saved projects yet.',()=>{
       document.getElementById('landing-screen').style.display='none';
       document.getElementById('app-screen').style.display='block';
+      document.getElementById('sticky-bar').style.display='flex';
+      document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
+      document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
       if(species.length===0) addSpecies();
       window.scrollTo({top:0,behavior:'smooth'});
-    });
+    },'Create','var(--green)');
     return;
   }
   document.getElementById('landing-screen').style.display='none';
