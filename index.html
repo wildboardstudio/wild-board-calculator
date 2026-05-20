@@ -951,7 +951,7 @@ function addThick(sid){
 function remThick(sid,tid){appConfirm("Remove this thickness block and all its boards?",()=>{const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();});}
 function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
 function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();}
-function remBoard(sid,tid,bid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();}
+function remBoard(sid,tid,bid){appConfirm("Remove this board?",()=>{const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();});}
 
 function loadProjectIntoCalc(p){
   // Deep clone species data with fresh IDs so edits don't mutate the saved project
@@ -1287,11 +1287,11 @@ function renderSaved(){
     const _rDel=actions.querySelector('[data-del]');
     if(_rDel)_rDel.addEventListener('click',e=>{
       e.stopPropagation();
-      if(confirm(`Delete "${p.name}"?`)){
+      appConfirm(`Delete "${p.name}"?`,()=>{
         projects=projects.filter(x=>x.id!==p.id);
         persist();
         renderSaved();
-      }
+      });
     });
 
     el.appendChild(item);
@@ -1691,7 +1691,7 @@ function addLFSpecies(){
   lfSpecies.push({id:uid(),name:'',price:'',pieces:[{id:uid(),lft:'',lin:''}]});
   renderLFSpecies();updateLFTotals();
 }
-function remLFSpecies(sid){if(!confirm("Remove this species and all its pieces?"))return;lfSpecies=lfSpecies.filter(s=>s.id!==sid);renderLFSpeciesNoScroll();updateLFTotals();}
+function remLFSpecies(sid){appConfirm("Remove this species and all its pieces?",()=>{lfSpecies=lfSpecies.filter(s=>s.id!==sid);renderLFSpeciesNoScroll();updateLFTotals();});}
 function addLFPiece(sid){
   const s=lfSpecies.find(x=>x.id===sid);
   if(s) s.pieces.push({id:uid(),lft:'',lin:''});
@@ -2531,12 +2531,12 @@ function updateLandingLink(){
 
 function showSaved(){
   if(!projects.length){
-    if(confirm('You have no saved projects. Would you like to create one?')){
+    appConfirm('No saved projects yet. Create one now?',()=>{
       document.getElementById('landing-screen').style.display='none';
       document.getElementById('app-screen').style.display='block';
       if(species.length===0) addSpecies();
       window.scrollTo({top:0,behavior:'smooth'});
-    }
+    });
     return;
   }
   document.getElementById('landing-screen').style.display='none';
@@ -2674,12 +2674,12 @@ function renderSavedScreen(){
     const _qDel=actions.querySelector('[data-del]');
     if(_qDel)_qDel.addEventListener('click',e=>{
       e.stopPropagation();
-      if(confirm(`Delete "${p.name}"?`)){
+      appConfirm(`Delete "${p.name}"?`,()=>{
         projects=projects.filter(x=>x.id!==p.id);
         persist();
         updateLandingLink();
         renderSavedScreen();
-      }
+      });
     });
 
     el.appendChild(item);
