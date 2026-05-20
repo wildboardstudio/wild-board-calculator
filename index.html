@@ -355,8 +355,9 @@
     }
     .calc-key:active { opacity: 0.6; }
     .calc-key-fn { background: var(--bg3); color: var(--text2); font-size:16px; }
+    .calc-key-clear { background: #b85c00; color: #fff; font-size:16px; font-weight:600; }
     .calc-key-op { background: var(--border2); color: var(--text); font-size:22px; }
-    .calc-key-eq { background: var(--brown); color: #fff; font-size:22px; }
+    .calc-key-eq { background: var(--green); color: #fff; font-size:22px; }
 
   </style>
 </head>
@@ -514,8 +515,8 @@
 
 
 <!-- ── CALCULATOR MODAL ──────────────────────────────────────────── -->
-<div id="calc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:900;" aria-hidden="true"></div>
-<div id="calc-sheet" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:901;background:var(--bg);border-radius:16px 16px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,0.18);padding:0 0 env(safe-area-inset-bottom);max-height:92vh;overflow:hidden;transition:transform 0.25s ease;">
+<div id="calc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:900;" aria-hidden="true"></div>
+<div id="calc-sheet" style="display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:901;background:var(--bg);border-radius:16px;box-shadow:0 -4px 32px rgba(0,0,0,0.28);padding:0 0 env(safe-area-inset-bottom);max-height:92vh;overflow:hidden;transition:transform 0.25s ease;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;">
     <span style="font-size:13px;font-weight:600;color:var(--text2);letter-spacing:0.04em;">CALCULATOR</span>
     <button id="calc-close" style="background:none;border:none;font-size:22px;color:var(--text2);cursor:pointer;padding:0 4px;">&#x2715;</button>
@@ -533,7 +534,7 @@
   <!-- Keypad -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px 16px;">
     <!-- Row 1 -->
-    <button class="calc-key calc-key-fn" data-calc="clear">C</button>
+    <button class="calc-key calc-key-clear" data-calc="clear">C</button>
     <button class="calc-key calc-key-fn" data-calc="sign">+/-</button>
     <button class="calc-key calc-key-fn" data-calc="pct">%</button>
     <button class="calc-key calc-key-op" data-calc="op-div">&#xF7;</button>
