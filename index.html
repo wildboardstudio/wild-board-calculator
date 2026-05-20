@@ -378,6 +378,8 @@
       border: none; cursor: pointer; background: var(--bg3);
       color: var(--text); transition: opacity 0.1s;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none; -webkit-user-select: none;
     }
     .calc-key:active { opacity: 0.6; }
     .calc-key-fn { background: var(--bg3); color: var(--text2); font-size:16px; }
@@ -3101,10 +3103,16 @@ function summaryClose(){
   const _co = document.getElementById('calc-overlay');
   if(_co) _co.addEventListener('click', calcClose);
   const _cs = document.getElementById('calc-sheet');
-  if(_cs) _cs.addEventListener('click', function(e){
-    const key = e.target.dataset.calc;
-    if(key) calcInput(key);
-  });
+  if(_cs){
+    _cs.addEventListener('click', function(e){
+      const key = e.target.closest('[data-calc]')?.dataset.calc;
+      if(key) calcInput(key);
+    });
+    _cs.addEventListener('touchstart', function(e){
+      const key = e.target.closest('[data-calc]')?.dataset.calc;
+      if(key){ e.preventDefault(); calcInput(key); }
+    },{passive:false});
+  }
 })();
 
 </script>
