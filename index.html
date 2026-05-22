@@ -900,7 +900,8 @@ function commitSave(overwriteId){
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     species:JSON.parse(JSON.stringify(species)),
     slabSpecies:JSON.parse(JSON.stringify(slabSpecies)),
-    lfSpecies:JSON.parse(JSON.stringify(lfSpecies))
+    lfSpecies:JSON.parse(JSON.stringify(lfSpecies)),
+    sgMaterials:JSON.parse(JSON.stringify(sgMaterials))
   };
   if(overwriteId){
     const idx=projects.findIndex(p=>p.id===overwriteId);
@@ -1063,10 +1064,13 @@ function loadProjectIntoCalc(p){
     ...s, id:uid(),
     pieces:s.pieces.map(p=>({...p,id:uid()}))
   }));
+  sgMaterials=JSON.parse(JSON.stringify(p.sgMaterials||[])).map(m=>({...m,id:uid()}));
   editingId=p.id;
   setProjName(p.name);
   render();
   renderSlabSpecies();
+  renderLFSpecies();
+  renderSG();
   const budgetEl=document.getElementById('budget-input');
   if(budgetEl) budgetEl.value=p.budget||'';
   document.getElementById('edit-bar').style.display='flex';
@@ -1326,7 +1330,13 @@ function renderSaved(){
 
     // Detail view
     const detail=document.createElement('div');detail.className='saved-detail';
+
+    // BF Species
     if(p.species&&p.species.length){
+      const secLabel=document.createElement('div');
+      secLabel.style.cssText='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin-bottom:6px;';
+      secLabel.textContent='Lumber - BF';
+      detail.appendChild(secLabel);
       p.species.forEach(s=>{
         const sDiv=document.createElement('div');sDiv.className='detail-species';
         sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
@@ -1352,6 +1362,58 @@ function renderSaved(){
         detail.appendChild(sDiv);
       });
     }
+
+    // Slab Species
+    if(p.slabSpecies&&p.slabSpecies.length){
+      const secLabel=document.createElement('div');
+      secLabel.style.cssText='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin:8px 0 6px;';
+      secLabel.textContent='Slabs';
+      detail.appendChild(secLabel);
+      p.slabSpecies.forEach(s=>{
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
+        s.thicknesses.forEach(t=>{
+          const tDiv=document.createElement('div');tDiv.className='detail-thick';
+          const sCount=t.slabs.length;
+          tDiv.innerHTML=`<div class="detail-thick-head">${t.tNum||'—'}/4 &nbsp;·&nbsp; $${parseFloat(t.price||0).toFixed(2)}/bf &nbsp;·&nbsp; ${sCount} ${sCount===1?'slab':'slabs'}</div>`;
+          sDiv.appendChild(tDiv);
+        });
+        detail.appendChild(sDiv);
+      });
+    }
+
+    // LF Species
+    if(p.lfSpecies&&p.lfSpecies.length){
+      const secLabel=document.createElement('div');
+      secLabel.style.cssText='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin:8px 0 6px;';
+      secLabel.textContent='Lumber - LF';
+      detail.appendChild(secLabel);
+      p.lfSpecies.forEach(s=>{
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        const pCount=s.pieces.length;
+        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed'}</div>
+          <div class="detail-thick"><div class="detail-thick-head">$${parseFloat(s.price||0).toFixed(2)}/lf &nbsp;·&nbsp; ${pCount} ${pCount===1?'piece':'pieces'}</div></div>`;
+        detail.appendChild(sDiv);
+      });
+    }
+
+    // Sheet Goods
+    if(p.sgMaterials&&p.sgMaterials.length){
+      const secLabel=document.createElement('div');
+      secLabel.style.cssText='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin:8px 0 6px;';
+      secLabel.textContent='Sheet Goods';
+      detail.appendChild(secLabel);
+      p.sgMaterials.forEach(m=>{
+        if(!m.qty||!m.price) return;
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        const size=m.size==='Custom'?m.customSize:m.size;
+        const thick=m.thick==='Custom'?m.customThick:m.thick;
+        sDiv.innerHTML=`<div class="detail-species-name">${m.name||'Unnamed Material'}</div>
+          <div class="detail-thick"><div class="detail-thick-head">${size} / ${thick} &nbsp;·&nbsp; $${parseFloat(m.price).toFixed(2)}/sheet &nbsp;·&nbsp; ${m.qty} ${m.qty===1?'sheet':'sheets'} &nbsp;·&nbsp; $${(m.price*m.qty).toFixed(2)}</div></div>`;
+        detail.appendChild(sDiv);
+      });
+    }
+
     item.appendChild(detail);
 
     // Toggle expand
@@ -1429,7 +1491,7 @@ function buildSummaryText(p) {
     });
   });
   if(lumberItems.length) {
-    lines.push('--- LUMBER ---');
+    lines.push('--- LUMBER - BF ---');
     lumberItems.forEach(item => {
       lines.push(item.name + ' | ' + item.thick + ' | ' + item.label + ' | ' + item.dims);
       lines.push('  ' + item.bf.toFixed(2) + ' bf  $' + item.cost.toFixed(2));
@@ -1483,12 +1545,31 @@ function buildSummaryText(p) {
     lines.push('');
   }
 
+  // SG
+  const sgSp3 = p ? (p.sgMaterials||[]) : sgMaterials;
+  const sgItems = (sgSp3||[]).filter(m=>m.qty>0&&m.price>0);
+  if(sgItems.length){
+    lines.push('--- SHEET GOODS ---');
+    sgItems.forEach(m=>{
+      const size=m.size==='Custom'?m.customSize:m.size;
+      const thick=m.thick==='Custom'?m.customThick:m.thick;
+      lines.push((m.name||'Unnamed')+' | '+size+' / '+thick+' | '+m.qty+' sheet'+(m.qty!==1?'s':''));
+      lines.push('  $'+(m.price*m.qty).toFixed(2));
+    });
+    lines.push('  Sheet Goods Total: $'+sgItems.reduce((s,m)=>s+(m.price*m.qty),0).toFixed(2));
+    lines.push('');
+  }
+
   // Totals
-  const totalBF = lumberItems.reduce((s,x)=>s+x.bf,0) + slabItems.reduce((s,x)=>s+x.bf,0);
+  const bfTotal = lumberItems.reduce((s,x)=>s+x.bf,0) + slabItems.reduce((s,x)=>s+x.bf,0);
+  const bfCost = lumberItems.reduce((s,x)=>s+x.cost,0) + slabItems.reduce((s,x)=>s+x.cost,0);
+  const lfTotalLF = lfItems.reduce((s,x)=>s+x.lf,0);
   const lfTotalCost = lfItems.reduce((s,x)=>s+x.cost,0);
-  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0) + slabItems.reduce((s,x)=>s+x.cost,0) + lfTotalCost;
-  lines.push('TOTAL: ' + totalBF.toFixed(2) + ' bf');
-  if(lfItems.length) lines.push('TOTAL LF: ' + lfItems.reduce((s,x)=>s+x.lf,0).toFixed(2) + ' lf');
+  const sgTotalCost = sgItems.reduce((s,m)=>s+(m.price*m.qty),0);
+  const totalCost = bfCost + lfTotalCost + sgTotalCost;
+  if(bfTotal>0) lines.push('TOTAL BOARD FEET: ' + bfTotal.toFixed(2) + ' bf  ($'+bfCost.toFixed(2)+')');
+  if(lfTotalLF>0) lines.push('TOTAL LINEAR FEET: ' + lfTotalLF.toFixed(2) + ' lf  ($'+lfTotalCost.toFixed(2)+')');
+  if(sgTotalCost>0) lines.push('SHEET GOODS TOTAL: $'+sgTotalCost.toFixed(2));
   lines.push('SUBTOTAL: $' + totalCost.toFixed(2));
   if(budget && totalCost > budget) lines.push('OVER BUDGET BY: $' + (totalCost-budget).toFixed(2));
   lines.push('');
@@ -1701,9 +1782,29 @@ function exportPDF(p) {
     });
   }
 
-  drawSection('Lumber', lumberItems);
+  drawSection('Lumber - BF', lumberItems);
   drawSection('Slabs', slabItems);
+  // BF subtotal row after lumber+slab
+  if(lumberItems.length||slabItems.length){
+    const bfSub=lumberItems.reduce((s,x)=>s+x.bf,0)+slabItems.reduce((s,x)=>s+x.bf,0);
+    const bfCostSub=lumberItems.reduce((s,x)=>s+x.cost,0)+slabItems.reduce((s,x)=>s+x.cost,0);
+    checkPage();
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(44,36,24);
+    doc.text('Board Feet Subtotal: '+bfSub.toFixed(2)+' bf', margin+2, y);
+    doc.text('$'+bfCostSub.toFixed(2), pageW-margin, y, {align:'right'});
+    y+=6;
+  }
   drawLFSection(lfItems2);
+  // LF subtotal row after LF section
+  if(lfItems2.length){
+    const lfSub=lfItems2.reduce((s,x)=>s+x.lf,0);
+    const lfCostSub=lfItems2.reduce((s,x)=>s+x.cost,0);
+    checkPage();
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(44,36,24);
+    doc.text('Linear Feet Subtotal: '+lfSub.toFixed(2)+' lf', margin+2, y);
+    doc.text('$'+lfCostSub.toFixed(2), pageW-margin, y, {align:'right'});
+    y+=6;
+  }
 
   // Build and draw Sheet Goods section
   const sgSp2 = p ? (p.sgMaterials||[]) : sgMaterials;
@@ -1725,49 +1826,85 @@ function exportPDF(p) {
       const name2 = m.name||'Unnamed Material';
       const size = m.size==='Custom'?m.customSize:m.size;
       const thick = m.thick==='Custom'?m.customThick:m.thick;
-      const lineTotal = (m.price*m.qty).toFixed(2);
+      // Material name header
       doc.setFont('helvetica','bold');
       doc.setFontSize(10);
       doc.setTextColor(44,36,24);
       doc.text(name2, margin+2, y);
       y += 5;
       checkPage();
+      // Sub-header: size / thick / price per sheet
       doc.setFont('helvetica','italic');
       doc.setFontSize(8);
       doc.setTextColor(100,90,75);
-      doc.text(size+' / '+thick+' · $'+parseFloat(m.price).toFixed(2)+'/sheet · '+m.qty+' '+(m.qty===1?'sheet':'sheets'), margin+4, y);
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(9);
-      doc.setTextColor(60,50,40);
-      doc.text('$'+lineTotal, pageW-margin, y, {align:'right'});
-      doc.setFont('helvetica','normal');
-      y += 5;
+      doc.text(size+' / '+thick+' · $'+parseFloat(m.price).toFixed(2)+'/sheet', margin+4, y);
+      y += 4;
+      // Individual sheet lines
+      for(let i=0; i<m.qty; i++){
+        checkPage();
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9);
+        doc.setTextColor(60,50,40);
+        doc.text('Sheet '+(i+1), margin+6, y);
+        doc.setFont('helvetica','bold');
+        doc.text('$'+parseFloat(m.price).toFixed(2), pageW-margin, y, {align:'right'});
+        doc.setFont('helvetica','normal');
+        y += 4.5;
+      }
+      y += 2;
     });
     y += 2;
   }
   drawSGSection(sgSp2);
 
   // Totals footer
-  const sgCostPDF = sgSp2 ? sgSp2.reduce((s,m)=>s+((m.price||0)*(m.qty||0)),0) : 0;
-  const totalBF = lumberItems.reduce((s,x)=>s+x.bf,0)+slabItems.reduce((s,x)=>s+x.bf,0);
-  const lfTotal = lfItems2.reduce((s,x)=>s+x.lf,0);
-  const totalCost = lumberItems.reduce((s,x)=>s+x.cost,0)+slabItems.reduce((s,x)=>s+x.cost,0)+lfItems2.reduce((s,x)=>s+x.cost,0)+sgCostPDF;
+  const sgCostPDF = sgSp2 ? sgSp2.filter(m=>m.qty>0&&m.price>0).reduce((s,m)=>s+((m.price||0)*(m.qty||0)),0) : 0;
+  const bfTotalPDF = lumberItems.reduce((s,x)=>s+x.bf,0)+slabItems.reduce((s,x)=>s+x.bf,0);
+  const bfCostPDF = lumberItems.reduce((s,x)=>s+x.cost,0)+slabItems.reduce((s,x)=>s+x.cost,0);
+  const lfTotalPDF = lfItems2.reduce((s,x)=>s+x.lf,0);
+  const lfCostPDF = lfItems2.reduce((s,x)=>s+x.cost,0);
+  const totalCost = bfCostPDF + lfCostPDF + sgCostPDF;
   checkPage();
   y += 2;
+  doc.setDrawColor(200,200,200);
+  doc.line(margin,y,pageW-margin,y);
+  y += 6;
+  // BF total row
+  if(bfTotalPDF > 0) {
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(44,36,24);
+    doc.text('Total Board Feet: '+bfTotalPDF.toFixed(2)+' bf', margin, y);
+    doc.text('$'+bfCostPDF.toFixed(2), pageW-margin, y, {align:'right'});
+    y += 5;
+  }
+  // LF total row
+  if(lfTotalPDF > 0) {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(44,36,24);
+    doc.text('Total Linear Feet: '+lfTotalPDF.toFixed(2)+' lf', margin, y);
+    doc.text('$'+lfCostPDF.toFixed(2), pageW-margin, y, {align:'right'});
+    y += 5;
+  }
+  // Sheet goods total row
+  if(sgCostPDF > 0) {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(44,36,24);
+    doc.text('Sheet Goods', margin, y);
+    doc.text('$'+sgCostPDF.toFixed(2), pageW-margin, y, {align:'right'});
+    y += 5;
+  }
+  // Divider + grand subtotal
   doc.setDrawColor(200,200,200);
   doc.line(margin,y,pageW-margin,y);
   y += 5;
   doc.setFont('helvetica','bold');
   doc.setFontSize(11);
   doc.setTextColor(44,36,24);
-  doc.text('Total Board Feet: '+totalBF.toFixed(2)+' bf', margin, y);
-  doc.text('Subtotal: $'+totalCost.toFixed(2), pageW-margin, y, {align:'right'});
-  if(lfTotal > 0) {
-    y += 5;
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9);
-    doc.text('Total Linear Feet: '+lfTotal.toFixed(2)+' lf', margin, y);
-  }
+  doc.text('Subtotal', margin, y);
+  doc.text('$'+totalCost.toFixed(2), pageW-margin, y, {align:'right'});
   y += 5;
   if(budget && totalCost > budget) {
     doc.setTextColor(180,40,20);
@@ -2080,6 +2217,7 @@ function saveSession(){
       species:JSON.parse(JSON.stringify(species)),
       slabSpecies:JSON.parse(JSON.stringify(slabSpecies)),
       lfSpecies:JSON.parse(JSON.stringify(lfSpecies)),
+      sgMaterials:JSON.parse(JSON.stringify(sgMaterials)),
       projName:projName,
       budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:'',
       calcHistory:[...calcHistory]
@@ -2110,6 +2248,9 @@ function loadSession(){
       if(session.budget){
         const bEl=document.getElementById('budget-input');
         if(bEl) bEl.value=session.budget;
+      }
+      if(session.sgMaterials && Array.isArray(session.sgMaterials)){
+        sgMaterials=session.sgMaterials.map(m=>({...m,id:uid()}));
       }
       if(session.calcHistory && Array.isArray(session.calcHistory)){
         calcHistory=session.calcHistory;
@@ -2745,7 +2886,7 @@ function renderSG(){
     sizeLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
     sizeLabel.textContent='Dimensions (ft)';
     const sizeSelect=document.createElement('select');
-    sizeSelect.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;';
+    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;';
     sizeSelect.addEventListener('change',()=>{sizeSelect.style.color=sizeSelect.value?'var(--text)':'var(--text3)';});
     const sPlaceholder=document.createElement('option');sPlaceholder.value='';sPlaceholder.textContent='Select size...';sPlaceholder.disabled=false;sPlaceholder.style.color='var(--text3)';if(!m.size)sPlaceholder.selected=true;sizeSelect.appendChild(sPlaceholder);
     SG_SIZES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===m.size)o.selected=true;sizeSelect.appendChild(o);});
@@ -2753,7 +2894,7 @@ function renderSG(){
     customSizeWrap.style.display=m.size==='Custom'?'block':'none';customSizeWrap.style.flex='1';
     const customSizeInput=document.createElement('input');
     customSizeInput.type='text';customSizeInput.placeholder='e.g. 4×8';
-    customSizeInput.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
+    customSizeInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
     customSizeInput.value=m.customSize||'';
     customSizeInput.addEventListener('change',()=>{m.customSize=customSizeInput.value;saveSession();});
     customSizeWrap.appendChild(customSizeInput);
@@ -2768,7 +2909,7 @@ function renderSG(){
     thickLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
     thickLabel.textContent='Thickness';
     const thickSelect=document.createElement('select');
-    thickSelect.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.thick?'var(--text)':'var(--text3)')+';flex:1;';
+    thickSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.thick?'var(--text)':'var(--text3)')+';flex:1;';
     thickSelect.addEventListener('change',()=>{thickSelect.style.color=thickSelect.value?'var(--text)':'var(--text3)';});
     const tPlaceholder=document.createElement('option');tPlaceholder.value='';tPlaceholder.textContent='Select thickness...';tPlaceholder.style.color='var(--text3)';if(!m.thick)tPlaceholder.selected=true;thickSelect.appendChild(tPlaceholder);
     SG_THICK.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===m.thick)o.selected=true;thickSelect.appendChild(o);});
@@ -2776,7 +2917,7 @@ function renderSG(){
     customThickWrap.style.display=m.thick==='Custom'?'block':'none';customThickWrap.style.flex='1';
     const customThickInput=document.createElement('input');
     customThickInput.type='text';customThickInput.placeholder='e.g. 1"';
-    customThickInput.style.cssText='font-size:14px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
+    customThickInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
     customThickInput.value=m.customThick||'';
     customThickInput.addEventListener('change',()=>{m.customThick=customThickInput.value;saveSession();});
     customThickWrap.appendChild(customThickInput);
@@ -2798,7 +2939,7 @@ function renderSG(){
     pPrefix.style.cssText='padding:0 4px 0 10px;font-size:14px;color:var(--text2);';
     pPrefix.textContent='$';
     const priceInput=document.createElement('input');
-    priceInput.style.cssText='border:none;background:transparent;width:100px;padding:8px 8px 8px 2px;font-size:14px;color:var(--text);text-align:right;-webkit-appearance:none;';
+    priceInput.style.cssText='border:none;background:transparent;width:100px;padding:9px 8px 9px 2px;font-size:16px;color:var(--text);text-align:right;-webkit-appearance:none;';
     initPriceInput(priceInput, v=>{ m.price=v; refreshSG(m.id); });
     if(m.price>0) priceInput.value=m.price.toFixed(2);
     priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
@@ -2814,7 +2955,7 @@ function renderSG(){
     const qtyInput=document.createElement('input');
     qtyInput.type='number';qtyInput.min='1';qtyInput.step='1';
     qtyInput.value=m.qty||1;
-    qtyInput.style.cssText='font-size:14px;padding:8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:80px;text-align:center;-webkit-appearance:none;';
+    qtyInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:80px;text-align:center;-webkit-appearance:none;';
     qtyInput.addEventListener('input',()=>{m.qty=parseInt(qtyInput.value)||1;refreshSG(m.id);});
     qtyRow.appendChild(qtyLabel);qtyRow.appendChild(qtyInput);
     content.appendChild(qtyRow);
@@ -3098,6 +3239,38 @@ function renderSavedScreen(){
         detail.appendChild(sDiv);
       });
     }
+    // LF Species
+    if(p.lfSpecies&&p.lfSpecies.length){
+      const lfHead=document.createElement('div');
+      lfHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 6px;';
+      lfHead.textContent='Lumber - LF';
+      detail.appendChild(lfHead);
+      p.lfSpecies.forEach(s=>{
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        const pCount=s.pieces.length;
+        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed'}</div>
+          <div class="detail-thick"><div class="detail-thick-head">$${parseFloat(s.price||0).toFixed(2)}/lf &nbsp;·&nbsp; ${pCount} ${pCount===1?'piece':'pieces'}</div></div>`;
+        detail.appendChild(sDiv);
+      });
+    }
+
+    // Sheet Goods
+    if(p.sgMaterials&&p.sgMaterials.length){
+      const sgHead=document.createElement('div');
+      sgHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 6px;';
+      sgHead.textContent='Sheet Goods';
+      detail.appendChild(sgHead);
+      p.sgMaterials.forEach(m=>{
+        if(!m.qty||!m.price) return;
+        const sDiv=document.createElement('div');sDiv.className='detail-species';
+        const size=m.size==='Custom'?m.customSize:m.size;
+        const thick=m.thick==='Custom'?m.customThick:m.thick;
+        sDiv.innerHTML=`<div class="detail-species-name">${m.name||'Unnamed Material'}</div>
+          <div class="detail-thick"><div class="detail-thick-head">${size} / ${thick} &nbsp;·&nbsp; $${parseFloat(m.price).toFixed(2)}/sheet &nbsp;·&nbsp; ${m.qty} ${m.qty===1?'sheet':'sheets'} &nbsp;·&nbsp; $${(m.price*m.qty).toFixed(2)}</div></div>`;
+        detail.appendChild(sDiv);
+      });
+    }
+
     item.appendChild(detail);
 
     // Project Summary label inside detail
