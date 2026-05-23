@@ -234,7 +234,7 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; max-width: calc(100% - 120px); }
     .t-meta-row { display: flex; gap: 8px; align-items: center; }
     .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
@@ -2073,19 +2073,14 @@ function renderLFSpecies(){
               <input type="text" inputmode="numeric" data-lfsid="${s.id}" data-lffield="price" value="${s.price>0?parseFloat(s.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
             </div>
           </div>
-          <div class="t-meta-field" style="margin-left:auto;">Waste
-            <div class="waste-wrap">
-              <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" />
-              
-            </div>
-          </div>
+
         </div>
       </div>
       <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
       <span style="flex:1;"></span>
-      <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+      <span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
       <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
       <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>`;
     blk.appendChild(tMeta);
@@ -2521,12 +2516,7 @@ function renderSlabSpecies(){
                   <input type="text" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
                 </div>
               </div>
-              <div class="t-meta-field">Waste
-                <div class="waste-wrap">
-                  <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" />
-                  
-                </div>
-              </div>
+
             </div>
           </div>
           <div class="t-meta-field" id="st-label-${t.id}" style="${t._collapsed?'':'display:none'}">
