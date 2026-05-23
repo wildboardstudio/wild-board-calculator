@@ -110,11 +110,11 @@
       padding: 12px; margin-bottom: 10px; border: 1px solid var(--border2);
     }
     .t-meta {
-      display: flex; gap: 4px; align-items: center;
+      display: flex; flex-direction: column; gap: 8px;
       margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
-      flex-wrap: nowrap;
     }
-    .t-meta-del { margin-left: auto; flex-shrink: 0; }
+    .t-meta-controls { display: flex; align-items: center; gap: 6px; }
+    .t-meta-del { flex-shrink: 0; }
 
     .waste-wrap { display: flex; align-items: center; gap: 4px; }
     .waste-wrap input { width: 36px; padding: 5px 2px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
@@ -1022,10 +1022,10 @@ function refreshNums(sid,tid){
     });
     const waste=parseFloat(t.waste)||0;
     const rawBF=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
-    const adjBF=waste>0?rawBF*(1+waste/100):rawBF;
+    const adjBF=waste>0?rawBF*(1-waste/100):rawBF;
     const adjCost=adjBF*(parseFloat(t.price)||0);
     const te=document.getElementById('tbf-'+tid),tce=document.getElementById('tc-'+tid);
-    if(te)te.textContent=rawBF.toFixed(2)+' bf'+(waste>0?' → '+adjBF.toFixed(2)+' bf (+'+waste+'%)':'');
+    if(te)te.textContent=rawBF.toFixed(2)+' bf'+(waste>0?' → '+adjBF.toFixed(2)+' bf usable (-'+waste+'%)':'');
     if(tce)tce.textContent='$'+adjCost.toFixed(2);
   }
   const se=document.getElementById('sbf-'+sid),sce=document.getElementById('sc-'+sid);
@@ -1214,8 +1214,13 @@ function render(){
         <div class="t-meta-field" id="t-label-${t.id}" style="${t._collapsed?'':'display:none'}">
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
-        <span style="flex:1;"></span><span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;margin-right:6px;" /><span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
-        <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>`;
+        <div class="t-meta-controls">
+          <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
+          <input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+          <span style="flex:1;"></span>
+          <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
+          <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
+        </div>`;
       blk.appendChild(tMeta);
 
       // Summary (shown when collapsed)
@@ -1997,8 +2002,12 @@ function refreshLFNums(sid){
     if(lcEl) lcEl.textContent='$'+cost.toFixed(2);
   });
   const stEl=document.getElementById('lf-stotal-'+sid),scEl=document.getElementById('lf-scost-'+sid);
-  if(stEl) stEl.textContent=lfSTotal(s).toFixed(2)+' lf';
-  if(scEl) scEl.textContent='$'+lfSCost(s).toFixed(2);
+  const lfWaste=parseFloat(s.waste)||0;
+  const rawLF=lfSTotal(s);
+  const adjLF=lfWaste>0?rawLF*(1-lfWaste/100):rawLF;
+  const adjLFCost=adjLF*(parseFloat(s.price)||0);
+  if(stEl) stEl.textContent=rawLF.toFixed(2)+' lf'+(lfWaste>0?' → '+adjLF.toFixed(2)+' lf usable (-'+lfWaste+'%)':'');
+  if(scEl) scEl.textContent='$'+adjLFCost.toFixed(2);
   updateLFTotals();
 }
 
@@ -2079,10 +2088,13 @@ function renderLFSpecies(){
       <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
-      <span style="flex:1;"></span>
-      <span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
-      <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
-      <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>`;
+      <div class="t-meta-controls">
+        <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
+        <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+        <span style="flex:1;"></span>
+        <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
+        <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>
+      </div>`;
     blk.appendChild(tMeta);
 
     // Summary row shown when collapsed
@@ -2371,10 +2383,10 @@ function refreshSlabNums(sid,tid){
     });
     const slabW=parseFloat(t.waste)||0;
     const rawSlabBF=slabTBF(t);
-    const adjSlabBF=slabW>0?rawSlabBF*(1+slabW/100):rawSlabBF;
+    const adjSlabBF=slabW>0?rawSlabBF*(1-slabW/100):rawSlabBF;
     const adjSlabCost=adjSlabBF*(parseFloat(t.price)||0);
     const ttEl=document.getElementById('stbf-'+tid), tcEl=document.getElementById('stc-'+tid);
-    if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2)+' bf'+(slabW>0?' → '+adjSlabBF.toFixed(2)+' bf (+'+slabW+'%)':'');
+    if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2)+' bf'+(slabW>0?' → '+adjSlabBF.toFixed(2)+' bf usable (-'+slabW+'%)':'');
     if(tcEl) tcEl.textContent='$'+adjSlabCost.toFixed(2);
   }
   const seEl=document.getElementById('ssbf-'+sid), scEl=document.getElementById('ssc-'+sid);
@@ -2522,12 +2534,13 @@ function renderSlabSpecies(){
           <div class="t-meta-field" id="st-label-${t.id}" style="${t._collapsed?'':'display:none'}">
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
-          <span style="flex:1;"></span><span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span>
-          <div class="waste-wrap" style="margin-right:6px;">
-            <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+          <div class="t-meta-controls">
+            <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
+            <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+            <span style="flex:1;"></span>
+            <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
+            <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
           </div>
-          <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
-          <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
         </div>
         <div id="st-summary-${t.id}" class="${t._collapsed ? '' : 't-block-collapsed'}"></div>`;
 
@@ -2851,9 +2864,9 @@ function refreshSG(mid){
   const m=sgMaterials.find(x=>x.id===mid);if(!m)return;
   const el=document.getElementById('sg-line-'+mid);
   const waste=parseFloat(m.waste)||0;
-  const qtyAdj=waste>0?m.qty*(1+waste/100):m.qty;
-  if(el) el.textContent='$'+(m.price*qtyAdj).toFixed(2)+(waste>0?' ('+m.qty+' + '+waste+'% waste)':'');
-  let t=0;sgMaterials.forEach(x=>{const w=parseFloat(x.waste)||0;const qa=w>0?x.qty*(1+w/100):x.qty;t+=x.price*qa;});
+  const qtyAdj=waste>0?m.qty*(1-waste/100):m.qty;
+  if(el) el.textContent='$'+(m.price*qtyAdj).toFixed(2)+(waste>0?' ('+qtyAdj.toFixed(2)+' usable, -'+waste+'%)':'');
+  let t=0;sgMaterials.forEach(x=>{const w=parseFloat(x.waste)||0;const qa=w>0?x.qty*(1-w/100):x.qty;t+=x.price*qa;});
   const tot=document.getElementById('sg-total');
   if(tot) tot.textContent='Total: $'+t.toFixed(2);
   updateTotals();saveSession();
