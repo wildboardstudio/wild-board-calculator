@@ -110,39 +110,39 @@
       padding: 12px; margin-bottom: 10px; border: 1px solid var(--border2);
     }
     .t-meta {
-      display: flex; gap: 8px; align-items: center;
+      display: flex; gap: 4px; align-items: center;
       margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     .t-meta-del { margin-left: auto; flex-shrink: 0; }
 
     .waste-wrap { display: flex; align-items: center; gap: 4px; }
-    .waste-wrap input { width: 40px; padding: 5px 3px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
+    .waste-wrap input { width: 36px; padding: 5px 2px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
     .waste-wrap .waste-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
 
-    .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; min-width: 0; }
+    .t-meta-field { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text2); flex-shrink: 0; min-width: 0; white-space: nowrap; }
     .t-wrap {
       display: flex; align-items: center;
       border: 1px solid var(--border2); border-radius: var(--radius);
-      background: var(--bg); overflow: hidden; width: 80px; min-height: 40px;
+      background: var(--bg); overflow: hidden; width: 72px; min-height: 36px;
     }
     .t-wrap input {
       border: none; background: transparent;
-      width: 42px; padding: 9px 2px 9px 8px;
-      font-size: 16px; color: var(--text); text-align: right;
+      width: 38px; padding: 7px 2px 7px 6px;
+      font-size: 15px; color: var(--text); text-align: right;
     }
     .t-wrap input:focus { outline: none; }
-    .t-suffix { font-size: 15px; color: var(--text2); padding: 0 7px 0 3px; user-select: none; }
+    .t-suffix { font-size: 13px; color: var(--text2); padding: 0 5px 0 2px; user-select: none; }
     .p-wrap {
       display: flex; align-items: center;
       border: 1px solid var(--border2); border-radius: var(--radius);
-      background: var(--bg); overflow: hidden; min-height: 40px; width: 110px;
+      background: var(--bg); overflow: hidden; min-height: 36px; width: 96px;
     }
-    .p-prefix { padding: 0 3px 0 10px; font-size: 15px; color: var(--text2); flex-shrink: 0; }
+    .p-prefix { padding: 0 2px 0 8px; font-size: 14px; color: var(--text2); flex-shrink: 0; }
     .p-wrap input {
       border: none; background: transparent;
-      width: 100%; padding: 9px 8px 9px 0;
-      font-size: 16px; color: var(--text); text-align: right;
+      width: 100%; padding: 7px 6px 7px 0;
+      font-size: 15px; color: var(--text); text-align: right;
     }
     .p-wrap input:focus { outline: none; }
     .t-meta-spacer { flex: 1; display: none; }
@@ -234,7 +234,7 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; max-width: calc(100% - 120px); }
+    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
     .t-meta-row { display: flex; gap: 8px; align-items: center; }
     .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
