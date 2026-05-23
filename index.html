@@ -115,6 +115,11 @@
       flex-wrap: wrap;
     }
     .t-meta-del { margin-left: auto; flex-shrink: 0; }
+
+    .waste-wrap { display: flex; align-items: center; gap: 4px; }
+    .waste-wrap input { width: 40px; padding: 5px 3px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
+    .waste-wrap .waste-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+
     .t-meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); flex-shrink: 0; min-width: 0; }
     .t-wrap {
       display: flex; align-items: center;
@@ -229,7 +234,8 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; min-width: 0; }
+    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+    .t-meta-row { display: flex; gap: 8px; align-items: center; }
     .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
     .species-right-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
@@ -885,8 +891,8 @@ function proceedSave(){
 }
 
 function commitSave(overwriteId){
-  const lumberBF=species.reduce((s,x)=>s+sBF(x),0);
-  const lumberCost=species.reduce((s,x)=>s+sCost(x),0);
+  const lumberBF=species.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0),0);
+  const lumberCost=species.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcCost(t.tNum,bd.lft,bd.lin,bd.w,t.price),0),0),0);
   const slabBF=slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
   const slabCost=slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
   const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
@@ -973,19 +979,19 @@ function sBF(s){return s.thicknesses.reduce((a,t)=>a+tBF(t),0);}
 function sCost(s){return s.thicknesses.reduce((a,t)=>a+tCost(t),0);}
 
 function updateTotals(){
-  const lumberBF=species.reduce((s,x)=>s+sBF(x),0);
-  const lumberCost=species.reduce((s,x)=>s+sCost(x),0);
-  const slabBF=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSBF(x),0):0;
-  const slabCost=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+slabSCost(x),0):0;
+  const lumberBF=species.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0),0);
+  const lumberCost=species.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcCost(t.tNum,bd.lft,bd.lin,bd.w,t.price),0),0),0);
+  const slabBF=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.slabs.reduce((b,sl)=>b+calcSlabBF(t.tNum,sl.lft,sl.lin,sl.measurements),0),0),0):0;
+  const slabCost=typeof slabSpecies!=='undefined'?slabSpecies.reduce((s,x)=>s+x.thicknesses.reduce((a,t)=>a+t.slabs.reduce((b,sl)=>b+calcSlabCost(t.tNum,sl.lft,sl.lin,sl.measurements,t.price),0),0),0):0;
   const lfCost=typeof lfSpecies!=='undefined'?lfSpecies.reduce((s,x)=>s+lfSCost(x),0):0;
   const sgCost=typeof sgMaterials!=='undefined'?sgMaterials.reduce((s,m)=>s+m.price*m.qty,0):0;
   const totalBF=lumberBF+slabBF;
   const totalCost=lumberCost+slabCost+lfCost+sgCost;
-  const bfEl=document.getElementById('t-bf'); if(bfEl) bfEl.innerHTML=`<span style="font-weight:700;color:var(--text)">${(lumberBF).toFixed(2)} bf</span>`;
-  const slabBfEl=document.getElementById('t-slab-bf'); if(slabBfEl) slabBfEl.textContent=slabBF.toFixed(2)+' bf';
+  const bfEl=document.getElementById('t-bf'); if(bfEl) bfEl.innerHTML=`<span style="font-weight:700;color:var(--text)">${(lumberBF).toFixed(4)} bf</span>`;
+  const slabBfEl=document.getElementById('t-slab-bf'); if(slabBfEl) slabBfEl.textContent=slabBF.toFixed(4)+' '+' bf';
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
   const bfBar=document.getElementById('t-bf-bar');
-  if(bfBar){if(totalBF>0){bfBar.textContent=totalBF.toFixed(2)+' bf';bfBar.style.display='block';}else{bfBar.style.display='none';}}
+  if(bfBar){if(totalBF>0){bfBar.textContent=totalBF.toFixed(4)+' '+' bf';bfBar.style.display='block';}else{bfBar.style.display='none';}}
   checkBudget(totalCost);
   if(typeof renderBirdsEye==='function') renderBirdsEye();
   saveSession();
@@ -1014,12 +1020,16 @@ function refreshNums(sid,tid){
       if(be)be.textContent=calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(2)+' bf';
       if(ce)ce.textContent='$'+calcCost(t.tNum,b.lft,b.lin,b.w,t.price).toFixed(2);
     });
+    const waste=parseFloat(t.waste)||0;
+    const rawBF=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
+    const adjBF=waste>0?rawBF*(1+waste/100):rawBF;
+    const adjCost=adjBF*(parseFloat(t.price)||0);
     const te=document.getElementById('tbf-'+tid),tce=document.getElementById('tc-'+tid);
-    if(te)te.textContent=tBF(t).toFixed(2)+' bf';
-    if(tce)tce.textContent='$'+tCost(t).toFixed(2);
+    if(te)te.textContent=rawBF.toFixed(2)+' bf'+(waste>0?' → '+adjBF.toFixed(2)+' bf (+'+waste+'%)':'');
+    if(tce)tce.textContent='$'+adjCost.toFixed(2);
   }
   const se=document.getElementById('sbf-'+sid),sce=document.getElementById('sc-'+sid);
-  if(se)se.textContent=sBF(s).toFixed(2)+' bf';
+  if(se)se.textContent=s.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0).toFixed(2)+' bf';
   if(sce)sce.textContent='$'+sCost(s).toFixed(2);
   updateTotals();
 }
@@ -1027,7 +1037,7 @@ function refreshNums(sid,tid){
 // --- Data ---
 function addSpecies(){
   species.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
-  species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
+  species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
   renderNoScroll();updateTotals();
 }
 function remSpecies(sid){appConfirm("Remove this species and all its boards?",()=>{species=species.filter(s=>s.id!==sid);renderNoScroll();updateTotals();});}
@@ -1035,7 +1045,7 @@ function addThick(sid){
   const s=species.find(x=>x.id===sid);
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
-    s.thicknesses.push({id:uid(),tNum:'',price:'',boards:[{id:uid(),lft:'',lin:'',w:''}]});
+    s.thicknesses.push({id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]});
   }
   renderNoScroll();
 }
@@ -1090,7 +1100,7 @@ document.addEventListener('input',function(e){
     val=val.toString();
   }
   if(bid){const t=s.thicknesses.find(x=>x.id===tid),b=t&&t.boards.find(x=>x.id===bid);if(b)b[field]=field==='price'?parseFloat(val):val;refreshNums(sid,tid);}
-  else if(tid){const t=s.thicknesses.find(x=>x.id===tid);if(t)t[field]=field==='price'?parseFloat(val):val;refreshNums(sid,tid);}
+  else if(tid){const t=s.thicknesses.find(x=>x.id===tid);if(t){t[field]=field==='price'?parseFloat(val):(field==='waste'?parseFloat(val)||0:val);}refreshNums(sid,tid);}
 });
 
 document.addEventListener('click',function(e){
@@ -1183,23 +1193,28 @@ function render(){
       const tThickLabel=(t.tNum?t.tNum+'/4':'—')+' · $'+(parseFloat(t.price||0).toFixed(2))+'/bf';
       tMeta.innerHTML=`
         <div class="t-meta-fields" id="t-fields-${t.id}" style="${t._collapsed?'display:none':''}">
-          <div class="t-meta-field">Thickness
-            <div class="t-wrap">
-              <input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="tNum" value="${t.tNum}" placeholder="4" min="1" step="1" />
-              <span class="t-suffix">/4</span>
+          <div class="t-meta-row">
+            <div class="t-meta-field">Thickness
+              <div class="t-wrap">
+                <input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="tNum" value="${t.tNum}" placeholder="4" min="1" step="1" />
+                <span class="t-suffix">/4</span>
+              </div>
             </div>
           </div>
-          <div class="t-meta-field">Price/bf
-            <div class="p-wrap">
-              <span class="p-prefix">$</span>
-              <input type="text" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+          <div class="t-meta-row">
+            <div class="t-meta-field">Price/bf
+              <div class="p-wrap">
+                <span class="p-prefix">$</span>
+                <input type="text" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+              </div>
             </div>
+
           </div>
         </div>
         <div class="t-meta-field" id="t-label-${t.id}" style="${t._collapsed?'':'display:none'}">
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
-        <span style="flex:1;"></span><span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
+        <span style="flex:1;"></span><span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;margin-right:6px;" /><span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
         <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>`;
       blk.appendChild(tMeta);
 
@@ -1247,7 +1262,7 @@ function render(){
             </div>
           </div>
           <div class="b-result">
-            <span id="bf-${b.id}">${calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(2)} bf</span>
+            <span id="bf-${b.id}">${calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(4)} bf</span>
             <span id="bc-${b.id}">$${calcCost(t.tNum,b.lft,b.lin,b.w,t.price).toFixed(2)}</span>
           </div>`;
         bl.appendChild(wrap);
@@ -1279,7 +1294,7 @@ function render(){
           const tBF2=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
           const tCost2=t.boards.reduce((s,b)=>s+calcCost(t.tNum,b.lft,b.lin,b.w,t.price),0);
           const tot2b=t.boards.length;
-          tSummary.innerHTML=`<div style="font-size:12px;color:var(--text2);padding:4px 2px 8px;">${tot2b} board${tot2b!==1?'s':''} &nbsp;·&nbsp; <strong>${tBF2.toFixed(2)} bf</strong> &nbsp;·&nbsp; <strong>$${tCost2.toFixed(2)}</strong></div>`;
+          tSummary.innerHTML=`<div style="font-size:12px;color:var(--text2);padding:4px 2px 8px;">${tot2b} board${tot2b!==1?'s':''} &nbsp;·&nbsp; <strong>${tBF2.toFixed(4)} bf</strong> &nbsp;·&nbsp; <strong>$${tCost2.toFixed(2)}</strong></div>`;
           tSummary.classList.remove('t-block-collapsed');
         } else {
           tSummary.innerHTML='';tSummary.classList.add('t-block-collapsed');
@@ -1349,11 +1364,9 @@ function renderSaved(){
           t.boards.forEach((b,i)=>{
             const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
             const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
-            const lStr=(parseFloat(b.lft)||0)+"' "+(parseFloat(b.lin)||0)+'"';
-            const wStr=(parseFloat(b.w)||0)+'"';
             boards+=`<div class="detail-board-row">
-              <span>${boardName(i,total)} &nbsp; ${lStr} × ${wStr}</span>
-              <span>${bfVal.toFixed(2)} bf &nbsp; $${costVal.toFixed(2)}</span>
+              <span>${boardName(i,total)} &nbsp; ${uFormatLen(b.lft,b.lin)} × ${uFormatWidth(b.w)}</span>
+              <span>${bfVal.toFixed(4)} bf &nbsp; $${costVal.toFixed(2)}</span>
             </div>`;
           });
           tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${boards}`;
@@ -1954,7 +1967,7 @@ function pieceName(i,total){ return total===1?'Piece':'Piece '+(i+1); }
 
 function addLFSpecies(){
   lfSpecies.forEach(s=>{s._collapsed=true;});
-  lfSpecies.push({id:uid(),name:'',price:'',pieces:[{id:uid(),lft:'',lin:''}]});
+  lfSpecies.push({id:uid(),name:'',price:'',waste:'',pieces:[{id:uid(),lft:'',lin:''}]});
   renderLFSpecies();updateLFTotals();
 }
 function remLFSpecies(sid){appConfirm("Remove this species and all its pieces?",()=>{lfSpecies=lfSpecies.filter(s=>s.id!==sid);renderLFSpeciesNoScroll();updateLFTotals();});}
@@ -2053,17 +2066,27 @@ function renderLFSpecies(){
     const priceLabel='$'+(parseFloat(s.price||0).toFixed(2))+'/lf';
     tMeta.innerHTML=`
       <div class="t-meta-fields" id="lf-fields-${s.id}" style="${s._blkCollapsed?'display:none':''}">
-        <div class="t-meta-field">Price/lf
-          <div class="p-wrap">
-            <span class="p-prefix">$</span>
-            <input type="text" inputmode="numeric" data-lfsid="${s.id}" data-lffield="price" value="${s.price>0?parseFloat(s.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+        <div class="t-meta-row">
+          <div class="t-meta-field">Price/lf
+            <div class="p-wrap">
+              <span class="p-prefix">$</span>
+              <input type="text" inputmode="numeric" data-lfsid="${s.id}" data-lffield="price" value="${s.price>0?parseFloat(s.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+            </div>
+          </div>
+          <div class="t-meta-field" style="margin-left:auto;">Waste
+            <div class="waste-wrap">
+              <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" />
+              
+            </div>
           </div>
         </div>
       </div>
       <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
-      <span style="flex:1;"></span><span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
+      <span style="flex:1;"></span>
+      <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+      <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
       <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>`;
     blk.appendChild(tMeta);
 
@@ -2090,7 +2113,7 @@ function renderLFSpecies(){
     // Column heads
     const bHeads=document.createElement('div');
     bHeads.style.cssText='display:grid;grid-template-columns:72px 1fr auto 24px;gap:6px;margin-bottom:6px;font-size:11px;color:var(--text2);padding:0 2px;margin-top:8px;';
-    bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">LF &nbsp;·&nbsp; Cost</div><div></div>`;
+    bHeads.innerHTML=`<div></div><div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:2px;">Length</div><div style="text-align:right">lf &nbsp;·&nbsp; Cost</div><div></div>`;
     tContent.appendChild(bHeads);
 
     // Pieces
@@ -2171,7 +2194,7 @@ document.addEventListener('input',function(e){
     el.value=val>0?val.toFixed(2):'';
   }
   if(pid){const p=s.pieces.find(x=>x.id===pid);if(p)p[field]=val;}
-  else s[field]=field==='price'?val:el.value;
+  else s[field]=field==='price'?val:(field==='waste'?parseFloat(val)||0:el.value);
   refreshLFNums(sid);
 });
 
@@ -2351,9 +2374,13 @@ function refreshSlabNums(sid,tid){
       if(bfEl) bfEl.textContent=calcSlabBF(t.tNum,b.lft,b.lin,b.measurements).toFixed(2)+' bf';
       if(bcEl) bcEl.textContent='$'+calcSlabCost(t.tNum,b.lft,b.lin,b.measurements,t.price).toFixed(2);
     });
+    const slabW=parseFloat(t.waste)||0;
+    const rawSlabBF=slabTBF(t);
+    const adjSlabBF=slabW>0?rawSlabBF*(1+slabW/100):rawSlabBF;
+    const adjSlabCost=adjSlabBF*(parseFloat(t.price)||0);
     const ttEl=document.getElementById('stbf-'+tid), tcEl=document.getElementById('stc-'+tid);
-    if(ttEl) ttEl.textContent=slabTBF(t).toFixed(2)+' bf';
-    if(tcEl) tcEl.textContent='$'+slabTCost(t).toFixed(2);
+    if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2)+' bf'+(slabW>0?' → '+adjSlabBF.toFixed(2)+' bf (+'+slabW+'%)':'');
+    if(tcEl) tcEl.textContent='$'+adjSlabCost.toFixed(2);
   }
   const seEl=document.getElementById('ssbf-'+sid), scEl=document.getElementById('ssc-'+sid);
   if(seEl) seEl.textContent=slabSBF(s).toFixed(2)+' bf';
@@ -2375,12 +2402,11 @@ document.addEventListener('input',function(e){
   if(el.dataset.slabsid&&el.dataset.slabfield){
     const sid=el.dataset.slabsid, tid=el.dataset.slabtid, bid=el.dataset.slabbid, field=el.dataset.slabfield;
     const s=slabSpecies.find(x=>x.id===sid); if(!s) return;
-    if(field==='price'){
+    if(field==='price'||field==='waste'){
       const t2=s.thicknesses.find(x=>x.id===tid);
       if(t2){
-        const digits=el.value.replace(/[^0-9]/g,'');
-        t2.price=digits?(parseInt(digits,10)/100):0;
-        el.value=t2.price>0?t2.price.toFixed(2):'';
+        if(field==='price'){const digits=el.value.replace(/[^0-9]/g,'');t2.price=digits?(parseInt(digits,10)/100):0;el.value=t2.price>0?t2.price.toFixed(2):'';}
+        else{t2.waste=parseFloat(el.value)||0;}
         refreshSlabNums(sid,tid);
       }
       return;
@@ -2488,17 +2514,29 @@ function renderSlabSpecies(){
                 <span class="t-suffix">/4</span>
               </div>
             </div>
-            <div class="t-meta-field">Price/bf
-              <div class="p-wrap">
-                <span class="p-prefix">$</span>
-                <input type="text" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+            <div class="t-meta-row">
+              <div class="t-meta-field">Price/bf
+                <div class="p-wrap">
+                  <span class="p-prefix">$</span>
+                  <input type="text" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
+                </div>
+              </div>
+              <div class="t-meta-field">Waste
+                <div class="waste-wrap">
+                  <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" />
+                  
+                </div>
               </div>
             </div>
           </div>
           <div class="t-meta-field" id="st-label-${t.id}" style="${t._collapsed?'':'display:none'}">
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
-          <span style="flex:1;"></span><span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
+          <span style="flex:1;"></span><span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;">Waste</span>
+          <div class="waste-wrap" style="margin-right:6px;">
+            <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" style="width:40px;padding:5px 3px;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
+          </div>
+          <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
           <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
         </div>
         <div id="st-summary-${t.id}" class="${t._collapsed ? '' : 't-block-collapsed'}"></div>`;
@@ -2822,8 +2860,10 @@ function updateSGTotals(){
 function refreshSG(mid){
   const m=sgMaterials.find(x=>x.id===mid);if(!m)return;
   const el=document.getElementById('sg-line-'+mid);
-  if(el) el.textContent='$'+(m.price*m.qty).toFixed(2);
-  let t=0;sgMaterials.forEach(x=>t+=x.price*x.qty);
+  const waste=parseFloat(m.waste)||0;
+  const qtyAdj=waste>0?m.qty*(1+waste/100):m.qty;
+  if(el) el.textContent='$'+(m.price*qtyAdj).toFixed(2)+(waste>0?' ('+m.qty+' + '+waste+'% waste)':'');
+  let t=0;sgMaterials.forEach(x=>{const w=parseFloat(x.waste)||0;const qa=w>0?x.qty*(1+w/100):x.qty;t+=x.price*qa;});
   const tot=document.getElementById('sg-total');
   if(tot) tot.textContent='Total: $'+t.toFixed(2);
   updateTotals();saveSession();
@@ -2944,6 +2984,18 @@ function renderSG(){
     if(m.price>0) priceInput.value=m.price.toFixed(2);
     priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
     priceRow.appendChild(priceLabel);priceRow.appendChild(priceWrap);
+    // Waste field
+    const wasteLabelSG=document.createElement('span');
+    wasteLabelSG.style.cssText='min-width:40px;font-size:13px;font-weight:600;color:var(--text2);';
+    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;';
+    const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-wrap';
+    const wasteInputSG=document.createElement('input');
+    wasteInputSG.type='number';wasteInputSG.min='0';wasteInputSG.max='100';wasteInputSG.step='1';
+    wasteInputSG.placeholder='%';wasteInputSG.style.cssText='width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;';
+    wasteInputSG.value=m.waste||'';
+    wasteInputSG.addEventListener('input',()=>{m.waste=parseFloat(wasteInputSG.value)||0;refreshSG(m.id);});
+    wasteWrapSG.appendChild(wasteInputSG);
+    priceRow.appendChild(wasteLabelSG);priceRow.appendChild(wasteWrapSG);
     content.appendChild(priceRow);
 
     // Qty row
@@ -3194,11 +3246,9 @@ function renderSavedScreen(){
           t.boards.forEach((b,i)=>{
             const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
             const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
-            const lStr=(parseFloat(b.lft)||0)+"' "+(parseFloat(b.lin)||0)+'"';
-            const wStr=(parseFloat(b.w)||0)+'"';
             boards+=`<div class="detail-board-row">
-              <span>${boardName(i,total)} &nbsp; ${lStr} × ${wStr}</span>
-              <span>${bfVal.toFixed(2)} bf &nbsp; $${costVal.toFixed(2)}</span>
+              <span>${boardName(i,total)} &nbsp; ${uFormatLen(b.lft,b.lin)} × ${uFormatWidth(b.w)}</span>
+              <span>${bfVal.toFixed(4)} bf &nbsp; $${costVal.toFixed(2)}</span>
             </div>`;
           });
           tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${boards}`;
