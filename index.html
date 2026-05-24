@@ -107,7 +107,12 @@
 
     .t-block {
       background: #ede8e0; border-radius: var(--radius);
-      padding: 12px; margin-bottom: 10px; border: 1px solid var(--border2);
+      padding: 12px; padding-top: 10px; margin-bottom: 10px; border: 1px solid var(--border2);
+      position: relative;
+    }
+    .t-corner-btns {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; align-items: center; gap: 6px;
     }
     .t-meta {
       display: flex; flex-direction: column; gap: 8px;
@@ -119,6 +124,9 @@
     .waste-wrap { display: flex; align-items: center; gap: 4px; }
     .waste-wrap input { width: 36px; padding: 5px 2px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
     .waste-wrap .waste-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+    .waste-input-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); overflow: hidden; }
+    .waste-input-wrap input { border: none; background: transparent; width: 48px; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; }
+    .waste-input-wrap .waste-suffix { padding: 0 8px 0 2px; font-size: 13px; color: var(--text2); }
 
     .t-meta-field { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text2); flex-shrink: 0; min-width: 0; white-space: nowrap; }
     .t-wrap {
@@ -1215,9 +1223,10 @@ function render(){
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
         <div class="t-meta-controls">
-          <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
-          <input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
-          <span style="flex:1;"></span>
+          <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+          <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
+        </div>
+        <div class="t-corner-btns">
           <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
           <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
         </div>`;
@@ -1283,6 +1292,15 @@ function render(){
       tContent.appendChild(tFoot);
       blk.appendChild(tContent);
 
+      // Corner buttons: chevron collapses, X is handled by global delegation
+      const tCorner=blk.querySelector('.t-corner-btns');
+      if(tCorner){
+        tCorner.querySelector('.t-collapse-indicator').addEventListener('click',function(e){
+          e.stopPropagation();
+          tMeta.click();
+        });
+      }
+
       // Collapse toggle
       tMeta.addEventListener('click',function(e){
         if(e.target.closest('input')||e.target.closest('.del-btn')) return;
@@ -1324,7 +1342,7 @@ function render(){
 // --- Render saved projects ---
 function renderSaved(){
   updateLandingLink();
-  const el=document.getElementById('saved-list');
+  const el=document.getElementById('saved-list-screen');
   if(!el) return;
   if(!projects.length){el.innerHTML='<p class="empty">No saved lists yet.</p>';return;}
   el.innerHTML='';
@@ -1332,11 +1350,13 @@ function renderSaved(){
     const item=document.createElement('div');item.className='saved-item';
 
     // Summary row
+    const pBF=(parseFloat(p.bf)||0).toFixed(2);
+    const pCost=(parseFloat(p.cost)||0).toFixed(2);
     const summary=document.createElement('div');summary.className='saved-summary';
     summary.innerHTML=`
       <div style="flex:1;min-width:0">
-        <div class="saved-name">${p.name}</div>
-        <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}${p.budget?` &nbsp;·&nbsp; budget: $${parseFloat(p.budget).toFixed(2)}`:''}</div>
+        <div class="saved-name">${p.name||'Unnamed'}</div>
+        <div class="saved-meta">${p.date||''} &nbsp;·&nbsp; ${pBF} bf &nbsp;·&nbsp; $${pCost}${p.budget?` &nbsp;·&nbsp; budget: $${parseFloat(p.budget).toFixed(2)}`:''}</div>
       </div>
       <span class="saved-chevron">&#8964;</span>`;
     item.appendChild(summary);
@@ -1345,6 +1365,8 @@ function renderSaved(){
     const actions=document.createElement('div');actions.className='saved-actions';
     actions.innerHTML=`
       <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red);">Delete</button>
+      <button class="btn btn-sm" data-pdf="${p.id}">&#128196; PDF</button>
+      <button class="btn btn-sm" data-share="${p.id}">&#128257; Share</button>
       <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit List</button>`;
     item.appendChild(actions);
 
@@ -1370,7 +1392,7 @@ function renderSaved(){
             const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
             const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
             boards+=`<div class="detail-board-row">
-              <span>${boardName(i,total)} &nbsp; ${uFormatLen(b.lft,b.lin)} × ${uFormatWidth(b.w)}</span>
+              <span>${boardName(i,total)} &nbsp; ${(parseFloat(b.lft)||0)+'\' '+(parseFloat(b.lin)||0)+'"'} × ${(parseFloat(b.w)||0)+'"'}</span>
               <span>${bfVal.toFixed(4)} bf &nbsp; $${costVal.toFixed(2)}</span>
             </div>`;
           });
@@ -1449,10 +1471,21 @@ function renderSaved(){
       }
     });
 
+    // PDF
+    const _rPdf=actions.querySelector('[data-pdf]');
+    if(_rPdf)_rPdf.addEventListener('click',e=>{e.stopPropagation();exportPDF(p);});
+
+    // Share
+    const _rShare=actions.querySelector('[data-share]');
+    if(_rShare)_rShare.addEventListener('click',e=>{e.stopPropagation();shareProject(p);});
+
     // Edit
     const _rEdit=actions.querySelector('[data-edit]');
     if(_rEdit)_rEdit.addEventListener('click',e=>{
       e.stopPropagation();
+      document.getElementById('saved-screen').style.display='none';
+      document.getElementById('landing-screen').style.display='none';
+      document.getElementById('app-screen').style.display='block';
       document.getElementById('sticky-bar').style.display='flex';
       document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
       document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
@@ -2089,9 +2122,10 @@ function renderLFSpecies(){
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
       <div class="t-meta-controls">
-        <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
-        <input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
-        <span style="flex:1;"></span>
+        <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+        <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
+      </div>
+      <div class="t-corner-btns">
         <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
         <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>
       </div>`;
@@ -2155,6 +2189,14 @@ function renderLFSpecies(){
     tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
     tContent.appendChild(tFoot);
     blk.appendChild(tContent);
+
+    // Wire LF corner chevron to trigger header collapse
+    const lfCorner=blk.querySelector('.t-corner-btns');
+    if(lfCorner){
+      lfCorner.querySelector('.t-collapse-indicator').addEventListener('click',function(e){
+        e.stopPropagation();tMeta.click();
+      });
+    }
 
     // Collapse toggle — click header (but not input or del-btn)
     tMeta.addEventListener('click',function(e){
@@ -2535,9 +2577,10 @@ function renderSlabSpecies(){
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
           <div class="t-meta-controls">
-            <span style="font-size:11px;color:var(--text2);font-weight:600;">Waste</span>
-            <input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="%" style="width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;" />
-            <span style="flex:1;"></span>
+            <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+            <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
+          </div>
+          <div class="t-corner-btns">
             <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
             <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
           </div>
@@ -2567,6 +2610,15 @@ function renderSlabSpecies(){
       blk.appendChild(stContent);
 
       const stHeader=blk.querySelector('#st-header-'+t.id);
+
+      // Wire Slab corner chevron to trigger header collapse
+      const slabCorner=blk.querySelector('.t-corner-btns');
+      if(slabCorner){
+        slabCorner.querySelector('.t-collapse-indicator').addEventListener('click',function(e){
+          e.stopPropagation();stHeader.click();
+        });
+      }
+
       stHeader.addEventListener('click',function(e){
         if(e.target.closest('input')||e.target.closest('.del-btn')) return;
         t._collapsed=!t._collapsed;
@@ -2922,19 +2974,19 @@ function renderSG(){
     content.className='inner-card-sg';
     content.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;'+(m._collapsed?'display:none;':'');
 
-    // Size row
+    // Size row — label | select (flex:1) | chevron | ×
     const sizeRow=document.createElement('div');
     sizeRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
     const sizeLabel=document.createElement('span');
-    sizeLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    sizeLabel.style.cssText='white-space:nowrap;font-size:13px;font-weight:600;color:var(--text2);';
     sizeLabel.textContent='Dimensions (ft)';
     const sizeSelect=document.createElement('select');
-    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;';
+    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;min-width:0;';
     sizeSelect.addEventListener('change',()=>{sizeSelect.style.color=sizeSelect.value?'var(--text)':'var(--text3)';});
     const sPlaceholder=document.createElement('option');sPlaceholder.value='';sPlaceholder.textContent='Select size...';sPlaceholder.disabled=false;sPlaceholder.style.color='var(--text3)';if(!m.size)sPlaceholder.selected=true;sizeSelect.appendChild(sPlaceholder);
     SG_SIZES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===m.size)o.selected=true;sizeSelect.appendChild(o);});
     const customSizeWrap=document.createElement('div');
-    customSizeWrap.style.display=m.size==='Custom'?'block':'none';customSizeWrap.style.flex='1';
+    customSizeWrap.style.display=m.size==='Custom'?'block':'none';customSizeWrap.style.cssText='flex:1;min-width:0;display:'+(m.size==='Custom'?'block':'none')+';';
     const customSizeInput=document.createElement('input');
     customSizeInput.type='text';customSizeInput.placeholder='e.g. 4×8';
     customSizeInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
@@ -2942,7 +2994,15 @@ function renderSG(){
     customSizeInput.addEventListener('change',()=>{m.customSize=customSizeInput.value;saveSession();});
     customSizeWrap.appendChild(customSizeInput);
     sizeSelect.addEventListener('change',()=>{m.size=sizeSelect.value;customSizeWrap.style.display=m.size==='Custom'?'block':'none';saveSession();});
+    // Chevron + delete inline
+    const sgChev=document.createElement('span');sgChev.className='t-collapse-indicator';sgChev.id='sg-chev-'+m.id;
+    sgChev.style.cssText='flex-shrink:0;';
+    sgChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+    const sgDel=document.createElement('button');sgDel.className='del-btn';sgDel.style.cssText='flex-shrink:0;min-width:28px;';
+    sgDel.innerHTML='&times;';sgDel.title='Remove material';
+    sgDel.addEventListener('click',()=>remSGMaterial(m.id));
     sizeRow.appendChild(sizeLabel);sizeRow.appendChild(sizeSelect);sizeRow.appendChild(customSizeWrap);
+    sizeRow.appendChild(sgChev);sizeRow.appendChild(sgDel);
     content.appendChild(sizeRow);
 
     // Thickness row — back in card 3
@@ -2989,15 +3049,15 @@ function renderSG(){
     priceRow.appendChild(priceLabel);priceRow.appendChild(priceWrap);
     // Waste field
     const wasteLabelSG=document.createElement('span');
-    wasteLabelSG.style.cssText='min-width:40px;font-size:13px;font-weight:600;color:var(--text2);';
-    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;margin-right:3px;';
-    const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-wrap';
+    wasteLabelSG.style.cssText='min-width:40px;font-size:13px;font-weight:400;color:var(--text2);';
+    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='margin-left:auto;font-size:11px;color:var(--text2);font-weight:400;margin-right:3px;';
+    const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-input-wrap';
     const wasteInputSG=document.createElement('input');
     wasteInputSG.type='number';wasteInputSG.min='0';wasteInputSG.max='100';wasteInputSG.step='1';
-    wasteInputSG.placeholder='%';wasteInputSG.style.cssText='width:44px;padding:6px 4px;font-size:13px;text-align:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);-webkit-appearance:none;';
-    wasteInputSG.value=m.waste||'';
+    wasteInputSG.placeholder='0';wasteInputSG.value=m.waste||'';
     wasteInputSG.addEventListener('input',()=>{m.waste=parseFloat(wasteInputSG.value)||0;refreshSG(m.id);});
-    wasteWrapSG.appendChild(wasteInputSG);
+    const wasteSuffixSG=document.createElement('span');wasteSuffixSG.className='waste-suffix';wasteSuffixSG.textContent='%';
+    wasteWrapSG.appendChild(wasteInputSG);wasteWrapSG.appendChild(wasteSuffixSG);
     priceRow.appendChild(wasteLabelSG);priceRow.appendChild(wasteWrapSG);
     content.appendChild(priceRow);
 
@@ -3024,16 +3084,20 @@ function renderSG(){
 
     card.appendChild(content);
 
-    // Collapse toggle
-    colBtn.addEventListener('click',()=>{
+    // Shared collapse logic
+    function doSGCollapse(){
       m._collapsed=!m._collapsed;
       content.style.display=m._collapsed?'none':'';
       colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+      const innerChev=document.getElementById('sg-chev-'+m.id);
+      if(innerChev) innerChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
       const titleEl=nameW.querySelector('.ititle');
       if(titleEl){ m._collapsed?titleEl.classList.add('locked'):titleEl.classList.remove('locked'); }
       summary.innerHTML=m._collapsed?sgCollapseSummary(m):'';
       saveSession();
-    });
+    }
+    colBtn.addEventListener('click',()=>doSGCollapse());
+    sgChev.addEventListener('click',e=>{e.stopPropagation();doSGCollapse();});
 
     list.appendChild(card);
   });
@@ -3196,7 +3260,7 @@ function showSaved(){
   }
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('saved-screen').style.display='block';
-  renderSavedScreen();
+  renderSaved();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -3206,173 +3270,6 @@ function showSaved(){
   if(btn) btn.addEventListener('click', showSaved);
 })();
 
-function renderSavedScreen(){
-  const el=document.getElementById('saved-list-screen');
-  if(!el) return;
-  if(!projects.length){el.innerHTML='<p class="empty">No saved lists yet.</p>';return;}
-  el.innerHTML='';
-  projects.forEach(p=>{
-    const item=document.createElement('div');item.className='saved-item';
-    const summary=document.createElement('div');summary.className='saved-summary';
-    summary.innerHTML=`
-      <div style="flex:1;min-width:0">
-        <div class="saved-name">${p.name}</div>
-        <div class="saved-meta">${p.date} &nbsp;·&nbsp; ${p.bf.toFixed(2)} bf &nbsp;·&nbsp; $${p.cost.toFixed(2)}${p.budget?' &nbsp;·&nbsp; budget: $'+parseFloat(p.budget).toFixed(2):''}</div>
-      </div>
-      <span class="saved-chevron">&#8964;</span>`;
-    item.appendChild(summary);
-
-    const actions=document.createElement('div');actions.className='saved-actions';
-    actions.innerHTML=`
-      <button class="btn btn-sm" data-del="${p.id}" style="color:var(--red);border-color:var(--red);">Delete</button>
-      <button class="btn btn-sm" data-pdf="${p.id}">&#128196; PDF</button>
-      <button class="btn btn-sm" data-share="${p.id}">&#128257; Share</button>
-      <button class="btn btn-sm btn-green" data-edit="${p.id}">Edit List</button>`;
-    item.appendChild(actions);
-
-    const detail=document.createElement('div');detail.className='saved-detail';
-    // Rough lumber
-    if(p.species&&p.species.length){
-      const lHead=document.createElement('div');
-      lHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;';
-      lHead.textContent='Lumber';
-      detail.appendChild(lHead);
-      p.species.forEach(s=>{
-        const sDiv=document.createElement('div');sDiv.className='detail-species';
-        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
-        s.thicknesses.forEach(t=>{
-          const tDiv=document.createElement('div');tDiv.className='detail-thick';
-          const bCount=t.boards.length;
-          const tHead=`${t.tNum||'—'}/4 &nbsp;·&nbsp; $${parseFloat(t.price||0).toFixed(2)}/bf &nbsp;·&nbsp; ${bCount} ${bCount===1?'board':'boards'}`;
-          let boards='';
-          const total=t.boards.length;
-          t.boards.forEach((b,i)=>{
-            const bfVal=calcBF(t.tNum,b.lft,b.lin,b.w);
-            const costVal=calcCost(t.tNum,b.lft,b.lin,b.w,t.price);
-            boards+=`<div class="detail-board-row">
-              <span>${boardName(i,total)} &nbsp; ${uFormatLen(b.lft,b.lin)} × ${uFormatWidth(b.w)}</span>
-              <span>${bfVal.toFixed(4)} bf &nbsp; $${costVal.toFixed(2)}</span>
-            </div>`;
-          });
-          tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${boards}`;
-          sDiv.appendChild(tDiv);
-        });
-        detail.appendChild(sDiv);
-      });
-    }
-    // Slabs
-    if(p.slabSpecies&&p.slabSpecies.length){
-      const sHead=document.createElement('div');
-      sHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 6px;';
-      sHead.textContent='Slabs';
-      detail.appendChild(sHead);
-      p.slabSpecies.forEach(s=>{
-        const sDiv=document.createElement('div');sDiv.className='detail-species';
-        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed species'}</div>`;
-        s.thicknesses.forEach(t=>{
-          const tDiv=document.createElement('div');tDiv.className='detail-thick';
-          const sCount=t.slabs.length;
-          const tHead=`${t.tNum||'—'}/4 &nbsp;·&nbsp; $${parseFloat(t.price||0).toFixed(2)}/bf &nbsp;·&nbsp; ${sCount} ${sCount===1?'slab':'slabs'}`;
-          let slabs='';
-          const total=t.slabs.length;
-          t.slabs.forEach((b,i)=>{
-            const validM=b.measurements.map(m=>parseFloat(m)||0).filter(m=>m>0);
-            const avg=validM.length?validM.reduce((a,c)=>a+c,0)/validM.length:0;
-            const bfVal=calcSlabBF(t.tNum,b.lft,b.lin,b.measurements);
-            const costVal=calcSlabCost(t.tNum,b.lft,b.lin,b.measurements,t.price);
-            const lStr=(parseFloat(b.lft)||0)+"' "+(parseFloat(b.lin)||0)+'"';
-            slabs+=`<div class="detail-board-row">
-              <span>${slabBoardName(i,total)} &nbsp; ${lStr} × avg ${avg.toFixed(1)}"</span>
-              <span>${bfVal.toFixed(2)} bf &nbsp; $${costVal.toFixed(2)}</span>
-            </div>`;
-          });
-          tDiv.innerHTML=`<div class="detail-thick-head">${tHead}</div>${slabs}`;
-          sDiv.appendChild(tDiv);
-        });
-        detail.appendChild(sDiv);
-      });
-    }
-    // LF Species
-    if(p.lfSpecies&&p.lfSpecies.length){
-      const lfHead=document.createElement('div');
-      lfHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 6px;';
-      lfHead.textContent='Lumber - LF';
-      detail.appendChild(lfHead);
-      p.lfSpecies.forEach(s=>{
-        const sDiv=document.createElement('div');sDiv.className='detail-species';
-        const pCount=s.pieces.length;
-        sDiv.innerHTML=`<div class="detail-species-name">${s.name||'Unnamed'}</div>
-          <div class="detail-thick"><div class="detail-thick-head">$${parseFloat(s.price||0).toFixed(2)}/lf &nbsp;·&nbsp; ${pCount} ${pCount===1?'piece':'pieces'}</div></div>`;
-        detail.appendChild(sDiv);
-      });
-    }
-
-    // Sheet Goods
-    if(p.sgMaterials&&p.sgMaterials.length){
-      const sgHead=document.createElement('div');
-      sgHead.style.cssText='font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 6px;';
-      sgHead.textContent='Sheet Goods';
-      detail.appendChild(sgHead);
-      p.sgMaterials.forEach(m=>{
-        if(!m.qty||!m.price) return;
-        const sDiv=document.createElement('div');sDiv.className='detail-species';
-        const size=m.size==='Custom'?m.customSize:m.size;
-        const thick=m.thick==='Custom'?m.customThick:m.thick;
-        sDiv.innerHTML=`<div class="detail-species-name">${m.name||'Unnamed Material'}</div>
-          <div class="detail-thick"><div class="detail-thick-head">${size} / ${thick} &nbsp;·&nbsp; $${parseFloat(m.price).toFixed(2)}/sheet &nbsp;·&nbsp; ${m.qty} ${m.qty===1?'sheet':'sheets'} &nbsp;·&nbsp; $${(m.price*m.qty).toFixed(2)}</div></div>`;
-        detail.appendChild(sDiv);
-      });
-    }
-
-    item.appendChild(detail);
-
-    // Project Summary label inside detail
-    const projSumLabel=document.createElement('div');
-    projSumLabel.style.cssText='font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:8px;text-align:center;';
-    projSumLabel.textContent='List Summary';
-    detail.insertBefore(projSumLabel, detail.firstChild);
-
-    summary.addEventListener('click',()=>{
-      const chevron=summary.querySelector('.saved-chevron');
-      const isOpen=actions.classList.contains('open');
-      if(isOpen){actions.classList.remove('open');detail.classList.remove('open');chevron.classList.remove('open');}
-      else{actions.classList.add('open');detail.classList.add('open');chevron.classList.add('open');}
-    });
-
-    const _qEdit=actions.querySelector('[data-edit]');
-    if(_qEdit)_qEdit.addEventListener('click',e=>{
-      e.stopPropagation();
-      document.getElementById('saved-screen').style.display='none';
-      document.getElementById('app-screen').style.display='block';
-      document.getElementById('sticky-bar').style.display='flex';
-      document.getElementById('tab-lumber-btn').style.background='#e8ddd0';
-      document.getElementById('tab-lumber-btn').style.borderBottomColor='#e8ddd0';
-      loadProjectIntoCalc(p);
-    });
-    const _qPdf=actions.querySelector('[data-pdf]');
-    if(_qPdf)_qPdf.addEventListener('click',e=>{
-      e.stopPropagation();
-      exportPDF(p);
-    });
-    const _qShare=actions.querySelector('[data-share]');
-    if(_qShare)_qShare.addEventListener('click',e=>{
-      e.stopPropagation();
-      shareProject(p);
-    });
-    const _qDel=actions.querySelector('[data-del]');
-    if(_qDel)_qDel.addEventListener('click',e=>{
-      e.stopPropagation();
-      appConfirm(`Delete "${p.name}"?`,()=>{
-        projects=projects.filter(x=>x.id!==p.id);
-        persist();
-        updateLandingLink();
-        renderSavedScreen();
-      });
-    });
-
-    el.appendChild(item);
-  });
-}
 
 // Wire calculator
 (function(){
