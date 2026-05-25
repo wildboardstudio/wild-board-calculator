@@ -1222,13 +1222,10 @@ function render(){
               </div>
             </div>
           </div>
-          <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-          <div class="waste-input-wrap" id="t-waste-input-${t.id}"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
         </div>
         <div class="t-meta-field" id="t-label-${t.id}" style="${t._collapsed?'':'display:none'}">
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
-        <div id="t-waste-${t.id}" style="display:none"></div>
         <div class="t-corner-btns">
           <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
           <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
@@ -1290,6 +1287,12 @@ function render(){
       bAct.innerHTML=`<button class="btn btn-sm" data-action="add-board" data-sid="${s.id}" data-tid="${t.id}">+ Board</button>
         <button class="btn btn-sm" data-action="dup-board" data-sid="${s.id}" data-tid="${t.id}">&#10697; Last Board</button>`;
       tContent.appendChild(bAct);
+      // Waste row — below board entries
+      const wasteRowBF=document.createElement('div');
+      wasteRowBF.id='t-waste-'+t.id;
+      wasteRowBF.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
+      wasteRowBF.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+      tContent.appendChild(wasteRowBF);
       const tFoot=document.createElement('div');tFoot.className='t-footer';
       tFoot.innerHTML=`<span>Total: <strong id="tbf-${t.id}">${tBF(t).toFixed(2)} bf</strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>`;
       tContent.appendChild(tFoot);
@@ -2120,13 +2123,10 @@ function renderLFSpecies(){
             </div>
           </div>
         </div>
-        <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-        <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
       </div>
       <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
-      <div id="lf-waste-${s.id}" style="display:none"></div>
       <div class="t-corner-btns">
         <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
         <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>
@@ -2185,7 +2185,12 @@ function renderLFSpecies(){
     bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Piece</button>
       <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Piece</button>`;
     tContent.appendChild(bAct);
-
+    // Waste row
+    const wasteRowLF=document.createElement('div');
+    wasteRowLF.id='lf-waste-'+s.id;
+    wasteRowLF.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
+    wasteRowLF.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    tContent.appendChild(wasteRowLF);
     // Running total inside card
     const tFoot=document.createElement('div');tFoot.className='t-footer';
     tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
@@ -2576,13 +2581,10 @@ function renderSlabSpecies(){
                 </div>
               </div>
             </div>
-            <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-            <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
           </div>
           <div class="t-meta-field" id="st-label-${t.id}" style="${t._collapsed?'':'display:none'}">
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
-          <div id="st-waste-${t.id}" style="display:none"></div>
           <div class="t-corner-btns">
             <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
             <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
@@ -2709,6 +2711,12 @@ function renderSlabSpecies(){
       const addSlabBtn=document.createElement('div');addSlabBtn.style.marginTop='8px';
       addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Slab</button>`;
       stContent.appendChild(addSlabBtn);
+      // Waste row
+      const wasteRowSlab=document.createElement('div');
+      wasteRowSlab.id='st-waste-'+t.id;
+      wasteRowSlab.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
+      wasteRowSlab.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+      stContent.appendChild(wasteRowSlab);
 
       // Append blk to ssContent
       blk.appendChild(stContent);
