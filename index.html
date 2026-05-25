@@ -118,7 +118,9 @@
       display: flex; flex-direction: column; gap: 8px;
       margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
     }
-    .t-meta-controls { display: flex; align-items: center; gap: 6px; }
+    .t-meta-controls { display: contents; }
+    .t-meta-controls > span:first-child { font-size: 12px; color: var(--text2); align-self: center; }
+    .t-meta-controls .waste-input-wrap { justify-self: start; width: auto; flex-shrink: 0; align-self: center; }
     .t-meta-del { flex-shrink: 0; }
 
     .waste-wrap { display: flex; align-items: center; gap: 4px; }
@@ -128,28 +130,30 @@
     .waste-input-wrap input { border: none; background: transparent; width: 48px; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; }
     .waste-input-wrap .waste-suffix { padding: 0 8px 0 2px; font-size: 13px; color: var(--text2); }
 
-    .t-meta-field { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text2); flex-shrink: 0; min-width: 0; white-space: nowrap; }
+    .t-meta-field { font-size: 12px; color: var(--text2); white-space: nowrap; display: contents; }
+    .t-meta-field > span.field-label { align-self: center; }
+    .t-meta-field > .t-wrap, .t-meta-field > .p-wrap { justify-self: stretch; }
     .t-wrap {
       display: flex; align-items: center;
       border: 1px solid var(--border2); border-radius: var(--radius);
-      background: var(--bg); overflow: hidden; width: 72px; min-height: 36px;
+      background: var(--bg); overflow: hidden; width: 100%; min-height: 36px;
     }
     .t-wrap input {
       border: none; background: transparent;
-      width: 38px; padding: 7px 2px 7px 6px;
+      flex: 1; min-width: 0; padding: 7px 6px 7px 6px;
       font-size: 15px; color: var(--text); text-align: right;
     }
     .t-wrap input:focus { outline: none; }
-    .t-suffix { font-size: 13px; color: var(--text2); padding: 0 5px 0 2px; user-select: none; }
+    .t-suffix { font-size: 13px; color: var(--text2); padding: 0 8px 0 2px; user-select: none; flex-shrink: 0; }
     .p-wrap {
       display: flex; align-items: center;
       border: 1px solid var(--border2); border-radius: var(--radius);
-      background: var(--bg); overflow: hidden; min-height: 36px; width: 96px;
+      background: var(--bg); overflow: hidden; min-height: 36px; width: 100%;
     }
     .p-prefix { padding: 0 2px 0 8px; font-size: 14px; color: var(--text2); flex-shrink: 0; }
     .p-wrap input {
       border: none; background: transparent;
-      width: 100%; padding: 7px 6px 7px 0;
+      flex: 1; min-width: 0; padding: 7px 8px 7px 0;
       font-size: 15px; color: var(--text); text-align: right;
     }
     .p-wrap input:focus { outline: none; }
@@ -242,8 +246,8 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
-    .t-meta-row { display: flex; gap: 8px; align-items: center; }
+    .t-meta-fields { display: grid; grid-template-columns: max-content 1fr; gap: 8px 12px; align-items: center; min-width: 0; max-width: calc(100% - 60px); }
+    .t-meta-row { display: contents; }
     .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
     .species-right-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
@@ -1205,7 +1209,7 @@ function render(){
       tMeta.innerHTML=`
         <div class="t-meta-fields" id="t-fields-${t.id}" style="${t._collapsed?'display:none':''}">
           <div class="t-meta-row">
-            <div class="t-meta-field">Thickness
+            <div class="t-meta-field"><span class="field-label">Thickness</span>
               <div class="t-wrap">
                 <input type="number" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="tNum" value="${t.tNum}" placeholder="4" min="1" step="1" />
                 <span class="t-suffix">/4</span>
@@ -1213,22 +1217,20 @@ function render(){
             </div>
           </div>
           <div class="t-meta-row">
-            <div class="t-meta-field">Price/bf
+            <div class="t-meta-field"><span class="field-label">Price/bf</span>
               <div class="p-wrap">
                 <span class="p-prefix">$</span>
                 <input type="text" inputmode="numeric" data-sid="${s.id}" data-tid="${t.id}" data-field="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
               </div>
             </div>
-
           </div>
+          <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+          <div class="waste-input-wrap" id="t-waste-input-${t.id}"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
         </div>
         <div class="t-meta-field" id="t-label-${t.id}" style="${t._collapsed?'':'display:none'}">
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
-        <div class="t-meta-controls">
-          <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-          <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
-        </div>
+        <div id="t-waste-${t.id}" style="display:none"></div>
         <div class="t-corner-btns">
           <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
           <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
@@ -1315,6 +1317,7 @@ function render(){
         const tLabel=document.getElementById('t-label-'+t.id);
         if(tFields) tFields.style.display=t._collapsed?'none':'';
         if(tLabel) tLabel.style.display=t._collapsed?'':'none';
+
         if(t._collapsed){
           const tot2=t.boards.length;
           const tBF2=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
@@ -2112,22 +2115,20 @@ function renderLFSpecies(){
     tMeta.innerHTML=`
       <div class="t-meta-fields" id="lf-fields-${s.id}" style="${s._blkCollapsed?'display:none':''}">
         <div class="t-meta-row">
-          <div class="t-meta-field">Price/lf
+          <div class="t-meta-field"><span class="field-label">Price/lf</span>
             <div class="p-wrap">
               <span class="p-prefix">$</span>
               <input type="text" inputmode="numeric" data-lfsid="${s.id}" data-lffield="price" value="${s.price>0?parseFloat(s.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
             </div>
           </div>
-
         </div>
+        <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+        <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
       </div>
       <div class="t-meta-field" id="lf-label-${s.id}" style="${s._blkCollapsed?'':'display:none'}">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
-      <div class="t-meta-controls">
-        <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-        <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
-      </div>
+      <div id="lf-waste-${s.id}" style="display:none"></div>
       <div class="t-corner-btns">
         <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
         <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>
@@ -2212,6 +2213,7 @@ function renderLFSpecies(){
       const lfLabel=document.getElementById('lf-label-'+s.id);
       if(lfFields) lfFields.style.display=s._blkCollapsed?'none':'';
       if(lfLabel) lfLabel.style.display=s._blkCollapsed?'':'none';
+
       if(s._blkCollapsed){
         let sumHtml='<div class="t-block-summary">';
         s.pieces.forEach((pc2,i2)=>{
@@ -2560,29 +2562,29 @@ function renderSlabSpecies(){
       blk.innerHTML=`
         <div class="t-meta t-block-header" id="st-header-${t.id}">
           <div class="t-meta-fields" id="st-fields-${t.id}" style="${t._collapsed?'display:none':''}">
-            <div class="t-meta-field">Thickness
-              <div class="t-wrap">
-                <input type="number" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="tNum" value="${t.tNum}" placeholder="4" min="1" step="1" />
-                <span class="t-suffix">/4</span>
+            <div class="t-meta-row">
+              <div class="t-meta-field"><span class="field-label">Thickness</span>
+                <div class="t-wrap">
+                  <input type="number" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="tNum" value="${t.tNum}" placeholder="4" min="1" step="1" />
+                  <span class="t-suffix">/4</span>
+                </div>
               </div>
             </div>
             <div class="t-meta-row">
-              <div class="t-meta-field">Price/bf
+              <div class="t-meta-field"><span class="field-label">Price/bf</span>
                 <div class="p-wrap">
                   <span class="p-prefix">$</span>
                   <input type="text" inputmode="numeric" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="price" value="${t.price>0?parseFloat(t.price).toFixed(2):''}" placeholder="0.00" style="text-align:right;" />
                 </div>
               </div>
-
             </div>
+            <span class="field-label" style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
+            <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
           </div>
           <div class="t-meta-field" id="st-label-${t.id}" style="${t._collapsed?'':'display:none'}">
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
-          <div class="t-meta-controls">
-            <span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span>
-            <div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" style="" /><span class="waste-suffix">%</span></div>
-          </div>
+          <div id="st-waste-${t.id}" style="display:none"></div>
           <div class="t-corner-btns">
             <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
             <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
@@ -2632,6 +2634,7 @@ function renderSlabSpecies(){
         const stLabel=blk.querySelector('#st-label-'+t.id);
         if(stFields) stFields.style.display=t._collapsed?'none':'';
         if(stLabel) stLabel.style.display=t._collapsed?'':'none';
+
         const sumEl=blk.querySelector('#st-summary-'+t.id);
         if(sumEl){
           if(t._collapsed){
@@ -2975,16 +2978,16 @@ function renderSG(){
     // Inner darker content block — matches thickness-block style
     const content=document.createElement('div');
     content.className='inner-card-sg';
-    content.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;'+(m._collapsed?'display:none;':'');
+    content.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;display:'+(m._collapsed?'none':'grid')+';grid-template-columns:max-content 1fr;gap:8px 12px;align-items:center;';
 
     // Size row — label | select (flex:1) | chevron | ×
     const sizeRow=document.createElement('div');
-    sizeRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    sizeRow.style.cssText='display:flex;align-items:center;gap:8px;grid-column:1/-1;';
     const sizeLabel=document.createElement('span');
-    sizeLabel.style.cssText='white-space:nowrap;font-size:13px;font-weight:600;color:var(--text2);';
+    sizeLabel.style.cssText='white-space:nowrap;font-size:13px;color:var(--text2);flex-shrink:0;';
     sizeLabel.textContent='Dimensions (ft)';
     const sizeSelect=document.createElement('select');
-    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;min-width:0;';
+    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';width:50%;min-width:0;flex-shrink:0;';
     sizeSelect.addEventListener('change',()=>{sizeSelect.style.color=sizeSelect.value?'var(--text)':'var(--text3)';});
     const sPlaceholder=document.createElement('option');sPlaceholder.value='';sPlaceholder.textContent='Select size...';sPlaceholder.disabled=false;sPlaceholder.style.color='var(--text3)';if(!m.size)sPlaceholder.selected=true;sizeSelect.appendChild(sPlaceholder);
     SG_SIZES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===m.size)o.selected=true;sizeSelect.appendChild(o);});
@@ -3012,10 +3015,10 @@ function renderSG(){
     const thickRow=document.createElement('div');
     thickRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
     const thickLabel=document.createElement('span');
-    thickLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    thickLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     thickLabel.textContent='Thickness';
     const thickSelect=document.createElement('select');
-    thickSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.thick?'var(--text)':'var(--text3)')+';flex:1;';
+    thickSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.thick?'var(--text)':'var(--text3)')+';width:100%;min-width:0;';
     thickSelect.addEventListener('change',()=>{thickSelect.style.color=thickSelect.value?'var(--text)':'var(--text3)';});
     const tPlaceholder=document.createElement('option');tPlaceholder.value='';tPlaceholder.textContent='Select thickness...';tPlaceholder.style.color='var(--text3)';if(!m.thick)tPlaceholder.selected=true;thickSelect.appendChild(tPlaceholder);
     SG_THICK.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===m.thick)o.selected=true;thickSelect.appendChild(o);});
@@ -3035,12 +3038,12 @@ function renderSG(){
 
     // Price/sheet row
     const priceRow=document.createElement('div');
-    priceRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    priceRow.style.cssText='display:contents;';
     const priceLabel=document.createElement('span');
-    priceLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    priceLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     priceLabel.textContent='Price/sheet';
     const priceWrap=document.createElement('div');
-    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;flex:1;min-width:0;';
+    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;width:100%;';
     const pPrefix=document.createElement('span');
     pPrefix.style.cssText='padding:0 4px 0 10px;font-size:14px;color:var(--text2);';
     pPrefix.textContent='$';
@@ -3052,8 +3055,7 @@ function renderSG(){
     priceRow.appendChild(priceLabel);priceRow.appendChild(priceWrap);
     // Waste field
     const wasteLabelSG=document.createElement('span');
-    wasteLabelSG.style.cssText='min-width:40px;font-size:13px;font-weight:400;color:var(--text2);';
-    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='margin-left:auto;font-size:11px;color:var(--text2);font-weight:400;margin-right:3px;';
+    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='font-size:12px;color:var(--text2);font-weight:400;white-space:nowrap;align-self:center;';
     const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-input-wrap';
     const wasteInputSG=document.createElement('input');
     wasteInputSG.type='number';wasteInputSG.min='0';wasteInputSG.max='100';wasteInputSG.step='1';
@@ -3066,14 +3068,14 @@ function renderSG(){
 
     // Qty row
     const qtyRow=document.createElement('div');
-    qtyRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+    qtyRow.style.cssText='display:contents;';
     const qtyLabel=document.createElement('span');
-    qtyLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
+    qtyLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     qtyLabel.textContent='Qty (sheets)';
     const qtyInput=document.createElement('input');
     qtyInput.type='number';qtyInput.min='1';qtyInput.step='1';
     qtyInput.value=m.qty||1;
-    qtyInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:80px;text-align:center;-webkit-appearance:none;';
+    qtyInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;text-align:left;-webkit-appearance:none;';
     qtyInput.addEventListener('input',()=>{m.qty=parseInt(qtyInput.value)||1;refreshSG(m.id);});
     qtyRow.appendChild(qtyLabel);qtyRow.appendChild(qtyInput);
     content.appendChild(qtyRow);
@@ -3081,7 +3083,7 @@ function renderSG(){
     // Line total
     const lineTotal=document.createElement('div');
     lineTotal.id='sg-line-'+m.id;
-    lineTotal.style.cssText='font-size:13px;font-weight:600;color:var(--text2);text-align:right;padding-top:4px;border-top:1px solid var(--border);';
+    lineTotal.style.cssText='font-size:13px;font-weight:600;color:var(--text2);text-align:right;padding-top:4px;border-top:1px solid var(--border);grid-column:1/-1;';
     lineTotal.textContent='$'+(m.price*m.qty).toFixed(2);
     content.appendChild(lineTotal);
 
@@ -3090,7 +3092,7 @@ function renderSG(){
     // Shared collapse logic
     function doSGCollapse(){
       m._collapsed=!m._collapsed;
-      content.style.display=m._collapsed?'none':'';
+      content.style.display=m._collapsed?'none':'grid';
       colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
       const innerChev=document.getElementById('sg-chev-'+m.id);
       if(innerChev) innerChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
