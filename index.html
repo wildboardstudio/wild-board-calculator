@@ -1057,7 +1057,7 @@ function addThick(sid){
   const s=species.find(x=>x.id===sid);
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
-    s.thicknesses.push({id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]});
+    s.thicknesses.push({id:uid(),tNum:'',price:'',waste:s.waste||0,boards:[{id:uid(),lft:'',lin:'',w:''}]});
   }
   renderNoScroll();
 }
@@ -1334,7 +1334,7 @@ function render(){
     // Waste row inline
     const bfWasteWrap=document.createElement('div');bfWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
     bfWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-field="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    bfWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    bfWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshNums(s.id,t.id);});saveSession();});
     atb.appendChild(bfWasteWrap);
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
@@ -2383,7 +2383,7 @@ function addSlabThick(sid){
   const s=slabSpecies.find(x=>x.id===sid);
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
-    s.thicknesses.push({id:uid(),tNum:'',price:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]});
+    s.thicknesses.push({id:uid(),tNum:'',price:'',waste:s.waste||0,slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]});
   }
   renderSlabSpeciesNoScroll();updateSlabTotals();
 }
@@ -2722,7 +2722,7 @@ function renderSlabSpecies(){
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
     const slabWasteWrap=document.createElement('div');slabWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
     slabWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabfield="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    slabWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    slabWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshSlabNums(s.id,t.id);});saveSession();});
     atb.appendChild(slabWasteWrap);
     ssContent.appendChild(atb);
 
