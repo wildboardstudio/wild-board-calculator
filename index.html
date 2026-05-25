@@ -673,7 +673,7 @@
   <meta name="theme-color" content="#e0d8cc" />
   <script>
 
-let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined;
+let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null;
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 function appConfirm(msg, onYes, okLabel, okColor) {
@@ -860,7 +860,7 @@ const pWrap=makeTitle({ph:'Tap to name this list',onSave:v=>{projName=v;}});
 document.getElementById('proj-wrap').appendChild(pWrap);
 
 function clearProj(){
-  projName='';editingId=null;
+  projName='';editingId=null;_savedSnapshot=null;
   const budgetEl=document.getElementById('budget-input');if(budgetEl)budgetEl.value='';
   const alertEl=document.getElementById('budget-alert');if(alertEl)alertEl.classList.remove('show');
   const t=pWrap.querySelector('.ititle'),i=pWrap.querySelector('input');
@@ -939,6 +939,8 @@ function commitSave(overwriteId){
     if(editLabel) editLabel.textContent='Saved: '+projName;
     setTimeout(()=>{ if(editLabel) editLabel.textContent='Editing: '+projName; },1500);
   }
+  // Mark current state as saved
+  _savedSnapshot=_buildSnapshot();
 }
 
 const _bp=document.getElementById('budget-proceed');if(_bp)_bp.addEventListener('click',()=>{
@@ -1084,6 +1086,7 @@ function loadProjectIntoCalc(p){
   }));
   sgMaterials=JSON.parse(JSON.stringify(p.sgMaterials||[])).map(m=>({...m,id:uid()}));
   editingId=p.id;
+  setTimeout(()=>{_savedSnapshot=_buildSnapshot();},50); // snapshot after render settles
   setProjName(p.name);
   render();
   renderSlabSpecies();
@@ -3037,12 +3040,12 @@ function renderSG(){
     priceLabel.style.cssText='min-width:80px;font-size:13px;font-weight:600;color:var(--text2);';
     priceLabel.textContent='Price/sheet';
     const priceWrap=document.createElement('div');
-    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;';
+    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;flex:1;min-width:0;';
     const pPrefix=document.createElement('span');
     pPrefix.style.cssText='padding:0 4px 0 10px;font-size:14px;color:var(--text2);';
     pPrefix.textContent='$';
     const priceInput=document.createElement('input');
-    priceInput.style.cssText='border:none;background:transparent;width:100px;padding:9px 8px 9px 2px;font-size:16px;color:var(--text);text-align:right;-webkit-appearance:none;';
+    priceInput.style.cssText='border:none;background:transparent;flex:1;min-width:0;padding:9px 8px 9px 2px;font-size:16px;color:var(--text);text-align:left;-webkit-appearance:none;';
     initPriceInput(priceInput, v=>{ m.price=v; refreshSG(m.id); });
     if(m.price>0) priceInput.value=m.price.toFixed(2);
     priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
@@ -3220,11 +3223,42 @@ document.getElementById('start-btn').addEventListener('click', function(){
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
-document.getElementById('back-btn').addEventListener('click', function(){
+
+function _buildSnapshot(){
+  try{
+    return JSON.stringify({
+      species:species,
+      slabSpecies:slabSpecies,
+      lfSpecies:lfSpecies,
+      sgMaterials:sgMaterials,
+      projName:projName,
+      budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:''
+    });
+  }catch(e){return null;}
+}
+function hasUnsavedChanges(){
+  if(_savedSnapshot===null) return false; // nothing has been saved or loaded — no warning
+  return _buildSnapshot()!==_savedSnapshot;
+}
+
+function doGoBack(){
   document.getElementById('app-screen').style.display='none';
   document.getElementById('landing-screen').style.display='flex';
   document.getElementById('sticky-bar').style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('back-btn').addEventListener('click', function(){
+  if(hasUnsavedChanges()){
+    appConfirm(
+      editingId ? 'You have unsaved changes to "'+projName+'". Go back without saving?' : 'You have unsaved data. Go back without saving?',
+      ()=>doGoBack(),
+      'Go Back',
+      'var(--red)'
+    );
+  } else {
+    doGoBack();
+  }
 });
 
 document.getElementById('saved-back-btn').addEventListener('click', function(){
