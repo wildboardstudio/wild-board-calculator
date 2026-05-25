@@ -108,14 +108,12 @@
     .t-block {
       background: #ede8e0; border-radius: var(--radius);
       padding: 12px; padding-top: 10px; margin-bottom: 10px; border: 1px solid var(--border2);
-      position: relative;
     }
     .t-corner-btns {
-      position: absolute; top: 8px; right: 8px;
-      display: flex; align-items: center; gap: 6px;
+      display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; padding-top: 2px;
     }
     .t-meta {
-      display: flex; flex-direction: column; gap: 8px;
+      display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
       margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
     }
     .t-meta-controls { display: contents; }
@@ -127,7 +125,7 @@
     .waste-wrap input { width: 36px; padding: 5px 2px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
     .waste-wrap .waste-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
     .waste-input-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); overflow: hidden; }
-    .waste-input-wrap input { border: none; background: transparent; width: 48px; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; }
+    .waste-input-wrap input { border: none; background: transparent; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; flex: 1; min-width: 0; }
     .waste-input-wrap .waste-suffix { padding: 0 8px 0 2px; font-size: 13px; color: var(--text2); }
 
     .t-meta-field { font-size: 12px; color: var(--text2); white-space: nowrap; display: contents; }
@@ -246,7 +244,7 @@
 
     .empty { font-size: 14px; color: var(--text2); }
     .t-block-header { cursor: pointer; user-select: none; }
-    .t-meta-fields { display: grid; grid-template-columns: max-content 1fr; gap: 8px 12px; align-items: center; min-width: 0; max-width: calc(100% - 60px); }
+    .t-meta-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; align-items: center; flex: 1; min-width: 0; }
     .t-meta-row { display: contents; }
     .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
     .species-collapse-btn:active { opacity: 0.7; }
@@ -2899,7 +2897,7 @@ const SG_THICK = ['⅛"','¼"','⅜"','½"','⅝"','¾"','1"','1-¼"','1-½"','C
 
 function addSGMaterial(){
   sgMaterials.forEach(m=>{m._collapsed=true;});
-  sgMaterials.push({id:uid(),name:'',size:'',thick:'',customSize:'',customThick:'',price:0,qty:1,_collapsed:false});
+  sgMaterials.push({id:uid(),name:'',size:'',thick:'',customSize:'',customThick:'',price:0,qty:0,_collapsed:false});
   renderSG();saveSession();
 }
 
@@ -2975,24 +2973,42 @@ function renderSG(){
 
 
 
-    // Inner darker content block — matches thickness-block style
-    const content=document.createElement('div');
-    content.className='inner-card-sg';
-    content.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;display:'+(m._collapsed?'none':'grid')+';grid-template-columns:max-content 1fr;gap:8px 12px;align-items:center;';
+    // Inner card — flex row: fields grid + corner buttons (matches BF/LF/Slab pattern)
+    const contentOuter=document.createElement('div');
+    contentOuter.className='inner-card-sg';
+    contentOuter.style.cssText='border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;display:'+(m._collapsed?'none':'block')+';';
 
-    // Size row — label | select (flex:1) | chevron | ×
+    // Flex row wrapper: fields grid + corner buttons
+    const contentFlex=document.createElement('div');
+    contentFlex.style.cssText='display:flex;flex-direction:row;align-items:flex-start;gap:8px;';
+
+    // Fields grid
+    const content=document.createElement('div');
+    content.style.cssText='display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 12px;align-items:center;flex:1;min-width:0;';
+
+    // Corner buttons — flex siblings (same as BF/LF/Slab)
+    const sgChev=document.createElement('span');sgChev.className='t-collapse-indicator';sgChev.id='sg-chev-'+m.id;
+    sgChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+    const sgDel=document.createElement('button');sgDel.className='del-btn';
+    sgDel.innerHTML='&times;';sgDel.title='Remove material';
+    sgDel.addEventListener('click',()=>remSGMaterial(m.id));
+    const sgCorner=document.createElement('div');
+    sgCorner.style.cssText='display:flex;align-items:flex-start;gap:6px;flex-shrink:0;padding-top:2px;';
+    sgCorner.appendChild(sgChev);sgCorner.appendChild(sgDel);
+
+    // Size row — spans both grid columns, flex row inside
     const sizeRow=document.createElement('div');
     sizeRow.style.cssText='display:flex;align-items:center;gap:8px;grid-column:1/-1;';
     const sizeLabel=document.createElement('span');
     sizeLabel.style.cssText='white-space:nowrap;font-size:13px;color:var(--text2);flex-shrink:0;';
     sizeLabel.textContent='Dimensions (ft)';
     const sizeSelect=document.createElement('select');
-    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';width:50%;min-width:0;flex-shrink:0;';
+    sizeSelect.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:'+(m.size?'var(--text)':'var(--text3)')+';flex:1;min-width:0;';
     sizeSelect.addEventListener('change',()=>{sizeSelect.style.color=sizeSelect.value?'var(--text)':'var(--text3)';});
     const sPlaceholder=document.createElement('option');sPlaceholder.value='';sPlaceholder.textContent='Select size...';sPlaceholder.disabled=false;sPlaceholder.style.color='var(--text3)';if(!m.size)sPlaceholder.selected=true;sizeSelect.appendChild(sPlaceholder);
     SG_SIZES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===m.size)o.selected=true;sizeSelect.appendChild(o);});
     const customSizeWrap=document.createElement('div');
-    customSizeWrap.style.display=m.size==='Custom'?'block':'none';customSizeWrap.style.cssText='flex:1;min-width:0;display:'+(m.size==='Custom'?'block':'none')+';';
+    customSizeWrap.style.cssText='flex:1;min-width:0;display:'+(m.size==='Custom'?'block':'none')+';';
     const customSizeInput=document.createElement('input');
     customSizeInput.type='text';customSizeInput.placeholder='e.g. 4×8';
     customSizeInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
@@ -3000,20 +3016,10 @@ function renderSG(){
     customSizeInput.addEventListener('change',()=>{m.customSize=customSizeInput.value;saveSession();});
     customSizeWrap.appendChild(customSizeInput);
     sizeSelect.addEventListener('change',()=>{m.size=sizeSelect.value;customSizeWrap.style.display=m.size==='Custom'?'block':'none';saveSession();});
-    // Chevron + delete inline
-    const sgChev=document.createElement('span');sgChev.className='t-collapse-indicator';sgChev.id='sg-chev-'+m.id;
-    sgChev.style.cssText='flex-shrink:0;';
-    sgChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
-    const sgDel=document.createElement('button');sgDel.className='del-btn';sgDel.style.cssText='flex-shrink:0;min-width:28px;';
-    sgDel.innerHTML='&times;';sgDel.title='Remove material';
-    sgDel.addEventListener('click',()=>remSGMaterial(m.id));
     sizeRow.appendChild(sizeLabel);sizeRow.appendChild(sizeSelect);sizeRow.appendChild(customSizeWrap);
-    sizeRow.appendChild(sgChev);sizeRow.appendChild(sgDel);
     content.appendChild(sizeRow);
 
-    // Thickness row — back in card 3
-    const thickRow=document.createElement('div');
-    thickRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    // Thickness — col1: label, col2: select
     const thickLabel=document.createElement('span');
     thickLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     thickLabel.textContent='Thickness';
@@ -3023,7 +3029,7 @@ function renderSG(){
     const tPlaceholder=document.createElement('option');tPlaceholder.value='';tPlaceholder.textContent='Select thickness...';tPlaceholder.style.color='var(--text3)';if(!m.thick)tPlaceholder.selected=true;thickSelect.appendChild(tPlaceholder);
     SG_THICK.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===m.thick)o.selected=true;thickSelect.appendChild(o);});
     const customThickWrap=document.createElement('div');
-    customThickWrap.style.display=m.thick==='Custom'?'block':'none';customThickWrap.style.flex='1';
+    customThickWrap.style.cssText='width:100%;display:'+(m.thick==='Custom'?'block':'none')+';';
     const customThickInput=document.createElement('input');
     customThickInput.type='text';customThickInput.placeholder='e.g. 1"';
     customThickInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;';
@@ -3031,31 +3037,28 @@ function renderSG(){
     customThickInput.addEventListener('change',()=>{m.customThick=customThickInput.value;saveSession();});
     customThickWrap.appendChild(customThickInput);
     thickSelect.addEventListener('change',()=>{m.thick=thickSelect.value;customThickWrap.style.display=m.thick==='Custom'?'block':'none';saveSession();});
-    thickRow.appendChild(thickLabel);thickRow.appendChild(thickSelect);thickRow.appendChild(customThickWrap);
-    content.appendChild(thickRow);
+    content.appendChild(thickLabel);content.appendChild(thickSelect);
 
-
-
-    // Price/sheet row
-    const priceRow=document.createElement('div');
-    priceRow.style.cssText='display:contents;';
+    // Price/sheet — col1: label, col2: $-wrap
     const priceLabel=document.createElement('span');
     priceLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     priceLabel.textContent='Price/sheet';
     const priceWrap=document.createElement('div');
-    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;width:100%;';
+    priceWrap.style.cssText='display:flex;align-items:center;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);overflow:hidden;width:100%;min-height:36px;';
     const pPrefix=document.createElement('span');
-    pPrefix.style.cssText='padding:0 4px 0 10px;font-size:14px;color:var(--text2);';
+    pPrefix.style.cssText='padding:0 2px 0 8px;font-size:14px;color:var(--text2);flex-shrink:0;';
     pPrefix.textContent='$';
     const priceInput=document.createElement('input');
-    priceInput.style.cssText='border:none;background:transparent;flex:1;min-width:0;padding:9px 8px 9px 2px;font-size:16px;color:var(--text);text-align:left;-webkit-appearance:none;';
+    priceInput.style.cssText='border:none;background:transparent;flex:1;min-width:0;padding:7px 8px 7px 0;font-size:15px;color:var(--text);text-align:right;-webkit-appearance:none;';
     initPriceInput(priceInput, v=>{ m.price=v; refreshSG(m.id); });
     if(m.price>0) priceInput.value=m.price.toFixed(2);
     priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
-    priceRow.appendChild(priceLabel);priceRow.appendChild(priceWrap);
-    // Waste field
+    content.appendChild(priceLabel);content.appendChild(priceWrap);
+
+    // Waste — col1: label, col2: waste-input-wrap
     const wasteLabelSG=document.createElement('span');
-    wasteLabelSG.textContent='Waste';wasteLabelSG.style.cssText='font-size:12px;color:var(--text2);font-weight:400;white-space:nowrap;align-self:center;';
+    wasteLabelSG.textContent='Waste';
+    wasteLabelSG.style.cssText='font-size:12px;color:var(--text2);font-weight:400;white-space:nowrap;align-self:center;';
     const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-input-wrap';
     const wasteInputSG=document.createElement('input');
     wasteInputSG.type='number';wasteInputSG.min='0';wasteInputSG.max='100';wasteInputSG.step='1';
@@ -3063,36 +3066,36 @@ function renderSG(){
     wasteInputSG.addEventListener('input',()=>{m.waste=parseFloat(wasteInputSG.value)||0;refreshSG(m.id);});
     const wasteSuffixSG=document.createElement('span');wasteSuffixSG.className='waste-suffix';wasteSuffixSG.textContent='%';
     wasteWrapSG.appendChild(wasteInputSG);wasteWrapSG.appendChild(wasteSuffixSG);
-    priceRow.appendChild(wasteLabelSG);priceRow.appendChild(wasteWrapSG);
-    content.appendChild(priceRow);
+    content.appendChild(wasteLabelSG);content.appendChild(wasteWrapSG);
 
-    // Qty row
-    const qtyRow=document.createElement('div');
-    qtyRow.style.cssText='display:contents;';
+    // Qty — col1: label, col2: input
     const qtyLabel=document.createElement('span');
     qtyLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
     qtyLabel.textContent='Qty (sheets)';
     const qtyInput=document.createElement('input');
     qtyInput.type='number';qtyInput.min='1';qtyInput.step='1';
-    qtyInput.value=m.qty||1;
-    qtyInput.style.cssText='font-size:16px;padding:9px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;text-align:left;-webkit-appearance:none;';
+    qtyInput.value=m.qty||'';
+    qtyInput.placeholder='0';
+    qtyInput.style.cssText='font-size:15px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;text-align:right;-webkit-appearance:none;min-height:36px;';
     qtyInput.addEventListener('input',()=>{m.qty=parseInt(qtyInput.value)||1;refreshSG(m.id);});
-    qtyRow.appendChild(qtyLabel);qtyRow.appendChild(qtyInput);
-    content.appendChild(qtyRow);
+    content.appendChild(qtyLabel);content.appendChild(qtyInput);
 
-    // Line total
+    // Line total — spans both columns
     const lineTotal=document.createElement('div');
     lineTotal.id='sg-line-'+m.id;
     lineTotal.style.cssText='font-size:13px;font-weight:600;color:var(--text2);text-align:right;padding-top:4px;border-top:1px solid var(--border);grid-column:1/-1;';
     lineTotal.textContent='$'+(m.price*m.qty).toFixed(2);
     content.appendChild(lineTotal);
 
-    card.appendChild(content);
+    contentFlex.appendChild(content);contentFlex.appendChild(sgCorner);
+    contentOuter.appendChild(contentFlex);
+
+    card.appendChild(contentOuter);
 
     // Shared collapse logic
     function doSGCollapse(){
       m._collapsed=!m._collapsed;
-      content.style.display=m._collapsed?'none':'grid';
+      contentOuter.style.display=m._collapsed?'none':'block';
       colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
       const innerChev=document.getElementById('sg-chev-'+m.id);
       if(innerChev) innerChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
