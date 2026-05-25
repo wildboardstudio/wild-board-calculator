@@ -1287,12 +1287,7 @@ function render(){
       bAct.innerHTML=`<button class="btn btn-sm" data-action="add-board" data-sid="${s.id}" data-tid="${t.id}">+ Board</button>
         <button class="btn btn-sm" data-action="dup-board" data-sid="${s.id}" data-tid="${t.id}">&#10697; Last Board</button>`;
       tContent.appendChild(bAct);
-      // Waste row — below board entries
-      const wasteRowBF=document.createElement('div');
-      wasteRowBF.id='t-waste-'+t.id;
-      wasteRowBF.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
-      wasteRowBF.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-tid="${t.id}" data-field="waste" value="${t.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-      tContent.appendChild(wasteRowBF);
+
       const tFoot=document.createElement('div');tFoot.className='t-footer';
       tFoot.innerHTML=`<span>Total: <strong id="tbf-${t.id}">${tBF(t).toFixed(2)} bf</strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>`;
       tContent.appendChild(tFoot);
@@ -1334,8 +1329,13 @@ function render(){
       sContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div');atb.style.marginTop='8px';
+    const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add Thickness</button>`;
+    // Waste row inline
+    const bfWasteWrap=document.createElement('div');bfWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
+    bfWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-field="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    bfWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    atb.appendChild(bfWasteWrap);
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
     sf.innerHTML=`<span>Total: <strong id="sbf-${s.id}">${sBF(s).toFixed(2)} bf</strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span>`;
@@ -2185,12 +2185,7 @@ function renderLFSpecies(){
     bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Piece</button>
       <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Piece</button>`;
     tContent.appendChild(bAct);
-    // Waste row
-    const wasteRowLF=document.createElement('div');
-    wasteRowLF.id='lf-waste-'+s.id;
-    wasteRowLF.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
-    wasteRowLF.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    tContent.appendChild(wasteRowLF);
+
     // Running total inside card
     const tFoot=document.createElement('div');tFoot.className='t-footer';
     tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
@@ -2233,6 +2228,11 @@ function renderLFSpecies(){
     });
 
     sContent.appendChild(blk);
+    // Waste row in card 2
+    const lfWasteRow=document.createElement('div');lfWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
+    lfWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    lfWasteRow.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    sContent.appendChild(lfWasteRow);
     card.appendChild(sContent);
     list.appendChild(card);
   });
@@ -2711,20 +2711,19 @@ function renderSlabSpecies(){
       const addSlabBtn=document.createElement('div');addSlabBtn.style.marginTop='8px';
       addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Slab</button>`;
       stContent.appendChild(addSlabBtn);
-      // Waste row
-      const wasteRowSlab=document.createElement('div');
-      wasteRowSlab.id='st-waste-'+t.id;
-      wasteRowSlab.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);';
-      wasteRowSlab.innerHTML=`<span style="font-size:11px;color:var(--text2);font-weight:400;">Waste</span><div class="waste-input-wrap"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabtid="${t.id}" data-slabfield="waste" value="${t.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-      stContent.appendChild(wasteRowSlab);
+
 
       // Append blk to ssContent
       blk.appendChild(stContent);
       ssContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div'); atb.style.marginTop='8px';
+    const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
+    const slabWasteWrap=document.createElement('div');slabWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
+    slabWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabfield="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    slabWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    atb.appendChild(slabWasteWrap);
     ssContent.appendChild(atb);
 
     const sf=document.createElement('div'); sf.className='species-footer';
@@ -3099,6 +3098,13 @@ function renderSG(){
     contentOuter.appendChild(contentFlex);
 
     card.appendChild(contentOuter);
+
+    // Waste row in card 2
+    const sgCardWasteRow=document.createElement('div');
+    sgCardWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
+    sgCardWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="0" value="${m.waste||''}" /><span class="waste-suffix">%</span></div>`;
+    sgCardWasteRow.querySelector('input').addEventListener('change',e=>{m.waste=parseFloat(e.target.value)||0;refreshSG(m.id);saveSession();});
+    card.appendChild(sgCardWasteRow);
 
     // Shared collapse logic
     function doSGCollapse(){
