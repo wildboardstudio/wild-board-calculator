@@ -1032,13 +1032,16 @@ function refreshNums(sid,tid){
       if(be)be.textContent=calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(2)+' bf';
       if(ce)ce.textContent='$'+calcCost(t.tNum,b.lft,b.lin,b.w,t.price).toFixed(2);
     });
-    const waste=parseFloat(t.waste)||0;
+    // Read waste live from DOM (species-level input) so multi-board refresh is always current
+    const wasteInputEl=document.querySelector(`[data-sid="${sid}"][data-field="species-waste"]`);
+    const waste=wasteInputEl?parseFloat(wasteInputEl.value)||0:parseFloat(t.waste)||0;
+    t.waste=waste; s.waste=waste; // keep data in sync
     const rawBF=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
     const adjBF=waste>0?rawBF*(1-waste/100):rawBF;
-    const adjCost=adjBF*(parseFloat(t.price)||0);
+    const rawCost=rawBF*(parseFloat(t.price)||0);
     const te=document.getElementById('tbf-'+tid),tce=document.getElementById('tc-'+tid);
-    if(te)te.textContent=rawBF.toFixed(2)+' bf'+(waste>0?' → '+adjBF.toFixed(2)+' bf usable (-'+waste+'%)':'');
-    if(tce)tce.textContent='$'+adjCost.toFixed(2);
+    if(te)te.innerHTML=(waste>0?'<span style="color:inherit">'+rawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjBF.toFixed(2)+' bf usable</span>':rawBF.toFixed(2)+' bf');
+    if(tce)tce.textContent='$'+rawCost.toFixed(2);
   }
   const se=document.getElementById('sbf-'+sid),sce=document.getElementById('sc-'+sid);
   if(se)se.textContent=s.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0).toFixed(2)+' bf';
@@ -1049,7 +1052,7 @@ function refreshNums(sid,tid){
 // --- Data ---
 function addSpecies(){
   species.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
-  species.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
+  species.push({id:uid(),name:'',waste:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
   renderNoScroll();updateTotals();
 }
 function remSpecies(sid){appConfirm("Remove this species and all its boards?",()=>{species=species.filter(s=>s.id!==sid);renderNoScroll();updateTotals();});}
@@ -1063,7 +1066,7 @@ function addThick(sid){
 }
 function remThick(sid,tid){appConfirm("Remove this thickness block and all its boards?",()=>{const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();});}
 function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
-function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();}
+function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();if(s)s.thicknesses.forEach(th=>{refreshNums(sid,th.id);});}
 function remBoard(sid,tid,bid){appConfirm("Remove this board?",()=>{const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();});}
 
 function loadProjectIntoCalc(p){
@@ -1333,8 +1336,8 @@ function render(){
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add Thickness</button>`;
     // Waste row inline
     const bfWasteWrap=document.createElement('div');bfWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
-    bfWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-field="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    bfWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshNums(s.id,t.id);});saveSession();});
+    bfWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-field="species-waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    bfWasteWrap.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshNums(s.id,t.id);});saveSession();});
     atb.appendChild(bfWasteWrap);
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
@@ -2019,7 +2022,8 @@ function remLFSpecies(sid){appConfirm("Remove this species and all its pieces?",
 function addLFPiece(sid){
   const s=lfSpecies.find(x=>x.id===sid);
   if(s) s.pieces.push({id:uid(),lft:'',lin:''});
-  renderLFSpeciesNoScroll();updateLFTotals();
+  renderLFSpeciesNoScroll();
+  if(s)refreshLFNums(sid);updateLFTotals();
 }
 function dupLFPiece(sid){
   const s=lfSpecies.find(x=>x.id===sid);
@@ -2042,12 +2046,14 @@ function refreshLFNums(sid){
     if(lcEl) lcEl.textContent='$'+cost.toFixed(2);
   });
   const stEl=document.getElementById('lf-stotal-'+sid),scEl=document.getElementById('lf-scost-'+sid);
-  const lfWaste=parseFloat(s.waste)||0;
+  const lfWasteEl=document.querySelector(`[data-lfsid="${sid}"][data-lffield="waste"]`);
+  const lfWaste=lfWasteEl?parseFloat(lfWasteEl.value)||0:parseFloat(s.waste)||0;
+  s.waste=lfWaste;
   const rawLF=lfSTotal(s);
   const adjLF=lfWaste>0?rawLF*(1-lfWaste/100):rawLF;
-  const adjLFCost=adjLF*(parseFloat(s.price)||0);
-  if(stEl) stEl.textContent=rawLF.toFixed(2)+' lf'+(lfWaste>0?' → '+adjLF.toFixed(2)+' lf usable (-'+lfWaste+'%)':'');
-  if(scEl) scEl.textContent='$'+adjLFCost.toFixed(2);
+  const rawLFCost=rawLF*(parseFloat(s.price)||0);
+  if(stEl) stEl.innerHTML=(lfWaste>0?'<span style="color:inherit">'+rawLF.toFixed(2)+' lf</span> → <span style="color:#2d6a2d">'+adjLF.toFixed(2)+' lf usable</span>':rawLF.toFixed(2)+' lf');
+  if(scEl) scEl.textContent='$'+rawLFCost.toFixed(2);
   updateLFTotals();
 }
 
@@ -2230,8 +2236,8 @@ function renderLFSpecies(){
     sContent.appendChild(blk);
     // Waste row in card 2
     const lfWasteRow=document.createElement('div');lfWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
-    lfWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    lfWasteRow.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
+    lfWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    lfWasteRow.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
     sContent.appendChild(lfWasteRow);
     card.appendChild(sContent);
     list.appendChild(card);
@@ -2375,7 +2381,7 @@ function updateSlabTotals(){
 
 function addSlabSpecies(){
   slabSpecies.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
-  slabSpecies.push({id:uid(),name:'',thicknesses:[{id:uid(),tNum:'',price:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]}]});
+  slabSpecies.push({id:uid(),name:'',waste:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]}]});
   renderSlabSpeciesNoScroll();updateSlabTotals();
 }
 function remSlabSpecies(sid){ appConfirm("Remove this species and all its slabs?",()=>{ slabSpecies=slabSpecies.filter(s=>s.id!==sid); renderSlabSpeciesNoScroll(); updateSlabTotals(); }); }
@@ -2396,11 +2402,13 @@ function addSlab(sid,tid){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid);
   if(t) t.slabs.push({id:uid(),lft:'',lin:'',measurements:['','','']});
   renderSlabSpecies();updateSlabTotals();
+  const _ss=slabSpecies.find(x=>x.id===sid);if(_ss)_ss.thicknesses.forEach(th=>{refreshSlabNums(sid,th.id);});
 }
 function dupLastSlab(sid,tid){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid);
   if(t&&t.slabs.length>0){const b=t.slabs[t.slabs.length-1];t.slabs.push({...b,id:uid(),measurements:[...b.measurements]});}
   renderSlabSpecies();updateSlabTotals();
+  const _ds=slabSpecies.find(x=>x.id===sid);if(_ds)_ds.thicknesses.forEach(th=>{refreshSlabNums(sid,th.id);});
 }
 function remSlab(sid,tid,bid){appConfirm("Remove this slab?",()=>{
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid);
@@ -2431,13 +2439,15 @@ function refreshSlabNums(sid,tid){
       if(bfEl) bfEl.textContent=calcSlabBF(t.tNum,b.lft,b.lin,b.measurements).toFixed(2)+' bf';
       if(bcEl) bcEl.textContent='$'+calcSlabCost(t.tNum,b.lft,b.lin,b.measurements,t.price).toFixed(2);
     });
-    const slabW=parseFloat(t.waste)||0;
+    const slabWasteEl=document.querySelector(`[data-slabsid="${sid}"][data-slabfield="species-waste"]`);
+    const slabW=slabWasteEl?parseFloat(slabWasteEl.value)||0:parseFloat(t.waste)||0;
+    t.waste=slabW; s.waste=slabW;
     const rawSlabBF=slabTBF(t);
     const adjSlabBF=slabW>0?rawSlabBF*(1-slabW/100):rawSlabBF;
-    const adjSlabCost=adjSlabBF*(parseFloat(t.price)||0);
+    const rawSlabCost=rawSlabBF*(parseFloat(t.price)||0);
     const ttEl=document.getElementById('stbf-'+tid), tcEl=document.getElementById('stc-'+tid);
-    if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2)+' bf'+(slabW>0?' → '+adjSlabBF.toFixed(2)+' bf usable (-'+slabW+'%)':'');
-    if(tcEl) tcEl.textContent='$'+adjSlabCost.toFixed(2);
+    if(ttEl) ttEl.innerHTML=(slabW>0?'<span style="color:inherit">'+rawSlabBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjSlabBF.toFixed(2)+' bf usable</span>':rawSlabBF.toFixed(2)+' bf');
+    if(tcEl) tcEl.textContent='$'+rawSlabCost.toFixed(2);
   }
   const seEl=document.getElementById('ssbf-'+sid), scEl=document.getElementById('ssc-'+sid);
   if(seEl) seEl.textContent=slabSBF(s).toFixed(2)+' bf';
@@ -2721,8 +2731,8 @@ function renderSlabSpecies(){
     const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
     const slabWasteWrap=document.createElement('div');slabWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
-    slabWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabfield="species-waste" value="${s.waste||''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    slabWasteWrap.querySelector('input').addEventListener('change',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshSlabNums(s.id,t.id);});saveSession();});
+    slabWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabfield="species-waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
+    slabWasteWrap.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshSlabNums(s.id,t.id);});saveSession();});
     atb.appendChild(slabWasteWrap);
     ssContent.appendChild(atb);
 
@@ -2928,8 +2938,9 @@ function refreshSG(mid){
   const el=document.getElementById('sg-line-'+mid);
   const waste=parseFloat(m.waste)||0;
   const qtyAdj=waste>0?m.qty*(1-waste/100):m.qty;
-  if(el) el.textContent='$'+(m.price*qtyAdj).toFixed(2)+(waste>0?' ('+qtyAdj.toFixed(2)+' usable, -'+waste+'%)':'');
-  let t=0;sgMaterials.forEach(x=>{const w=parseFloat(x.waste)||0;const qa=w>0?x.qty*(1-w/100):x.qty;t+=x.price*qa;});
+  const rawCostSG=m.price*m.qty;
+  if(el) el.textContent='$'+rawCostSG.toFixed(2)+(waste>0?' → '+qtyAdj.toFixed(2)+' sheets usable':'');
+  let t=0;sgMaterials.forEach(x=>{t+=x.price*x.qty;});
   const tot=document.getElementById('sg-total');
   if(tot) tot.textContent='Total: $'+t.toFixed(2);
   updateTotals();saveSession();
@@ -3103,7 +3114,7 @@ function renderSG(){
     const sgCardWasteRow=document.createElement('div');
     sgCardWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
     sgCardWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="0" value="${m.waste||''}" /><span class="waste-suffix">%</span></div>`;
-    sgCardWasteRow.querySelector('input').addEventListener('change',e=>{m.waste=parseFloat(e.target.value)||0;refreshSG(m.id);saveSession();});
+    sgCardWasteRow.querySelector('input').addEventListener('input',e=>{m.waste=parseFloat(e.target.value)||0;refreshSG(m.id);saveSession();});
     card.appendChild(sgCardWasteRow);
 
     // Shared collapse logic
