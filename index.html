@@ -1040,11 +1040,26 @@ function refreshNums(sid,tid){
     const adjBF=waste>0?rawBF*(1-waste/100):rawBF;
     const rawCost=rawBF*(parseFloat(t.price)||0);
     const te=document.getElementById('tbf-'+tid),tce=document.getElementById('tc-'+tid);
-    if(te)te.innerHTML=(waste>0?'<span style="color:inherit">'+rawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjBF.toFixed(2)+' bf usable</span>':rawBF.toFixed(2)+' bf');
+    if(te)te.innerHTML='<span style="color:inherit">'+rawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjBF.toFixed(2)+' bf usable</span>';
     if(tce)tce.textContent='$'+rawCost.toFixed(2);
   }
+  // Update ALL thickness blocks with current waste display
+  s.thicknesses.forEach(th=>{
+    if(th.id===tid) return; // already updated above
+    const thWaste=parseFloat(th.waste)||0;
+    const thRawBF=th.boards.reduce((sum,b)=>sum+calcBF(th.tNum,b.lft,b.lin,b.w),0);
+    const thAdjBF=thWaste>0?thRawBF*(1-thWaste/100):thRawBF;
+    const thRawCost=thRawBF*(parseFloat(th.price)||0);
+    const thTe=document.getElementById('tbf-'+th.id),thTce=document.getElementById('tc-'+th.id);
+    if(thTe)thTe.innerHTML='<span style="color:inherit">'+thRawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+thAdjBF.toFixed(2)+' bf usable</span>';
+    if(thTce)thTce.textContent='$'+thRawCost.toFixed(2);
+  });
+  // Species footer — show total raw and total usable
+  const speciesWaste=parseFloat(s.waste)||0;
+  const speciesRawBF=s.thicknesses.reduce((a,th)=>a+th.boards.reduce((b,bd)=>b+calcBF(th.tNum,bd.lft,bd.lin,bd.w),0),0);
+  const speciesAdjBF=speciesWaste>0?speciesRawBF*(1-speciesWaste/100):speciesRawBF;
   const se=document.getElementById('sbf-'+sid),sce=document.getElementById('sc-'+sid);
-  if(se)se.textContent=s.thicknesses.reduce((a,t)=>a+t.boards.reduce((b,bd)=>b+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0).toFixed(2)+' bf';
+  if(se)se.innerHTML='<span style="color:inherit">'+speciesRawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+speciesAdjBF.toFixed(2)+' bf usable</span>';
   if(sce)sce.textContent='$'+sCost(s).toFixed(2);
   updateTotals();
 }
@@ -1292,7 +1307,7 @@ function render(){
       tContent.appendChild(bAct);
 
       const tFoot=document.createElement('div');tFoot.className='t-footer';
-      tFoot.innerHTML=`<span>Total: <strong id="tbf-${t.id}">${tBF(t).toFixed(2)} bf</strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>`;
+      tFoot.innerHTML=`<span>Total: <strong id="tbf-${t.id}"><span style="color:inherit">${tBF(t).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(t.waste>0?tBF(t)*(1-t.waste/100):tBF(t)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>`;
       tContent.appendChild(tFoot);
       blk.appendChild(tContent);
 
@@ -1341,7 +1356,7 @@ function render(){
     atb.appendChild(bfWasteWrap);
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
-    sf.innerHTML=`<span>Total: <strong id="sbf-${s.id}">${sBF(s).toFixed(2)} bf</strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span>`;
+    sf.innerHTML=`<span>Total: <strong id="sbf-${s.id}"><span style="color:inherit">${sBF(s).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(s.waste>0?sBF(s)*(1-s.waste/100):sBF(s)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span>`;
     sContent.appendChild(sf);
     card.appendChild(sContent);
     list.appendChild(card);
@@ -2052,10 +2067,12 @@ function refreshLFNums(sid){
   const rawLF=lfSTotal(s);
   const adjLF=lfWaste>0?rawLF*(1-lfWaste/100):rawLF;
   const rawLFCost=rawLF*(parseFloat(s.price)||0);
-  if(stEl) stEl.innerHTML=(lfWaste>0?'<span style="color:inherit">'+rawLF.toFixed(2)+' lf</span> → <span style="color:#2d6a2d">'+adjLF.toFixed(2)+' lf usable</span>':rawLF.toFixed(2)+' lf');
+  if(stEl) stEl.innerHTML='<span style="color:inherit">'+rawLF.toFixed(2)+' lf</span> → <span style="color:#2d6a2d">'+adjLF.toFixed(2)+' lf usable</span>';
   if(scEl) scEl.textContent='$'+rawLFCost.toFixed(2);
   updateLFTotals();
 }
+
+
 
 function renderLFSpeciesNoScroll(){
   const scrollY=window.scrollY;
@@ -2194,7 +2211,7 @@ function renderLFSpecies(){
 
     // Running total inside card
     const tFoot=document.createElement('div');tFoot.className='t-footer';
-    tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)} lf</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
+    tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}"><span style="color:inherit">${lfSTotal(s).toFixed(2)} lf</span> → <span style="color:#2d6a2d">${(s.waste>0?lfSTotal(s)*(1-s.waste/100):lfSTotal(s)).toFixed(2)} lf usable</span></strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
     tContent.appendChild(tFoot);
     blk.appendChild(tContent);
 
@@ -2446,11 +2463,26 @@ function refreshSlabNums(sid,tid){
     const adjSlabBF=slabW>0?rawSlabBF*(1-slabW/100):rawSlabBF;
     const rawSlabCost=rawSlabBF*(parseFloat(t.price)||0);
     const ttEl=document.getElementById('stbf-'+tid), tcEl=document.getElementById('stc-'+tid);
-    if(ttEl) ttEl.innerHTML=(slabW>0?'<span style="color:inherit">'+rawSlabBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjSlabBF.toFixed(2)+' bf usable</span>':rawSlabBF.toFixed(2)+' bf');
+    if(ttEl) ttEl.innerHTML='<span style="color:inherit">'+rawSlabBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjSlabBF.toFixed(2)+' bf usable</span>';
     if(tcEl) tcEl.textContent='$'+rawSlabCost.toFixed(2);
   }
+  // Update ALL slab thickness blocks
+  s.thicknesses.forEach(th=>{
+    if(th.id===tid) return;
+    const thW=parseFloat(th.waste)||0;
+    const thRaw=slabTBF(th);
+    const thAdj=thW>0?thRaw*(1-thW/100):thRaw;
+    const thCost=thRaw*(parseFloat(th.price)||0);
+    const thTt=document.getElementById('stbf-'+th.id),thTc=document.getElementById('stc-'+th.id);
+    if(thTt)thTt.innerHTML='<span style="color:inherit">'+thRaw.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+thAdj.toFixed(2)+' bf usable</span>';
+    if(thTc)thTc.textContent='$'+thCost.toFixed(2);
+  });
+  // Species footer
+  const slabSpeciesWaste=parseFloat(s.waste)||0;
+  const slabSpeciesRaw=slabSBF(s);
+  const slabSpeciesAdj=slabSpeciesWaste>0?slabSpeciesRaw*(1-slabSpeciesWaste/100):slabSpeciesRaw;
   const seEl=document.getElementById('ssbf-'+sid), scEl=document.getElementById('ssc-'+sid);
-  if(seEl) seEl.textContent=slabSBF(s).toFixed(2)+' bf';
+  if(seEl)seEl.innerHTML='<span style="color:inherit">'+slabSpeciesRaw.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+slabSpeciesAdj.toFixed(2)+' bf usable</span>';
   if(scEl) scEl.textContent='$'+slabSCost(s).toFixed(2);
   updateSlabTotals();
 }
@@ -2737,7 +2769,7 @@ function renderSlabSpecies(){
     ssContent.appendChild(atb);
 
     const sf=document.createElement('div'); sf.className='species-footer';
-    sf.innerHTML=`<span>Total: <strong id="ssbf-${s.id}">${slabSBF(s).toFixed(2)} bf</strong></span><span>Cost: <strong id="ssc-${s.id}">$${slabSCost(s).toFixed(2)}</strong></span>`;
+    sf.innerHTML=`<span>Total: <strong id="ssbf-${s.id}"><span style="color:inherit">${slabSBF(s).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(s.waste>0?slabSBF(s)*(1-s.waste/100):slabSBF(s)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="ssc-${s.id}">$${slabSCost(s).toFixed(2)}</strong></span>`;
     ssContent.appendChild(sf);
     card.appendChild(ssContent);
     list.appendChild(card);
