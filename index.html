@@ -178,7 +178,7 @@
     .edit-bar strong { color: #3a5c2e; flex: 1; font-size: 14px; }
     .b-result { font-size: 12px; color: var(--text2); font-weight: 600; padding: 2px 2px 8px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
     .b-result:last-child { border-bottom: none; }
-    .b-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .b-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; padding-top: 8px; border-top: 1px solid var(--border); }
     .t-footer {
       display: flex; flex-direction: column; gap: 2px;
       padding-top: 8px; border-top: 1px solid var(--border);
@@ -272,7 +272,7 @@
     .birds-eye-species-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
     .birds-eye-thick-label { font-size: 11px; color: var(--text2); margin: 4px 0 3px; font-style: italic; }
     .birds-eye-row span:last-child { font-weight: 600; color: var(--text); white-space: nowrap; margin-left: 8px; }
-    .actions { margin: 12px 0; display: flex; justify-content: flex-end; }
+    .actions { margin: 12px 0; display: flex; justify-content: center; }
     .landing {
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-start;
@@ -549,8 +549,8 @@
         <div class="waste-input-wrap" style="width:auto;"><input type="number" id="sg-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
       </div>
       <div id="sg-list"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:6px;"><button class="btn btn-sm" id="add-sg-material">+ Add Sheet</button></div>
-      <div id="sg-total-static" style="font-size:13px;font-weight:700;color:var(--text);text-align:right;margin-top:4px;"></div>
+      <div style="display:flex;justify-content:center;margin-top:6px;"><button class="btn btn-sm" id="add-sg-material">+ Add Sheet</button></div>
+      <div id="sg-total-static" style="font-size:13px;font-weight:700;color:var(--text);text-align:right;margin-top:6px;">Total: $0.00</div>
     </div>
   </div>
 
@@ -1526,7 +1526,7 @@ tToggleHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:
       sContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;';
+    const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add Thickness</button>`;
     // Waste row inline
 
@@ -2441,7 +2441,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
 
     // Actions
     const bAct=document.createElement('div');bAct.className='b-actions';bAct.style.marginTop='12px';bAct.style.paddingTop='8px';bAct.style.borderTop='1px solid var(--border)';
-    bAct.style.justifyContent='flex-end';
+    bAct.style.justifyContent='center';
     bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Add Board</button>
       <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Board</button>`;
     tContent.appendChild(bAct);
@@ -3024,7 +3024,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
 
       // + Slab button inside the thickness card
       const addSlabBtn=document.createElement('div');addSlabBtn.style.marginTop='0';
-      addSlabBtn.style.display='flex';addSlabBtn.style.justifyContent='flex-end';
+      addSlabBtn.style.display='flex';addSlabBtn.style.justifyContent='center';
       addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Add Slab</button>`;
       stContent.appendChild(addSlabBtn);
 
@@ -3041,7 +3041,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
       ssContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;';
+    const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
     ssContent.appendChild(atb);
 
@@ -3263,7 +3263,7 @@ function refreshSG(mid){
   const tot=document.getElementById('sg-total');
   if(tot) tot.textContent='Total: $'+t.toFixed(2);
   const totStatic=document.getElementById('sg-total-static');
-  if(totStatic) totStatic.textContent=t>0?'Total: $'+t.toFixed(2):'';
+  if(totStatic) totStatic.textContent='Total: $'+t.toFixed(2);
   updateTotals();saveSession();
 }
 
@@ -3444,13 +3444,9 @@ function renderSG(){
     list.appendChild(card);
   });
 
-  // Section total
-  const totDiv=document.createElement('div');
-  totDiv.id='sg-total';
-  totDiv.style.cssText='font-size:13px;font-weight:700;color:var(--text);text-align:right;margin-top:4px;';
-  let t=0;sgMaterials.forEach(m=>t+=m.price*m.qty);
-  totDiv.textContent='Total: $'+t.toFixed(2);
-  list.appendChild(totDiv);
+  // sg-total placeholder for refreshSG compatibility
+  let _sgTotEl=document.getElementById('sg-total');
+  if(!_sgTotEl){_sgTotEl=document.createElement('div');_sgTotEl.id='sg-total';_sgTotEl.style.display='none';list.appendChild(_sgTotEl);}
 }
 // ── END SHEET GOODS ───────────────────────────────────────────────
 
