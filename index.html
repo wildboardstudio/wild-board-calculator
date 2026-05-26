@@ -98,10 +98,9 @@
     .species-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .species-header .title-wrap { flex: 1; min-width: 0; }
     .species-footer {
-      display: flex; justify-content: space-between;
+      display: flex; flex-direction: column; gap: 2px;
       padding-top: 10px; border-top: 1px solid var(--border);
       margin-top: 10px; font-size: 13px; color: var(--text2);
-      flex-wrap: wrap; gap: 4px;
     }
     .species-footer strong { color: var(--text); }
 
@@ -110,7 +109,7 @@
       padding: 12px; padding-top: 10px; margin-bottom: 10px; border: 1px solid var(--border2);
     }
     .t-corner-btns {
-      display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; padding-top: 2px;
+      display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; padding-top: 2px; margin-left: auto;
     }
     .t-meta {
       display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
@@ -181,7 +180,7 @@
     .b-result:last-child { border-bottom: none; }
     .b-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     .t-footer {
-      display: flex; justify-content: space-between;
+      display: flex; flex-direction: column; gap: 2px;
       padding-top: 8px; border-top: 1px solid var(--border);
       margin-top: 8px; font-size: 13px; color: var(--text2);
     }
@@ -1040,7 +1039,8 @@ function refreshNums(sid,tid){
     const adjBF=waste>0?rawBF*(1-waste/100):rawBF;
     const rawCost=rawBF*(parseFloat(t.price)||0);
     const te=document.getElementById('tbf-'+tid),tce=document.getElementById('tc-'+tid);
-    if(te)te.innerHTML='<span style="color:inherit">'+rawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjBF.toFixed(2)+' bf usable</span>';
+    if(te)te.textContent=rawBF.toFixed(2);
+    const teU=document.getElementById('tbf-usable-'+tid);if(teU){teU.textContent=adjBF.toFixed(2);teU.style.opacity=waste>0?'1':'0.25';}
     if(tce)tce.textContent='$'+rawCost.toFixed(2);
   }
   // Update ALL thickness blocks with current waste display
@@ -1051,7 +1051,8 @@ function refreshNums(sid,tid){
     const thAdjBF=thWaste>0?thRawBF*(1-thWaste/100):thRawBF;
     const thRawCost=thRawBF*(parseFloat(th.price)||0);
     const thTe=document.getElementById('tbf-'+th.id),thTce=document.getElementById('tc-'+th.id);
-    if(thTe)thTe.innerHTML='<span style="color:inherit">'+thRawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+thAdjBF.toFixed(2)+' bf usable</span>';
+    if(thTe)thTe.textContent=thRawBF.toFixed(2);
+    const thTeU=document.getElementById('tbf-usable-'+th.id);if(thTeU){thTeU.textContent=thAdjBF.toFixed(2);thTeU.style.opacity=thWaste>0?'1':'0.25';}
     if(thTce)thTce.textContent='$'+thRawCost.toFixed(2);
   });
   // Species footer — show total raw and total usable
@@ -1059,7 +1060,8 @@ function refreshNums(sid,tid){
   const speciesRawBF=s.thicknesses.reduce((a,th)=>a+th.boards.reduce((b,bd)=>b+calcBF(th.tNum,bd.lft,bd.lin,bd.w),0),0);
   const speciesAdjBF=speciesWaste>0?speciesRawBF*(1-speciesWaste/100):speciesRawBF;
   const se=document.getElementById('sbf-'+sid),sce=document.getElementById('sc-'+sid);
-  if(se)se.innerHTML='<span style="color:inherit">'+speciesRawBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+speciesAdjBF.toFixed(2)+' bf usable</span>';
+  if(se)se.textContent=speciesRawBF.toFixed(2);
+  const seU=document.getElementById('sbf-usable-'+sid);if(seU){seU.textContent=speciesAdjBF.toFixed(2);seU.style.opacity=speciesWaste>0?'1':'0.25';}
   if(sce)sce.textContent='$'+sCost(s).toFixed(2);
   updateTotals();
 }
@@ -1163,6 +1165,8 @@ function render(){
     const hdr=document.createElement('div');hdr.className='species-header';
     const tw=makeTitle({ph:'Tap to add species / variety',val:s.name,onSave:v=>{s.name=v;updateTotals();}});
     tw.className='title-wrap';
+    const spLabel=document.createElement('span');spLabel.textContent='Species';spLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
+    hdr.appendChild(spLabel);
     // Lock title when collapsed
     const titleEl=tw.querySelector('.ititle');
     if(titleEl){ 
@@ -1263,6 +1267,10 @@ function render(){
           const w2=(parseFloat(b2.w)||0)+'"';
           sumHtml2+=`<div class="t-block-summary-row"><span>${boardName(i2,tot2)} · ${l2} × ${w2}</span><span>${bf2.toFixed(2)} bf · $${c2.toFixed(2)}</span></div>`;
         });
+        const tRaw2=t.boards.reduce((a,b2)=>a+calcBF(t.tNum,b2.lft,b2.lin,b2.w),0);
+        const tAdj2=t.waste>0?tRaw2*(1-t.waste/100):tRaw2;
+        const tCost2c=tRaw2*(parseFloat(t.price)||0);
+sumHtml2+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${tCost2c.toFixed(2)}</strong></span></span></div>`;
         sumHtml2+='</div>';
         tSummary.innerHTML=sumHtml2;
       }
@@ -1307,7 +1315,7 @@ function render(){
       tContent.appendChild(bAct);
 
       const tFoot=document.createElement('div');tFoot.className='t-footer';
-      tFoot.innerHTML=`<span>Total: <strong id="tbf-${t.id}"><span style="color:inherit">${tBF(t).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(t.waste>0?tBF(t)*(1-t.waste/100):tBF(t)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span>`;
+      tFoot.innerHTML=`<span>Total bf: <strong id="tbf-${t.id}">${tBF(t).toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="tbf-usable-${t.id}" style="color:#2d6a2d;opacity:${t.waste>0?1:0.25}">${(t.waste>0?tBF(t)*(1-t.waste/100):tBF(t)).toFixed(2)}</strong></span><span>Cost: <strong id="tc-${t.id}">$${tCost(t).toFixed(2)}</strong></span></span>`;
       tContent.appendChild(tFoot);
       blk.appendChild(tContent);
 
@@ -1337,7 +1345,20 @@ function render(){
           const tBF2=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
           const tCost2=t.boards.reduce((s,b)=>s+calcCost(t.tNum,b.lft,b.lin,b.w,t.price),0);
           const tot2b=t.boards.length;
-          tSummary.innerHTML=`<div style="font-size:12px;color:var(--text2);padding:4px 2px 8px;">${tot2b} board${tot2b!==1?'s':''} &nbsp;·&nbsp; <strong>${tBF2.toFixed(4)} bf</strong> &nbsp;·&nbsp; <strong>$${tCost2.toFixed(2)}</strong></div>`;
+          const tRawT=t.boards.reduce((a,b2)=>a+calcBF(t.tNum,b2.lft,b2.lin,b2.w),0);
+          const tAdjT=t.waste>0?tRawT*(1-t.waste/100):tRawT;
+          let tToggleHtml='<div class="t-block-summary">';
+          t.boards.forEach((b2,i2)=>{
+            const bf2=calcBF(t.tNum,b2.lft,b2.lin,b2.w);if(bf2<=0)return;
+            const c2=calcCost(t.tNum,b2.lft,b2.lin,b2.w,t.price);
+            const l2=(parseFloat(b2.lft)||0)+"' "+(parseFloat(b2.lin)||0)+'"';
+            const w2=(parseFloat(b2.w)||0)+'"';
+            tToggleHtml+=`<div class="t-block-summary-row"><span>${boardName(i2,tot2b)} · ${l2} × ${w2}</span><span>${bf2.toFixed(2)} bf · $${c2.toFixed(2)}</span></div>`;
+          });
+          const tCostTc=tRawT*(parseFloat(t.price)||0);
+tToggleHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${tCostTc.toFixed(2)}</strong></span></span></div>`;
+          tToggleHtml+='</div>';
+          tSummary.innerHTML=tToggleHtml;
           tSummary.classList.remove('t-block-collapsed');
         } else {
           tSummary.innerHTML='';tSummary.classList.add('t-block-collapsed');
@@ -1356,7 +1377,7 @@ function render(){
     atb.appendChild(bfWasteWrap);
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
-    sf.innerHTML=`<span>Total: <strong id="sbf-${s.id}"><span style="color:inherit">${sBF(s).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(s.waste>0?sBF(s)*(1-s.waste/100):sBF(s)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span>`;
+    sf.innerHTML=`<span>Total bf: <strong id="sbf-${s.id}">${sBF(s).toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="sbf-usable-${s.id}" style="color:#2d6a2d;opacity:${s.waste>0?1:0.25}">${(s.waste>0?sBF(s)*(1-s.waste/100):sBF(s)).toFixed(2)}</strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span></span>`;
     sContent.appendChild(sf);
     card.appendChild(sContent);
     list.appendChild(card);
@@ -2067,7 +2088,8 @@ function refreshLFNums(sid){
   const rawLF=lfSTotal(s);
   const adjLF=lfWaste>0?rawLF*(1-lfWaste/100):rawLF;
   const rawLFCost=rawLF*(parseFloat(s.price)||0);
-  if(stEl) stEl.innerHTML='<span style="color:inherit">'+rawLF.toFixed(2)+' lf</span> → <span style="color:#2d6a2d">'+adjLF.toFixed(2)+' lf usable</span>';
+  if(stEl) stEl.textContent=rawLF.toFixed(2);
+  const stElU=document.getElementById('lf-stotal-usable-'+sid);if(stElU){stElU.textContent=adjLF.toFixed(2);stElU.style.opacity=lfWaste>0?'1':'0.25';}
   if(scEl) scEl.textContent='$'+rawLFCost.toFixed(2);
   updateLFTotals();
 }
@@ -2091,6 +2113,8 @@ function renderLFSpecies(){
     const hdr=document.createElement('div');hdr.className='species-header';
     const tw=makeTitle({ph:'Tap to add species / type',val:s.name,onSave:v=>{s.name=v;updateLFTotals();}});
     tw.className='title-wrap';
+    const lfSpLabel=document.createElement('span');lfSpLabel.textContent='Species';lfSpLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
+    hdr.appendChild(lfSpLabel);
     const titleEl=tw.querySelector('.ititle');
     if(titleEl&&s._collapsed) titleEl.classList.add('locked');
     hdr.appendChild(tw);
@@ -2167,6 +2191,10 @@ function renderLFSpecies(){
         const l2=(parseFloat(pc2.lft)||0)+"' "+(parseFloat(pc2.lin)||0)+'"';
         sumHtml+=`<div class="t-block-summary-row"><span>${pieceName(i2,s.pieces.length)} · ${l2}</span><span>${lf2.toFixed(2)} lf · $${c2.toFixed(2)}</span></div>`;
       });
+      const lfRaw2=lfSTotal(s);
+      const lfAdj2=s.waste>0?lfRaw2*(1-s.waste/100):lfRaw2;
+      const lfCost2c=lfRaw2*(parseFloat(s.price)||0);
+sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCost2c.toFixed(2)}</strong></span></span></div>`;
       sumHtml+='</div>';
       tSummary.innerHTML=sumHtml;
     }
@@ -2211,7 +2239,7 @@ function renderLFSpecies(){
 
     // Running total inside card
     const tFoot=document.createElement('div');tFoot.className='t-footer';
-    tFoot.innerHTML=`<span>Total: <strong id="lf-stotal-${s.id}"><span style="color:inherit">${lfSTotal(s).toFixed(2)} lf</span> → <span style="color:#2d6a2d">${(s.waste>0?lfSTotal(s)*(1-s.waste/100):lfSTotal(s)).toFixed(2)} lf usable</span></strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span>`;
+    tFoot.innerHTML=`<span>Total lf: <strong id="lf-stotal-${s.id}">${lfSTotal(s).toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable lf: <strong id="lf-stotal-usable-${s.id}" style="color:#2d6a2d;opacity:${s.waste>0?1:0.25}">${(s.waste>0?lfSTotal(s)*(1-s.waste/100):lfSTotal(s)).toFixed(2)}</strong></span><span>Cost: <strong id="lf-scost-${s.id}">$${lfSCost(s).toFixed(2)}</strong></span></span>`;
     tContent.appendChild(tFoot);
     blk.appendChild(tContent);
 
@@ -2243,6 +2271,10 @@ function renderLFSpecies(){
           const l2=(parseFloat(pc2.lft)||0)+"' "+(parseFloat(pc2.lin)||0)+'"';
           sumHtml+=`<div class="t-block-summary-row"><span>${pieceName(i2,s.pieces.length)} · ${l2}</span><span>${lf2.toFixed(2)} lf · $${c2.toFixed(2)}</span></div>`;
         });
+        const lfRawT=lfSTotal(s);
+        const lfAdjT=s.waste>0?lfRawT*(1-s.waste/100):lfRawT;
+        const lfCostTc=lfRawT*(parseFloat(s.price)||0);
+sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCostTc.toFixed(2)}</strong></span></span></div>`;
         sumHtml+='</div>';
         tSummary.innerHTML=sumHtml;tSummary.classList.remove('t-block-collapsed');
       } else {
@@ -2463,7 +2495,8 @@ function refreshSlabNums(sid,tid){
     const adjSlabBF=slabW>0?rawSlabBF*(1-slabW/100):rawSlabBF;
     const rawSlabCost=rawSlabBF*(parseFloat(t.price)||0);
     const ttEl=document.getElementById('stbf-'+tid), tcEl=document.getElementById('stc-'+tid);
-    if(ttEl) ttEl.innerHTML='<span style="color:inherit">'+rawSlabBF.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+adjSlabBF.toFixed(2)+' bf usable</span>';
+    if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2);
+    const ttElU=document.getElementById('stbf-usable-'+tid);if(ttElU){ttElU.textContent=adjSlabBF.toFixed(2);ttElU.style.opacity=slabW>0?'1':'0.25';}
     if(tcEl) tcEl.textContent='$'+rawSlabCost.toFixed(2);
   }
   // Update ALL slab thickness blocks
@@ -2474,7 +2507,8 @@ function refreshSlabNums(sid,tid){
     const thAdj=thW>0?thRaw*(1-thW/100):thRaw;
     const thCost=thRaw*(parseFloat(th.price)||0);
     const thTt=document.getElementById('stbf-'+th.id),thTc=document.getElementById('stc-'+th.id);
-    if(thTt)thTt.innerHTML='<span style="color:inherit">'+thRaw.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+thAdj.toFixed(2)+' bf usable</span>';
+    if(thTt)thTt.textContent=thRaw.toFixed(2);
+    const thTtU=document.getElementById('stbf-usable-'+th.id);if(thTtU){thTtU.textContent=thAdj.toFixed(2);thTtU.style.opacity=thW>0?'1':'0.25';}
     if(thTc)thTc.textContent='$'+thCost.toFixed(2);
   });
   // Species footer
@@ -2482,7 +2516,8 @@ function refreshSlabNums(sid,tid){
   const slabSpeciesRaw=slabSBF(s);
   const slabSpeciesAdj=slabSpeciesWaste>0?slabSpeciesRaw*(1-slabSpeciesWaste/100):slabSpeciesRaw;
   const seEl=document.getElementById('ssbf-'+sid), scEl=document.getElementById('ssc-'+sid);
-  if(seEl)seEl.innerHTML='<span style="color:inherit">'+slabSpeciesRaw.toFixed(2)+' bf</span> → <span style="color:#2d6a2d">'+slabSpeciesAdj.toFixed(2)+' bf usable</span>';
+  if(seEl)seEl.textContent=slabSpeciesRaw.toFixed(2);
+  const seElU=document.getElementById('ssbf-usable-'+sid);if(seElU){seElU.textContent=slabSpeciesAdj.toFixed(2);seElU.style.opacity=slabSpeciesWaste>0?'1':'0.25';}
   if(scEl) scEl.textContent='$'+slabSCost(s).toFixed(2);
   updateSlabTotals();
 }
@@ -2563,6 +2598,8 @@ function renderSlabSpecies(){
     tw.className='title-wrap';
     const stitleEl2=tw.querySelector('.ititle');
     if(stitleEl2&&s._collapsed) stitleEl2.classList.add('locked');
+    const slabSpLabel=document.createElement('span');slabSpLabel.textContent='Species';slabSpLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
+    hdr.appendChild(slabSpLabel);
     hdr.appendChild(tw);
     const ssRightBtns=document.createElement('div');ssRightBtns.className='species-right-btns';
     const sscBtn=document.createElement('button');sscBtn.className='species-collapse-btn';
@@ -2647,6 +2684,10 @@ function renderSlabSpecies(){
           const l2=(parseFloat(b2.lft)||0)+"' "+(parseFloat(b2.lin)||0)+'"';
           ssHtml+=`<div class="t-block-summary-row"><span>${slabBoardName(i2,stot2)} · ${l2} × avg ${avg.toFixed(1)}"</span><span>${bf2.toFixed(2)} bf · $${c2.toFixed(2)}</span></div>`;
         });
+        const stRaw2=slabTBF(t);
+        const stAdj2=t.waste>0?stRaw2*(1-t.waste/100):stRaw2;
+        const stCost2c=stRaw2*(parseFloat(t.price)||0);
+ssHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${stCost2c.toFixed(2)}</strong></span></span></div>`;
         ssHtml+='</div>';
         stSumEl.innerHTML=ssHtml;
       }
@@ -2691,6 +2732,10 @@ function renderSlabSpecies(){
               const lStr2=(parseFloat(b2.lft)||0)+"' "+(parseFloat(b2.lin)||0)+'"';
               sumHtml+=`<div class="t-block-summary-row"><span>${slabBoardName(i2,total2)} · ${lStr2} × avg ${avg.toFixed(1)}"</span><span>${bf2.toFixed(2)} bf · $${cost2.toFixed(2)}</span></div>`;
             });
+            const stRawT=slabTBF(t);
+            const stAdjT=t.waste>0?stRawT*(1-t.waste/100):stRawT;
+            const stCostTc=stRawT*(parseFloat(t.price)||0);
+sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${stCostTc.toFixed(2)}</strong></span></span></div>`;
             sumHtml+='</div>';
             sumEl.innerHTML=sumHtml;
             sumEl.classList.remove('t-block-collapsed');
@@ -2754,6 +2799,13 @@ function renderSlabSpecies(){
       addSlabBtn.innerHTML=`<button class="btn btn-sm" data-slabaction="add-slab" data-slabsid="${s.id}" data-slabtid="${t.id}">+ Slab</button>`;
       stContent.appendChild(addSlabBtn);
 
+      // Slab thickness footer
+      const stFoot=document.createElement('div');stFoot.className='t-footer';
+      const slabThW=parseFloat(t.waste)||0;
+      const slabThRaw=slabTBF(t);
+      const slabThAdj=slabThW>0?slabThRaw*(1-slabThW/100):slabThRaw;
+      stFoot.innerHTML=`<span>Total bf: <strong id="stbf-${t.id}">${slabThRaw.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="stbf-usable-${t.id}" style="color:#2d6a2d;opacity:${slabThW>0?1:0.25}">${slabThAdj.toFixed(2)}</strong></span><span>Cost: <strong id="stc-${t.id}">$${(slabThRaw*(parseFloat(t.price)||0)).toFixed(2)}</strong></span></span>`;
+      stContent.appendChild(stFoot);
 
       // Append blk to ssContent
       blk.appendChild(stContent);
@@ -2769,7 +2821,7 @@ function renderSlabSpecies(){
     ssContent.appendChild(atb);
 
     const sf=document.createElement('div'); sf.className='species-footer';
-    sf.innerHTML=`<span>Total: <strong id="ssbf-${s.id}"><span style="color:inherit">${slabSBF(s).toFixed(2)} bf</span> → <span style="color:#2d6a2d">${(s.waste>0?slabSBF(s)*(1-s.waste/100):slabSBF(s)).toFixed(2)} bf usable</span></strong></span><span>Cost: <strong id="ssc-${s.id}">$${slabSCost(s).toFixed(2)}</strong></span>`;
+    sf.innerHTML=`<span>Total bf: <strong id="ssbf-${s.id}">${slabSBF(s).toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="ssbf-usable-${s.id}" style="color:#2d6a2d;opacity:${s.waste>0?1:0.25}">${(s.waste>0?slabSBF(s)*(1-s.waste/100):slabSBF(s)).toFixed(2)}</strong></span><span>Cost: <strong id="ssc-${s.id}">$${slabSCost(s).toFixed(2)}</strong></span></span>`;
     ssContent.appendChild(sf);
     card.appendChild(ssContent);
     list.appendChild(card);
@@ -3000,6 +3052,8 @@ function renderSG(){
     const nameW=makeTitle({ph:'Tap to name material',val:m.name,onSave:v=>{m.name=v;saveSession();}});
     nameW.className='title-wrap';
     if(m._collapsed) nameW.querySelector('.ititle')&&nameW.querySelector('.ititle').classList.add('locked');
+    const sgMatLabel=document.createElement('span');sgMatLabel.textContent='Material';sgMatLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
+    hdr.appendChild(sgMatLabel);
     hdr.appendChild(nameW);
 
     // Right-side buttons
