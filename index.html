@@ -124,7 +124,7 @@
     .waste-wrap input { width: 36px; padding: 5px 2px; font-size: 12px; text-align: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); -webkit-appearance: none; }
     .waste-wrap .waste-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
     .waste-input-wrap { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); overflow: hidden; }
-    .waste-input-wrap input { border: none; background: transparent; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; flex: 1; min-width: 0; }
+    .waste-input-wrap input { border: none; background: transparent; padding: 6px 2px 6px 6px; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; -webkit-appearance: none; flex: 1; min-width: 60px; }
     .waste-input-wrap .waste-suffix { padding: 0 8px 0 2px; font-size: 13px; color: var(--text2); }
 
     .t-meta-field { font-size: 12px; color: var(--text2); white-space: nowrap; display: contents; }
@@ -502,6 +502,10 @@
   </div>
   <div class="tab-panel tab-theme-bf" id="tab-lumber">
     <div class="tab-panel-inner">
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;">Waste</span>
+        <div class="waste-input-wrap" style="width:auto;"><input type="number" id="bf-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
+      </div>
       <div id="species-list"></div>
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-species">+ Add Species</button>
@@ -510,6 +514,10 @@
   </div>
   <div class="tab-panel hidden tab-theme-lf" id="tab-lf">
     <div class="tab-panel-inner">
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;">Waste</span>
+        <div class="waste-input-wrap" style="width:auto;"><input type="number" id="lf-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
+      </div>
       <div id="lf-species-list"></div>
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-lf-species">+ Add Species</button>
@@ -519,6 +527,10 @@
 
   <div class="tab-panel hidden tab-theme-slab" id="tab-slab">
     <div class="tab-panel-inner">
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;">Waste</span>
+        <div class="waste-input-wrap" style="width:auto;"><input type="number" id="slab-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
+      </div>
       <div id="slab-species-list"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 2px 4px;font-size:13px;font-weight:600;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;">
         <span>Total</span><span id="t-slab-bf" style="font-weight:700;color:var(--text)">0.00 bf</span>
@@ -532,6 +544,10 @@
   <!-- Sheet Goods Tab -->
   <div class="tab-panel hidden tab-theme-sg" id="tab-sg">
     <div class="tab-panel-inner">
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;">Waste</span>
+        <div class="waste-input-wrap" style="width:auto;"><input type="number" id="sg-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
+      </div>
       <div id="sg-list"></div>
       <button class="btn btn-sm" id="add-sg-material" style="margin-top:6px;">+ Sheet</button>
     </div>
@@ -691,7 +707,7 @@
   <meta name="theme-color" content="#e0d8cc" />
   <script>
 
-let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null;
+let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null, bfWaste=0, lfWasteTab=0, slabWasteTab=0, sgWasteTab=0;
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 function appConfirm(msg, onYes, okLabel, okColor) {
@@ -1088,10 +1104,8 @@ function refreshNums(sid,tid){
       if(be)be.textContent=calcBF(t.tNum,b.lft,b.lin,b.w).toFixed(2)+' bf';
       if(ce)ce.textContent='$'+calcCost(t.tNum,b.lft,b.lin,b.w,t.price).toFixed(2);
     });
-    // Read waste live from DOM (species-level input) so multi-board refresh is always current
-    const wasteInputEl=document.querySelector(`[data-sid="${sid}"][data-field="species-waste"]`);
-    const waste=wasteInputEl?parseFloat(wasteInputEl.value)||0:parseFloat(t.waste)||0;
-    t.waste=waste; s.waste=waste; // keep data in sync
+    const waste=bfWaste;
+    t.waste=waste; s.waste=waste;
     const rawBF=t.boards.reduce((s,b)=>s+calcBF(t.tNum,b.lft,b.lin,b.w),0);
     const adjBF=waste>0?rawBF*(1-waste/100):rawBF;
     const rawCost=rawBF*(parseFloat(t.price)||0);
@@ -1224,6 +1238,31 @@ document.addEventListener('click',function(e){
 
 document.getElementById('add-species').addEventListener('click',addSpecies);
 const _addSG=document.getElementById('add-sg-material');if(_addSG)_addSG.addEventListener('click',addSGMaterial);
+
+// Tab-level waste inputs
+function applyTabWaste(tabWaste, speciesList, refreshFn, isLF){
+  const w=parseFloat(tabWaste)||0;
+  if(isLF){
+    if(typeof lfSpecies!=='undefined') lfSpecies.forEach(s=>{s.waste=w;refreshLFNums(s.id);});
+  } else if(speciesList===slabSpecies){
+    speciesList.forEach(s=>{s.waste=w;s.thicknesses.forEach(t=>{t.waste=w;refreshSlabNums(s.id,t.id);});});
+  } else {
+    speciesList.forEach(s=>{s.waste=w;s.thicknesses.forEach(t=>{t.waste=w;refreshNums(s.id,t.id);});});
+  }
+  saveSession();
+}
+
+const _bfWasteInput=document.getElementById('bf-waste-input');
+if(_bfWasteInput)_bfWasteInput.addEventListener('input',e=>{bfWaste=parseFloat(e.target.value)||0;applyTabWaste(bfWaste,species,refreshNums,false);});
+
+const _lfWasteInput=document.getElementById('lf-waste-input');
+if(_lfWasteInput)_lfWasteInput.addEventListener('input',e=>{lfWasteTab=parseFloat(e.target.value)||0;applyTabWaste(lfWasteTab,null,refreshLFNums,true);});
+
+const _slabWasteInput=document.getElementById('slab-waste-input');
+if(_slabWasteInput)_slabWasteInput.addEventListener('input',e=>{slabWasteTab=parseFloat(e.target.value)||0;applyTabWaste(slabWasteTab,slabSpecies,refreshSlabNums,false);});
+
+const _sgWasteInput=document.getElementById('sg-waste-input');
+if(_sgWasteInput)_sgWasteInput.addEventListener('input',e=>{sgWasteTab=parseFloat(e.target.value)||0;sgMaterials.forEach(m=>{m.waste=sgWasteTab;refreshSG(m.id);});saveSession();});
 
 // --- Render calculator ---
 function renderNoScroll(){
@@ -1446,10 +1485,7 @@ tToggleHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:
     const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add Thickness</button>`;
     // Waste row inline
-    const bfWasteWrap=document.createElement('div');bfWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
-    bfWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-sid="${s.id}" data-field="species-waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    bfWasteWrap.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshNums(s.id,t.id);});saveSession();});
-    atb.appendChild(bfWasteWrap);
+
     sContent.appendChild(atb);
     const sf=document.createElement('div');sf.className='species-footer';
     sf.innerHTML=`<span>Total bf: <strong id="sbf-${s.id}">${sBF(s).toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="sbf-usable-${s.id}" style="color:#2d6a2d;opacity:${s.waste>0?1:0.25}">${(s.waste>0?sBF(s)*(1-s.waste/100):sBF(s)).toFixed(2)}</strong></span><span>Cost: <strong id="sc-${s.id}">$${sCost(s).toFixed(2)}</strong></span></span>`;
@@ -2157,8 +2193,7 @@ function refreshLFNums(sid){
     if(lcEl) lcEl.textContent='$'+cost.toFixed(2);
   });
   const stEl=document.getElementById('lf-stotal-'+sid),scEl=document.getElementById('lf-scost-'+sid);
-  const lfWasteEl=document.querySelector(`[data-lfsid="${sid}"][data-lffield="waste"]`);
-  const lfWaste=lfWasteEl?parseFloat(lfWasteEl.value)||0:parseFloat(s.waste)||0;
+  const lfWaste=lfWasteTab;
   s.waste=lfWaste;
   const rawLF=lfSTotal(s);
   const adjLF=lfWaste>0?rawLF*(1-lfWaste/100):rawLF;
@@ -2372,10 +2407,6 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
 
     sContent.appendChild(blk);
     // Waste row in card 2
-    const lfWasteRow=document.createElement('div');lfWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
-    lfWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-lfsid="${s.id}" data-lffield="waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    lfWasteRow.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;saveSession();});
-    sContent.appendChild(lfWasteRow);
     card.appendChild(sContent);
     list.appendChild(card);
   });
@@ -2443,7 +2474,8 @@ function saveSession(){
       sgMaterials:JSON.parse(JSON.stringify(sgMaterials)),
       projName:projName,
       budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:'',
-      calcHistory:[...calcHistory]
+      calcHistory:[...calcHistory],
+      bfWaste:bfWaste,lfWasteTab:lfWasteTab,slabWasteTab:slabWasteTab,sgWasteTab:sgWasteTab
     };
     localStorage.setItem('wbc_session', JSON.stringify(session));
   }catch(e){}
@@ -2479,6 +2511,11 @@ function loadSession(){
         calcHistory=session.calcHistory;
         calcRender();
       }
+      // Restore tab waste
+      if(session.bfWaste){bfWaste=session.bfWaste;const el=document.getElementById('bf-waste-input');if(el)el.value=bfWaste;}
+      if(session.lfWasteTab){lfWasteTab=session.lfWasteTab;const el=document.getElementById('lf-waste-input');if(el)el.value=lfWasteTab;}
+      if(session.slabWasteTab){slabWasteTab=session.slabWasteTab;const el=document.getElementById('slab-waste-input');if(el)el.value=slabWasteTab;}
+      if(session.sgWasteTab){sgWasteTab=session.sgWasteTab;const el=document.getElementById('sg-waste-input');if(el)el.value=sgWasteTab;}
       return true;
     }
     return false;
@@ -2576,8 +2613,7 @@ function refreshSlabNums(sid,tid){
       if(bfEl) bfEl.textContent=calcSlabBF(t.tNum,b.lft,b.lin,b.measurements).toFixed(2)+' bf';
       if(bcEl) bcEl.textContent='$'+calcSlabCost(t.tNum,b.lft,b.lin,b.measurements,t.price).toFixed(2);
     });
-    const slabWasteEl=document.querySelector(`[data-slabsid="${sid}"][data-slabfield="species-waste"]`);
-    const slabW=slabWasteEl?parseFloat(slabWasteEl.value)||0:parseFloat(t.waste)||0;
+    const slabW=slabWasteTab;
     t.waste=slabW; s.waste=slabW;
     const rawSlabBF=slabTBF(t);
     const adjSlabBF=slabW>0?rawSlabBF*(1-slabW/100):rawSlabBF;
@@ -2920,10 +2956,6 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
 
     const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
-    const slabWasteWrap=document.createElement('div');slabWasteWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-left:auto;';
-    slabWasteWrap.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" data-slabsid="${s.id}" data-slabfield="species-waste" value="${s.waste?s.waste:''}" placeholder="0" /><span class="waste-suffix">%</span></div>`;
-    slabWasteWrap.querySelector('input').addEventListener('input',e=>{s.waste=parseFloat(e.target.value)||0;s.thicknesses.forEach(t=>{t.waste=s.waste;refreshSlabNums(s.id,t.id);});saveSession();});
-    atb.appendChild(slabWasteWrap);
     ssContent.appendChild(atb);
 
     const sf=document.createElement('div'); sf.className='species-footer';
@@ -3265,19 +3297,6 @@ function renderSG(){
     priceWrap.appendChild(pPrefix);priceWrap.appendChild(priceInput);
     content.appendChild(priceLabel);content.appendChild(priceWrap);
 
-    // Waste — col1: label, col2: waste-input-wrap
-    const wasteLabelSG=document.createElement('span');
-    wasteLabelSG.textContent='Waste';
-    wasteLabelSG.style.cssText='font-size:12px;color:var(--text2);font-weight:400;white-space:nowrap;align-self:center;';
-    const wasteWrapSG=document.createElement('div');wasteWrapSG.className='waste-input-wrap';
-    const wasteInputSG=document.createElement('input');
-    wasteInputSG.type='number';wasteInputSG.min='0';wasteInputSG.max='100';wasteInputSG.step='1';
-    wasteInputSG.placeholder='0';wasteInputSG.value=m.waste||'';
-    wasteInputSG.addEventListener('input',()=>{m.waste=parseFloat(wasteInputSG.value)||0;refreshSG(m.id);});
-    const wasteSuffixSG=document.createElement('span');wasteSuffixSG.className='waste-suffix';wasteSuffixSG.textContent='%';
-    wasteWrapSG.appendChild(wasteInputSG);wasteWrapSG.appendChild(wasteSuffixSG);
-    content.appendChild(wasteLabelSG);content.appendChild(wasteWrapSG);
-
     // Qty — col1: label, col2: input
     const qtyLabel=document.createElement('span');
     qtyLabel.style.cssText='font-size:13px;color:var(--text2);white-space:nowrap;align-self:center;';
@@ -3451,7 +3470,8 @@ function _buildSnapshot(){
       lfSpecies:lfSpecies,
       sgMaterials:sgMaterials,
       projName:projName,
-      budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:''
+      budget:document.getElementById('budget-input')?document.getElementById('budget-input').value:'',
+      bfWaste:bfWaste,lfWasteTab:lfWasteTab,slabWasteTab:slabWasteTab,sgWasteTab:sgWasteTab
     });
   }catch(e){return null;}
 }
