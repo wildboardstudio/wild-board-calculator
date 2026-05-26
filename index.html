@@ -413,7 +413,7 @@
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; position: fixed;
       background: #c4b8a8; border-top: 1px solid var(--border2); box-shadow: none;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px calc(20px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+      padding: 10px calc(28px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(28px + env(safe-area-inset-left));
       gap: 12px;
     }
     .sticky-bar .sb-total { display: flex; flex-direction: column; gap: 1px; }
@@ -575,23 +575,23 @@
 
   <!-- Sticky bottom bar -->
   <div class="sticky-bar" id="sticky-bar" style="display:none;">
-    <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;">
+    <div style="display:flex;flex-direction:column;gap:1px;">
       <span class="sb-label">Subtotal</span>
       <span class="sb-value" id="t-cost">$0.00</span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
       <span class="sb-label">Budget</span>
       <div style="display:flex;align-items:center;gap:2px;">
-        <span class="sb-value" style="font-size:14px;">$</span>
-        <input type="number" id="budget-input" inputmode="decimal" placeholder="—" min="0" step="10"
-          style="font-size:14px;font-weight:700;color:var(--text);background:transparent;border:none;outline:none;-webkit-appearance:none;width:80px;padding:0;" />
+        <span style="font-size:13px;color:var(--text2);font-weight:600;">$</span>
+        <input type="number" id="budget-input" inputmode="decimal" placeholder="Optional" min="0" step="10"
+          style="font-size:13px;font-weight:600;color:var(--text);background:transparent;border:none;border-bottom:1px solid rgba(0,0,0,0.3);outline:none;-webkit-appearance:none;width:76px;padding:0 0 1px;" />
       </div>
-      <span id="budget-indicator" style="font-size:10px;font-weight:700;display:none;"></span>
+      <span id="budget-indicator" style="font-size:9px;font-weight:700;display:none;"></span>
     </div>
-    <div id="summary-trigger" style="display:flex;flex-direction:column;gap:1px;cursor:pointer;flex-shrink:0;">
+    <div id="summary-trigger" style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;cursor:pointer;">
       <span class="sb-label" id="summary-trigger-label">View List <span class="chev-icon up"></span></span>
     </div>
-    <span class="save-confirm" id="save-confirmation" style="position:absolute;top:6px;right:calc(20px + env(safe-area-inset-right));font-size:11px;color:var(--green);font-weight:600;opacity:0;transition:opacity 0.3s;"></span>
+    <span class="save-confirm" id="save-confirmation" style="position:absolute;top:6px;right:calc(28px + env(safe-area-inset-right));font-size:11px;color:var(--green);font-weight:600;opacity:0;transition:opacity 0.3s;"></span>
   </div>
 
 
