@@ -67,7 +67,7 @@
       color: var(--red); font-size: 20px; font-weight: 400;
       padding: 0 4px; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      min-width: 28px; min-height: 40px; flex-shrink: 0;
+      min-width: 28px; min-height: 40px; flex-shrink: 0; align-self: center;
     }
     .del-btn:active { opacity: 0.5; }
 
@@ -109,7 +109,7 @@
       padding: 12px; padding-top: 10px; margin-bottom: 10px; border: 1px solid var(--border2);
     }
     .t-corner-btns {
-      display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; padding-top: 2px; margin-left: auto;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto;
     }
     .t-meta {
       display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
@@ -245,12 +245,17 @@
     .t-block-header { cursor: pointer; user-select: none; }
     .t-meta-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; align-items: center; flex: 1; min-width: 0; }
     .t-meta-row { display: contents; }
-    .species-collapse-btn { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg3); cursor: pointer; flex-shrink: 0; white-space: nowrap; min-width: 36px; text-align: center; }
-    .species-collapse-btn:active { opacity: 0.7; }
+    .species-collapse-btn { display: flex; align-items: center; justify-content: center; padding: 8px; border: none; border-radius: 50%; background: transparent; cursor: pointer; flex-shrink: 0; width: 36px; height: 36px; }
+    .species-collapse-btn:active { background: var(--border); }
+    .chev-icon { display: inline-block; width: 11px; height: 11px; border-right: 2.5px solid var(--text2); border-bottom: 2.5px solid var(--text2); transition: transform 0.2s ease; }
+    .chev-icon.down { transform: rotate(45deg) translateY(-2px); }
+    .chev-icon.up { transform: rotate(-135deg) translateY(2px); }
+    .t-collapse-indicator { display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 4px; align-self: center; }
+    .t-collapse-indicator .chev-icon { border-color: var(--text2); }
     .species-right-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
     .t-block-header:active { opacity: 0.7; }
     .t-block-collapsed { display: none; }
-    .t-collapse-indicator { font-size: 14px; font-weight: 600; color: var(--text2); padding: 4px 10px; border: 1px solid var(--border2); border-radius: var(--radius); flex-shrink: 0; background: var(--bg3); cursor: pointer; min-width: 36px; text-align: center; margin-left: auto; }
+
     .t-block-summary { font-size: 12px; color: var(--text2); padding: 6px 0 2px; }
     .t-block-summary-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
     .t-block-summary-row:last-child { border-bottom: none; }
@@ -487,13 +492,8 @@
 
   <div id="edit-bar" style="display:none" class="edit-bar"><strong id="edit-label">Editing list</strong><button class="btn btn-sm" id="cancel-edit">Cancel</button></div>
 
-  <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;">
-    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">List Name</div>
-    <div id="proj-wrap" style="margin-bottom:12px;"></div>
-    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Budget</div>
-    <div class="budget-wrap" style="width:100%;max-width:100%;"><span class="budget-prefix">$</span><input type="number" id="budget-input" inputmode="decimal" placeholder="Optional" min="0" step="10" style="width:100%;" /></div>
-    <div class="budget-alert" id="budget-alert" style="margin-top:8px;margin-bottom:0;"></div>
-  </div>
+  <div id="proj-wrap" style="display:none;"></div>
+  <div class="budget-alert" id="budget-alert" style="margin-top:8px;margin-bottom:0;"></div>
   <div class="tabs">
     <button class="tab-btn active tab-lumber" id="tab-lumber-btn">Lumber<span class="tab-sub">board foot</span></button>
     <button class="tab-btn tab-lf" id="tab-lf-btn">Lumber<span class="tab-sub">linear foot</span></button>
@@ -559,7 +559,7 @@
   <div id="summary-sheet" style="display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:141;background:var(--bg);border-radius:16px;box-shadow:0 -4px 32px rgba(0,0,0,0.22);height:75vh;overflow:hidden;transition:transform 0.28s ease;touch-action:none;">
     <div id="summary-drag-handle" style="width:100%;display:flex;flex-direction:column;align-items:center;padding:8px 0 4px;cursor:pointer;gap:4px;">
       <div style="width:36px;height:4px;border-radius:2px;background:var(--border2);"></div>
-      <span style="font-size:11px;color:var(--text3);line-height:1;">&#9660;</span>
+      <span class="chev-icon down" style="border-color:var(--text3);"></span>
     </div>
     <div style="text-align:center;padding:6px 0 10px;border-bottom:1px solid var(--border);">
       <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text);">List Summary</span>
@@ -575,12 +575,21 @@
 
   <!-- Sticky bottom bar -->
   <div class="sticky-bar" id="sticky-bar" style="display:none;">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;">
+    <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;">
       <span class="sb-label">Subtotal</span>
       <span class="sb-value" id="t-cost">$0.00</span>
     </div>
-    <div id="summary-trigger" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;">
-      <span class="sb-label" id="summary-trigger-label">View List &#9650;</span>
+    <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;">
+      <span class="sb-label">Budget</span>
+      <div style="display:flex;align-items:center;gap:2px;">
+        <span class="sb-value" style="font-size:14px;">$</span>
+        <input type="number" id="budget-input" inputmode="decimal" placeholder="—" min="0" step="10"
+          style="font-size:14px;font-weight:700;color:var(--text);background:transparent;border:none;outline:none;-webkit-appearance:none;width:80px;padding:0;" />
+      </div>
+      <span id="budget-indicator" style="font-size:10px;font-weight:700;display:none;"></span>
+    </div>
+    <div id="summary-trigger" style="display:flex;flex-direction:column;gap:1px;cursor:pointer;flex-shrink:0;">
+      <span class="sb-label" id="summary-trigger-label">View List <span class="chev-icon up"></span></span>
     </div>
     <span class="save-confirm" id="save-confirmation" style="position:absolute;top:6px;right:calc(20px + env(safe-area-inset-right));font-size:11px;color:var(--green);font-weight:600;opacity:0;transition:opacity 0.3s;"></span>
   </div>
@@ -1084,14 +1093,21 @@ function updateTotals(){
 function checkBudget(totalCost){
   const budgetEl=document.getElementById('budget-input');
   const alertEl=document.getElementById('budget-alert');
+  const indicator=document.getElementById('budget-indicator');
   if(!budgetEl||!alertEl)return;
   const budget=parseFloat(budgetEl.value)||0;
   if(budget>0&&totalCost>budget){
     const over=totalCost-budget;
     alertEl.textContent='Over budget by $'+over.toFixed(2);
     alertEl.classList.add('show');
+    if(indicator){indicator.textContent='▲ $'+over.toFixed(2)+' over';indicator.style.color='var(--red)';indicator.style.display='inline';}
+    const costEl=document.getElementById('t-cost');
+    if(costEl) costEl.style.color='var(--red)';
   } else {
     alertEl.classList.remove('show');
+    if(indicator) indicator.style.display='none';
+    const costEl=document.getElementById('t-cost');
+    if(costEl) costEl.style.color='';
   }
 }
 
@@ -1291,7 +1307,7 @@ function render(){
     const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
     const scBtn=document.createElement('button');scBtn.className='species-collapse-btn';
     scBtn.id='sc-btn-'+s.id;
-    scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+    scBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
     sRightBtns.appendChild(scBtn);
     const rb=document.createElement('button');rb.className='del-btn';
     rb.dataset.action='rem-species';rb.dataset.sid=s.id;
@@ -1318,7 +1334,7 @@ function render(){
     scBtn.addEventListener('click',function(){
       s._collapsed=!s._collapsed;
       sContent.style.display=s._collapsed?'none':'';
-      scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+      scBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const titleEl=tw.querySelector('.ititle');
       if(titleEl){ 
         if(s._collapsed){titleEl.classList.add('locked');if(!s.name)titleEl.textContent='—';}
@@ -1363,7 +1379,7 @@ function render(){
           <span style="font-size:13px;font-weight:600;color:var(--text)">${tThickLabel}</span>
         </div>
         <div class="t-corner-btns">
-          <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'&#9660;':'&#9650;'}</span>
+          <span class="t-collapse-indicator" id="t-chevron-${t.id}">${t._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>'}</span>
           <button class="del-btn t-meta-del" data-action="rem-thick" data-sid="${s.id}" data-tid="${t.id}" aria-label="Remove thickness">×</button>
         </div>`;
       blk.appendChild(tMeta);
@@ -1448,7 +1464,7 @@ sumHtml2+=`<div class="bf-summary-totals" style="display:flex;flex-direction:col
         t._collapsed=!t._collapsed;
         tContent.style.display=t._collapsed?'none':'';
         const chev=document.getElementById('t-chevron-'+t.id);
-        if(chev) chev.innerHTML=t._collapsed?'&#9660;':'&#9650;';
+        if(chev) chev.innerHTML=t._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
         const tFields=document.getElementById('t-fields-'+t.id);
         const tLabel=document.getElementById('t-label-'+t.id);
         if(tFields) tFields.style.display=t._collapsed?'none':'';
@@ -1515,7 +1531,7 @@ function renderSaved(){
         <div class="saved-name">${p.name||'Unnamed'}</div>
         <div class="saved-meta">${p.date||''} &nbsp;·&nbsp; ${pBF} bf &nbsp;·&nbsp; $${pCost}${p.budget?` &nbsp;·&nbsp; budget: $${parseFloat(p.budget).toFixed(2)}`:''}</div>
       </div>
-      <span class="saved-chevron">&#8964;</span>`;
+      <span class="saved-chevron"><span class="chev-icon down"></span></span>`;
     item.appendChild(summary);
 
     // Action buttons
@@ -1620,11 +1636,11 @@ function renderSaved(){
       if(isOpen){
         actions.classList.remove('open');
         detail.classList.remove('open');
-        chevron.classList.remove('open');
+        chevron.innerHTML='<span class="chev-icon up"></span>';
       } else {
         actions.classList.add('open');
         detail.classList.add('open');
-        chevron.classList.add('open');
+        chevron.innerHTML='<span class="chev-icon down"></span>';
       }
     });
 
@@ -2243,7 +2259,7 @@ function renderLFSpecies(){
     hdr.appendChild(tw);
     const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
     const scBtn=document.createElement('button');scBtn.className='species-collapse-btn';
-    scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+    scBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
     sRightBtns.appendChild(scBtn);
     const rb=document.createElement('button');rb.className='del-btn';
     rb.setAttribute('aria-label','Remove');rb.textContent='×';
@@ -2265,7 +2281,7 @@ function renderLFSpecies(){
     scBtn.addEventListener('click',function(){
       s._collapsed=!s._collapsed;
       sContent.style.display=s._collapsed?'none':'';
-      scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+      scBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const tEl=tw.querySelector('.ititle');
       if(tEl){if(s._collapsed){tEl.classList.add('locked');if(!s.name)tEl.textContent='—';}else{tEl.classList.remove('locked');if(!s.name)tEl.textContent='Tap to add species / type';}}
       if(s._collapsed){
@@ -2298,7 +2314,7 @@ function renderLFSpecies(){
         <span style="font-size:13px;font-weight:600;color:var(--text)">${priceLabel}</span>
       </div>
       <div class="t-corner-btns">
-        <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'&#9660;':'&#9650;'}</span>
+        <span class="t-collapse-indicator" id="lf-chev-${s.id}">${s._blkCollapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>'}</span>
         <button class="del-btn t-meta-del" data-lfsid="${s.id}" data-lfaction="rem-price-blk" aria-label="Remove">×</button>
       </div>`;
     blk.appendChild(tMeta);
@@ -2380,7 +2396,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
       s._blkCollapsed=!s._blkCollapsed;
       tContent.style.display=s._blkCollapsed?'none':'';
       const chev=document.getElementById('lf-chev-'+s.id);
-      if(chev) chev.innerHTML=s._blkCollapsed?'&#9660;':'&#9650;';
+      if(chev) chev.innerHTML=s._blkCollapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const lfFields=document.getElementById('lf-fields-'+s.id);
       const lfLabel=document.getElementById('lf-label-'+s.id);
       if(lfFields) lfFields.style.display=s._blkCollapsed?'none':'';
@@ -2745,7 +2761,7 @@ function renderSlabSpecies(){
     hdr.appendChild(tw);
     const ssRightBtns=document.createElement('div');ssRightBtns.className='species-right-btns';
     const sscBtn=document.createElement('button');sscBtn.className='species-collapse-btn';
-    sscBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+    sscBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
     ssRightBtns.appendChild(sscBtn);
     const rb=document.createElement('button'); rb.className='del-btn';
     rb.dataset.slabaction='rem-species'; rb.dataset.slabsid=s.id;
@@ -2766,7 +2782,7 @@ function renderSlabSpecies(){
     sscBtn.addEventListener('click',function(){
       s._collapsed=!s._collapsed;
       ssContent.style.display=s._collapsed?'none':'';
-      sscBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
+      sscBtn.innerHTML=s._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const stitleEl=tw.querySelector('.ititle');
       if(stitleEl){
         if(s._collapsed){stitleEl.classList.add('locked');if(!s.name)stitleEl.textContent='—';}
@@ -2807,7 +2823,7 @@ function renderSlabSpecies(){
             <span style="font-size:13px;font-weight:600;color:var(--text)">${stThickLabel}</span>
           </div>
           <div class="t-corner-btns">
-            <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed ? '&#9660;' : '&#9650;'}</span>
+            <span class="t-collapse-indicator" id="st-chevron-${t.id}">${t._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>'}</span>
             <button class="del-btn" data-slabaction="rem-thick" data-slabsid="${s.id}" data-slabtid="${t.id}" aria-label="Remove thickness">×</button>
           </div>
         </div>
@@ -2854,7 +2870,7 @@ ssHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colum
         t._collapsed=!t._collapsed;
         stContent.style.display=t._collapsed?'none':'';
         const chev=blk.querySelector('#st-chevron-'+t.id);
-        if(chev) chev.innerHTML=t._collapsed?'&#9660;':'&#9650;';
+        if(chev) chev.innerHTML=t._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
         const stFields=blk.querySelector('#st-fields-'+t.id);
         const stLabel=blk.querySelector('#st-label-'+t.id);
         if(stFields) stFields.style.display=t._collapsed?'none':'';
@@ -3157,12 +3173,22 @@ function updateSGTotals(){
 
 function refreshSG(mid){
   const m=sgMaterials.find(x=>x.id===mid);if(!m)return;
-  const el=document.getElementById('sg-line-'+mid);
   const waste=parseFloat(m.waste)||0;
   const qtyAdj=waste>0?m.qty*(1-waste/100):m.qty;
-  const rawCostSG=m.price*m.qty;
-  if(el) el.textContent='$'+rawCostSG.toFixed(2)+(waste>0?' → '+qtyAdj.toFixed(2)+' sheets usable':'');
-  let t=0;sgMaterials.forEach(x=>{t+=x.price*x.qty;});
+  const rawCost=m.price*(m.qty||0);
+  // Update qty
+  const qtyEl=document.getElementById('sg-qty-'+mid);
+  if(qtyEl) qtyEl.textContent=m.qty||0;
+  // Update usable
+  const usableEl=document.getElementById('sg-usable-'+mid);
+  if(usableEl){
+    usableEl.style.opacity=waste>0?'1':'0.25';
+    usableEl.innerHTML='Usable: <strong>'+qtyAdj.toFixed(2)+'</strong>';
+  }
+  // Update cost
+  const costEl=document.getElementById('sg-cost-'+mid);
+  if(costEl) costEl.textContent='$'+rawCost.toFixed(2);
+  let t=0;sgMaterials.forEach(x=>{t+=x.price*(x.qty||0);});
   const tot=document.getElementById('sg-total');
   if(tot) tot.textContent='Total: $'+t.toFixed(2);
   updateTotals();saveSession();
@@ -3198,7 +3224,7 @@ function renderSG(){
     const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
     const colBtn=document.createElement('button');
     colBtn.className='species-collapse-btn';
-    colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+    colBtn.innerHTML=m._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
     sRightBtns.appendChild(colBtn);
     const rb=document.createElement('button');
     rb.className='del-btn';rb.innerHTML='&times;';rb.title='Remove material';
@@ -3230,12 +3256,12 @@ function renderSG(){
 
     // Corner buttons — flex siblings (same as BF/LF/Slab)
     const sgChev=document.createElement('span');sgChev.className='t-collapse-indicator';sgChev.id='sg-chev-'+m.id;
-    sgChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+    sgChev.innerHTML=m._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
     const sgDel=document.createElement('button');sgDel.className='del-btn';
     sgDel.innerHTML='&times;';sgDel.title='Remove material';
     sgDel.addEventListener('click',()=>remSGMaterial(m.id));
     const sgCorner=document.createElement('div');
-    sgCorner.style.cssText='display:flex;align-items:flex-start;gap:6px;flex-shrink:0;padding-top:2px;';
+    sgCorner.style.cssText='display:flex;align-items:center;gap:10px;flex-shrink:0;';
     sgCorner.appendChild(sgChev);sgCorner.appendChild(sgDel);
 
     // Size row — spans both grid columns, flex row inside
@@ -3312,12 +3338,14 @@ function renderSG(){
     // Line total — spans both columns
     const lineTotal=document.createElement('div');
     lineTotal.id='sg-line-'+m.id;
-    lineTotal.style.cssText='font-size:13px;font-weight:600;color:var(--text2);text-align:right;padding-top:4px;border-top:1px solid var(--border);grid-column:1/-1;';
-    lineTotal.textContent='$'+(m.price*m.qty).toFixed(2);
-    content.appendChild(lineTotal);
-
+    lineTotal.style.cssText='display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--text2);padding-top:6px;margin-top:4px;border-top:1px solid var(--border);width:100%;';
+    const sgWaste0=parseFloat(m.waste)||0;
+    const sgAdj0=sgWaste0>0?m.qty*(1-sgWaste0/100):m.qty;
+    const sgRawCost0=(m.price*m.qty).toFixed(2);
+    lineTotal.innerHTML=`<span>Total sheets: <strong id="sg-qty-${m.id}">${m.qty||0}</strong></span><span style="display:flex;justify-content:space-between;align-items:center;width:100%;"><span style="color:#2d6a2d;opacity:${sgWaste0>0?1:0.25};" id="sg-usable-${m.id}">Usable: <strong>${sgAdj0.toFixed(2)}</strong></span><span style="margin-left:auto;">Cost: <strong id="sg-cost-${m.id}">$${sgRawCost0}</strong></span></span>`;
     contentFlex.appendChild(content);contentFlex.appendChild(sgCorner);
     contentOuter.appendChild(contentFlex);
+    contentOuter.appendChild(lineTotal);
 
     card.appendChild(contentOuter);
 
@@ -3329,9 +3357,9 @@ function renderSG(){
     function doSGCollapse(){
       m._collapsed=!m._collapsed;
       contentOuter.style.display=m._collapsed?'none':'block';
-      colBtn.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+      colBtn.innerHTML=m._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const innerChev=document.getElementById('sg-chev-'+m.id);
-      if(innerChev) innerChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
+      if(innerChev) innerChev.innerHTML=m._collapsed?'<span class="chev-icon down"></span>':'<span class="chev-icon up"></span>';
       const titleEl=nameW.querySelector('.ititle');
       if(titleEl){if(m._collapsed){titleEl.classList.add('locked');if(!m.name)titleEl.textContent='—';}else{titleEl.classList.remove('locked');if(!m.name)titleEl.textContent='Tap to name material';}}
       summary.innerHTML=m._collapsed?sgCollapseSummary(m):'';
@@ -3570,7 +3598,7 @@ function summaryClose(){
   if(ov) ov.style.display='none';
   document.body.style.overflow='';
   const lbl=document.getElementById('summary-trigger-label');
-  if(lbl) lbl.innerHTML='View List &#9650;';
+  if(lbl) lbl.innerHTML='View List <span class="chev-icon up"></span>';
 }
 (()=>{
   const trigger=document.getElementById('summary-trigger');
