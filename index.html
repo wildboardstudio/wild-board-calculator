@@ -611,6 +611,23 @@
   </div>
 </div>
 
+<!-- Name list modal -->
+<div class="modal-overlay" id="name-modal">
+  <div class="modal">
+    <h3>Save List</h3>
+    <p id="name-modal-summary" style="font-size:12px;color:var(--text2);margin-bottom:12px;"></p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;">Name list</span>
+      <input type="text" id="name-modal-input" placeholder="Optional" autocomplete="off"
+        style="flex:1;padding:10px 12px;font-size:16px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);" />
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" id="name-modal-cancel" style="flex:1;">Cancel</button>
+      <button class="btn" id="name-modal-save" style="flex:1;background:var(--green);color:#fff;border-color:var(--green);">Save</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ── CALCULATOR MODAL ──────────────────────────────────────────── -->
 <div id="calc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:900;" aria-hidden="true"></div>
@@ -857,7 +874,7 @@ function makeTitle({ph,val,onSave}){
   return wrap;
 }
 
-const pWrap=makeTitle({ph:'Tap to name this list',onSave:v=>{projName=v;}});
+const pWrap=makeTitle({ph:'Tap to rename list',onSave:v=>{projName=v||projName;const t=pWrap.querySelector('.ititle');if(t&&!v&&projName)t.textContent=projName;}});
 document.getElementById('proj-wrap').appendChild(pWrap);
 
 function clearProj(){
@@ -875,8 +892,22 @@ function setProjName(name){
 }
 
 // --- Save flow ---
+function autoListName(){
+  return 'List '+(projects.length+1);
+}
+
+function buildSaveModalSummary(){
+  const totalBF=species.reduce((a,s)=>a+s.thicknesses.reduce((b,t)=>b+t.boards.reduce((c,bd)=>c+calcBF(t.tNum,bd.lft,bd.lin,bd.w),0),0),0);
+  const totalCostAll=species.reduce((a,s)=>a+sCost(s),0);
+  const specCount=species.filter(s=>s.thicknesses.some(t=>t.boards.some(b=>(parseFloat(b.lft)||0)+(parseFloat(b.lin)||0)+(parseFloat(b.w)||0)>0))).length;
+  const parts=[];
+  if(specCount>0) parts.push(specCount+' '+(specCount===1?'species':'species'));
+  if(totalBF>0) parts.push(totalBF.toFixed(2)+' bf');
+  if(totalCostAll>0) parts.push('$'+totalCostAll.toFixed(2));
+  return parts.length?parts.join(' · '):'Nothing entered yet';
+}
+
 function triggerSave(){
-  if(!projName){alert('Tap the project name field and enter a name first.');return;}
   const totalCost=species.reduce((s,x)=>s+sCost(x),0);
   const budget=parseFloat(document.getElementById('budget-input').value)||0;
   if(budget>0&&totalCost>budget){
@@ -892,10 +923,17 @@ function triggerSave(){
 
 function proceedSave(){
   if(editingId){
+    // Already saved — show overwrite/new modal
     document.getElementById('modal-msg').textContent=`Editing "${projName}". How would you like to save?`;
     document.getElementById('save-modal').classList.add('open');
   } else {
-    commitSave(null);
+    // New list — show name modal
+    const inp=document.getElementById('name-modal-input');
+    inp.value=projName||'';
+    inp.placeholder=autoListName();
+    document.getElementById('name-modal-summary').textContent=buildSaveModalSummary();
+    document.getElementById('name-modal').classList.add('open');
+    setTimeout(()=>inp.focus(),100);
   }
 }
 
@@ -957,6 +995,25 @@ document.getElementById('budget-input').addEventListener('input',()=>{
 });
 
 document.getElementById('save-btn').addEventListener('click',triggerSave);
+
+// Name modal
+document.getElementById('name-modal-save').addEventListener('click',()=>{
+  const inp=document.getElementById('name-modal-input');
+  projName=inp.value.trim()||autoListName();
+  // Update header name
+  const t=pWrap.querySelector('.ititle'),i=pWrap.querySelector('input');
+  if(t){t.textContent=projName;t.className='ititle has-value';}
+  if(i) i.value=projName;
+  document.getElementById('name-modal').classList.remove('open');
+  commitSave(null);
+});
+document.getElementById('name-modal-cancel').addEventListener('click',()=>{
+  document.getElementById('name-modal').classList.remove('open');
+});
+// Close on overlay click
+document.getElementById('name-modal').addEventListener('click',function(e){
+  if(e.target===this) this.classList.remove('open');
+});
 // save-btn2 removed - single save button at top
 
 const _ce=document.getElementById('cancel-edit');if(_ce)_ce.addEventListener('click',()=>{
@@ -1042,6 +1099,9 @@ function refreshNums(sid,tid){
     if(te)te.textContent=rawBF.toFixed(2);
     const teU=document.getElementById('tbf-usable-'+tid);if(teU){teU.textContent=adjBF.toFixed(2);teU.style.opacity=waste>0?'1':'0.25';}
     if(tce)tce.textContent='$'+rawCost.toFixed(2);
+    // Update collapsed label
+    const tLabelEl=document.getElementById('t-label-'+tid);
+    if(tLabelEl){const sp=tLabelEl.querySelector('span');if(sp)sp.textContent=(t.tNum?t.tNum+'/4':'—')+' · $'+(parseFloat(t.price||0).toFixed(2))+'/bf';}
   }
   // Update ALL thickness blocks with current waste display
   s.thicknesses.forEach(th=>{
@@ -1063,6 +1123,21 @@ function refreshNums(sid,tid){
   if(se)se.textContent=speciesRawBF.toFixed(2);
   const seU=document.getElementById('sbf-usable-'+sid);if(seU){seU.textContent=speciesAdjBF.toFixed(2);seU.style.opacity=speciesWaste>0?'1':'0.25';}
   if(sce)sce.textContent='$'+sCost(s).toFixed(2);
+  // Update collapsed summary totals if card is collapsed
+  s.thicknesses.forEach(th=>{
+    const sumEl=document.getElementById('t-summary-'+th.id);
+    if(!sumEl||sumEl.classList.contains('t-block-collapsed')) return;
+    const thW=parseFloat(th.waste)||0;
+    const thRaw=th.boards.reduce((a,b)=>a+calcBF(th.tNum,b.lft,b.lin,b.w),0);
+    const thAdj=thW>0?thRaw*(1-thW/100):thRaw;
+    const thCost=thRaw*(parseFloat(th.price)||0);
+    const totRow=sumEl.querySelector('.bf-summary-totals');
+    if(totRow){
+      totRow.children[0].innerHTML=`Total bf: <strong>${thRaw.toFixed(2)}</strong>`;
+      totRow.children[1].children[0].innerHTML=`Usable bf: <strong>${thAdj.toFixed(2)}</strong>`;
+      totRow.children[1].children[1].innerHTML=`Cost: <strong>$${thCost.toFixed(2)}</strong>`;
+    }
+  });
   updateTotals();
 }
 
@@ -1169,8 +1244,8 @@ function render(){
     hdr.appendChild(spLabel);
     // Lock title when collapsed
     const titleEl=tw.querySelector('.ititle');
-    if(titleEl){ 
-      if(s._collapsed) titleEl.classList.add('locked');
+    if(titleEl){
+      if(s._collapsed){titleEl.classList.add('locked');if(!s.name)titleEl.textContent='—';}
     }
     hdr.appendChild(tw);
     // Right-side buttons (fixed position)
@@ -1207,8 +1282,8 @@ function render(){
       scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
       const titleEl=tw.querySelector('.ititle');
       if(titleEl){ 
-        if(s._collapsed) titleEl.classList.add('locked');
-        else titleEl.classList.remove('locked');
+        if(s._collapsed){titleEl.classList.add('locked');if(!s.name)titleEl.textContent='—';}
+        else{titleEl.classList.remove('locked');if(!s.name)titleEl.textContent=tw.querySelector('input').placeholder||'Tap to add species / variety';}
       }
       if(s._collapsed){
         const sTotalBF=sBF(s);const sTotalCost=sCost(s);
@@ -1270,7 +1345,7 @@ function render(){
         const tRaw2=t.boards.reduce((a,b2)=>a+calcBF(t.tNum,b2.lft,b2.lin,b2.w),0);
         const tAdj2=t.waste>0?tRaw2*(1-t.waste/100):tRaw2;
         const tCost2c=tRaw2*(parseFloat(t.price)||0);
-sumHtml2+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${tCost2c.toFixed(2)}</strong></span></span></div>`;
+sumHtml2+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${tCost2c.toFixed(2)}</strong></span></span></div>`;
         sumHtml2+='</div>';
         tSummary.innerHTML=sumHtml2;
       }
@@ -1356,7 +1431,7 @@ sumHtml2+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px
             tToggleHtml+=`<div class="t-block-summary-row"><span>${boardName(i2,tot2b)} · ${l2} × ${w2}</span><span>${bf2.toFixed(2)} bf · $${c2.toFixed(2)}</span></div>`;
           });
           const tCostTc=tRawT*(parseFloat(t.price)||0);
-tToggleHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${tCostTc.toFixed(2)}</strong></span></span></div>`;
+tToggleHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${tRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${tAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${tCostTc.toFixed(2)}</strong></span></span></div>`;
           tToggleHtml+='</div>';
           tSummary.innerHTML=tToggleHtml;
           tSummary.classList.remove('t-block-collapsed');
@@ -2091,6 +2166,19 @@ function refreshLFNums(sid){
   if(stEl) stEl.textContent=rawLF.toFixed(2);
   const stElU=document.getElementById('lf-stotal-usable-'+sid);if(stElU){stElU.textContent=adjLF.toFixed(2);stElU.style.opacity=lfWaste>0?'1':'0.25';}
   if(scEl) scEl.textContent='$'+rawLFCost.toFixed(2);
+  // Update collapsed label
+  const lfLabelEl=document.getElementById('lf-label-'+sid);
+  if(lfLabelEl){const sp=lfLabelEl.querySelector('span');if(sp)sp.textContent='$'+(parseFloat(s.price||0).toFixed(2))+'/lf';}
+  // Update collapsed summary if card is collapsed
+  const lfSumEl=document.getElementById('lf-blk-summary-'+sid);
+  if(lfSumEl&&!lfSumEl.classList.contains('t-block-collapsed')){
+    const lfTotRow=lfSumEl.querySelector('.bf-summary-totals');
+    if(lfTotRow){
+      lfTotRow.children[0].innerHTML=`Total lf: <strong>${rawLF.toFixed(2)}</strong>`;
+      lfTotRow.children[1].children[0].innerHTML=`Usable lf: <strong>${adjLF.toFixed(2)}</strong>`;
+      lfTotRow.children[1].children[1].innerHTML=`Cost: <strong>$${rawLFCost.toFixed(2)}</strong>`;
+    }
+  }
   updateLFTotals();
 }
 
@@ -2116,7 +2204,7 @@ function renderLFSpecies(){
     const lfSpLabel=document.createElement('span');lfSpLabel.textContent='Species';lfSpLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
     hdr.appendChild(lfSpLabel);
     const titleEl=tw.querySelector('.ititle');
-    if(titleEl&&s._collapsed) titleEl.classList.add('locked');
+    if(titleEl&&s._collapsed){titleEl.classList.add('locked');if(!s.name)titleEl.textContent='—';}
     hdr.appendChild(tw);
     const sRightBtns=document.createElement('div');sRightBtns.className='species-right-btns';
     const scBtn=document.createElement('button');scBtn.className='species-collapse-btn';
@@ -2144,7 +2232,7 @@ function renderLFSpecies(){
       sContent.style.display=s._collapsed?'none':'';
       scBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
       const tEl=tw.querySelector('.ititle');
-      if(tEl){if(s._collapsed)tEl.classList.add('locked');else tEl.classList.remove('locked');}
+      if(tEl){if(s._collapsed){tEl.classList.add('locked');if(!s.name)tEl.textContent='—';}else{tEl.classList.remove('locked');if(!s.name)tEl.textContent='Tap to add species / type';}}
       if(s._collapsed){
         sSummary.innerHTML=`<span style="font-weight:600;color:var(--text)">${lfSTotal(s).toFixed(2)} lf</span> &nbsp;·&nbsp; <span style="font-weight:600;color:var(--text)">$${lfSCost(s).toFixed(2)}</span> &nbsp;·&nbsp; <span style="color:var(--text2)">${s.pieces.length} ${s.pieces.length===1?'piece':'pieces'}</span>`;
       } else { sSummary.innerHTML=''; }
@@ -2194,7 +2282,7 @@ function renderLFSpecies(){
       const lfRaw2=lfSTotal(s);
       const lfAdj2=s.waste>0?lfRaw2*(1-s.waste/100):lfRaw2;
       const lfCost2c=lfRaw2*(parseFloat(s.price)||0);
-sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCost2c.toFixed(2)}</strong></span></span></div>`;
+sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCost2c.toFixed(2)}</strong></span></span></div>`;
       sumHtml+='</div>';
       tSummary.innerHTML=sumHtml;
     }
@@ -2274,7 +2362,7 @@ sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;
         const lfRawT=lfSTotal(s);
         const lfAdjT=s.waste>0?lfRawT*(1-s.waste/100):lfRawT;
         const lfCostTc=lfRawT*(parseFloat(s.price)||0);
-sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCostTc.toFixed(2)}</strong></span></span></div>`;
+sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total lf: <strong>${lfRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable lf: <strong>${lfAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${lfCostTc.toFixed(2)}</strong></span></span></div>`;
         sumHtml+='</div>';
         tSummary.innerHTML=sumHtml;tSummary.classList.remove('t-block-collapsed');
       } else {
@@ -2498,6 +2586,9 @@ function refreshSlabNums(sid,tid){
     if(ttEl) ttEl.textContent=rawSlabBF.toFixed(2);
     const ttElU=document.getElementById('stbf-usable-'+tid);if(ttElU){ttElU.textContent=adjSlabBF.toFixed(2);ttElU.style.opacity=slabW>0?'1':'0.25';}
     if(tcEl) tcEl.textContent='$'+rawSlabCost.toFixed(2);
+    // Update collapsed label
+    const stLabelEl=document.querySelector('#st-label-'+tid);
+    if(stLabelEl){const sp=stLabelEl.querySelector('span');if(sp)sp.textContent=(t.tNum?t.tNum+'/4':'—')+' · $'+(parseFloat(t.price||0).toFixed(2))+'/bf';}
   }
   // Update ALL slab thickness blocks
   s.thicknesses.forEach(th=>{
@@ -2519,6 +2610,21 @@ function refreshSlabNums(sid,tid){
   if(seEl)seEl.textContent=slabSpeciesRaw.toFixed(2);
   const seElU=document.getElementById('ssbf-usable-'+sid);if(seElU){seElU.textContent=slabSpeciesAdj.toFixed(2);seElU.style.opacity=slabSpeciesWaste>0?'1':'0.25';}
   if(scEl) scEl.textContent='$'+slabSCost(s).toFixed(2);
+  // Update collapsed slab summary totals
+  s.thicknesses.forEach(th=>{
+    const stSumEl=document.querySelector('#st-summary-'+th.id);
+    if(!stSumEl||stSumEl.classList.contains('t-block-collapsed')) return;
+    const stW=parseFloat(th.waste)||0;
+    const stRaw=slabTBF(th);
+    const stAdj=stW>0?stRaw*(1-stW/100):stRaw;
+    const stCost=stRaw*(parseFloat(th.price)||0);
+    const stTotRow=stSumEl.querySelector('.bf-summary-totals');
+    if(stTotRow){
+      stTotRow.children[0].innerHTML=`Total bf: <strong>${stRaw.toFixed(2)}</strong>`;
+      stTotRow.children[1].children[0].innerHTML=`Usable bf: <strong>${stAdj.toFixed(2)}</strong>`;
+      stTotRow.children[1].children[1].innerHTML=`Cost: <strong>$${stCost.toFixed(2)}</strong>`;
+    }
+  });
   updateSlabTotals();
 }
 
@@ -2597,7 +2703,7 @@ function renderSlabSpecies(){
     const tw=makeTitle({ph:'Tap to add species / variety',val:s.name,onSave:v=>{s.name=v;updateSlabTotals();}});
     tw.className='title-wrap';
     const stitleEl2=tw.querySelector('.ititle');
-    if(stitleEl2&&s._collapsed) stitleEl2.classList.add('locked');
+    if(stitleEl2&&s._collapsed){stitleEl2.classList.add('locked');if(!s.name)stitleEl2.textContent='—';}
     const slabSpLabel=document.createElement('span');slabSpLabel.textContent='Species';slabSpLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
     hdr.appendChild(slabSpLabel);
     hdr.appendChild(tw);
@@ -2627,8 +2733,8 @@ function renderSlabSpecies(){
       sscBtn.innerHTML=s._collapsed?'&#9660;':'&#9650;';
       const stitleEl=tw.querySelector('.ititle');
       if(stitleEl){
-        if(s._collapsed) stitleEl.classList.add('locked');
-        else stitleEl.classList.remove('locked');
+        if(s._collapsed){stitleEl.classList.add('locked');if(!s.name)stitleEl.textContent='—';}
+        else{stitleEl.classList.remove('locked');if(!s.name)stitleEl.textContent='Tap to add species / variety';}
       }
       if(s._collapsed){
         const stBF=slabSBF(s);const stCost=slabSCost(s);
@@ -2687,7 +2793,7 @@ function renderSlabSpecies(){
         const stRaw2=slabTBF(t);
         const stAdj2=t.waste>0?stRaw2*(1-t.waste/100):stRaw2;
         const stCost2c=stRaw2*(parseFloat(t.price)||0);
-ssHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${stCost2c.toFixed(2)}</strong></span></span></div>`;
+ssHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRaw2.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdj2.toFixed(2)}</strong></span><span>Cost: <strong>$${stCost2c.toFixed(2)}</strong></span></span></div>`;
         ssHtml+='</div>';
         stSumEl.innerHTML=ssHtml;
       }
@@ -2735,7 +2841,7 @@ ssHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;f
             const stRawT=slabTBF(t);
             const stAdjT=t.waste>0?stRawT*(1-t.waste/100):stRawT;
             const stCostTc=stRawT*(parseFloat(t.price)||0);
-sumHtml+=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${stCostTc.toFixed(2)}</strong></span></span></div>`;
+sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;"><span>Total bf: <strong>${stRawT.toFixed(2)}</strong></span><span style="display:flex;justify-content:space-between;width:100%;"><span style="color:#2d6a2d">Usable bf: <strong>${stAdjT.toFixed(2)}</strong></span><span>Cost: <strong>$${stCostTc.toFixed(2)}</strong></span></span></div>`;
             sumHtml+='</div>';
             sumEl.innerHTML=sumHtml;
             sumEl.classList.remove('t-block-collapsed');
@@ -3051,7 +3157,7 @@ function renderSG(){
     hdr.className='species-header';
     const nameW=makeTitle({ph:'Tap to name material',val:m.name,onSave:v=>{m.name=v;saveSession();}});
     nameW.className='title-wrap';
-    if(m._collapsed) nameW.querySelector('.ititle')&&nameW.querySelector('.ititle').classList.add('locked');
+    if(m._collapsed){const _iEl=nameW.querySelector('.ititle');if(_iEl){_iEl.classList.add('locked');if(!m.name)_iEl.textContent='—';}}
     const sgMatLabel=document.createElement('span');sgMatLabel.textContent='Material';sgMatLabel.style.cssText='font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;flex-shrink:0;';
     hdr.appendChild(sgMatLabel);
     hdr.appendChild(nameW);
@@ -3197,11 +3303,8 @@ function renderSG(){
     card.appendChild(contentOuter);
 
     // Waste row in card 2
-    const sgCardWasteRow=document.createElement('div');
-    sgCardWasteRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:flex-end;';
-    sgCardWasteRow.innerHTML=`<span style="font-size:11px;color:var(--text2);">Waste</span><div class="waste-input-wrap" style="width:auto;"><input type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="0" value="${m.waste||''}" /><span class="waste-suffix">%</span></div>`;
-    sgCardWasteRow.querySelector('input').addEventListener('input',e=>{m.waste=parseFloat(e.target.value)||0;refreshSG(m.id);saveSession();});
-    card.appendChild(sgCardWasteRow);
+
+
 
     // Shared collapse logic
     function doSGCollapse(){
@@ -3211,7 +3314,7 @@ function renderSG(){
       const innerChev=document.getElementById('sg-chev-'+m.id);
       if(innerChev) innerChev.innerHTML=m._collapsed?'&#9660;':'&#9650;';
       const titleEl=nameW.querySelector('.ititle');
-      if(titleEl){ m._collapsed?titleEl.classList.add('locked'):titleEl.classList.remove('locked'); }
+      if(titleEl){if(m._collapsed){titleEl.classList.add('locked');if(!m.name)titleEl.textContent='—';}else{titleEl.classList.remove('locked');if(!m.name)titleEl.textContent='Tap to name material';}}
       summary.innerHTML=m._collapsed?sgCollapseSummary(m):'';
       saveSession();
     }
