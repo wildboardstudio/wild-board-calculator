@@ -1525,7 +1525,7 @@ tToggleHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:
       sContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
+    const atb=document.createElement('div');atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-action="add-thick" data-sid="${s.id}">+ Add Thickness</button>`;
     // Waste row inline
 
@@ -1818,8 +1818,24 @@ function buildSummaryText(p) {
   const lfTotalCost = lfItems.reduce((s,x)=>s+x.cost,0);
   const sgTotalCost = sgItems.reduce((s,m)=>s+(m.price*m.qty),0);
   const totalCost = bfCost + lfTotalCost + sgTotalCost;
-  if(bfTotal>0) lines.push('TOTAL BOARD FEET: ' + bfTotal.toFixed(2) + ' bf  ($'+bfCost.toFixed(2)+')');
-  if(lfTotalLF>0) lines.push('TOTAL LINEAR FEET: ' + lfTotalLF.toFixed(2) + ' lf  ($'+lfTotalCost.toFixed(2)+')');
+  // Waste
+  const bfWasteVal = parseFloat(p ? (p.bfWaste||0) : bfWaste)||0;
+  const lfWasteVal = parseFloat(p ? (p.lfWasteTab||0) : lfWasteTab)||0;
+  const slabWasteVal = parseFloat(p ? (p.slabWasteTab||0) : slabWasteTab)||0;
+  const lumberBFTotal = lumberItems.reduce((s,x)=>s+x.bf,0);
+  const slabBFTotal = slabItems.reduce((s,x)=>s+x.bf,0);
+  const usableLumberBF = bfWasteVal>0 ? lumberBFTotal*(1-bfWasteVal/100) : lumberBFTotal;
+  const usableSlabBF = slabWasteVal>0 ? slabBFTotal*(1-slabWasteVal/100) : slabBFTotal;
+  const usableBFTotal = usableLumberBF + usableSlabBF;
+  const usableLF = lfWasteVal>0 ? lfTotalLF*(1-lfWasteVal/100) : lfTotalLF;
+  if(bfTotal>0){
+    lines.push('TOTAL BOARD FEET: ' + bfTotal.toFixed(2) + ' bf  ($'+bfCost.toFixed(2)+')');
+    if(bfWasteVal>0||slabWasteVal>0) lines.push('USABLE BOARD FEET: ' + usableBFTotal.toFixed(2) + ' bf  (after '+Math.max(bfWasteVal,slabWasteVal)+'% waste)');
+  }
+  if(lfTotalLF>0){
+    lines.push('TOTAL LINEAR FEET: ' + lfTotalLF.toFixed(2) + ' lf  ($'+lfTotalCost.toFixed(2)+')');
+    if(lfWasteVal>0) lines.push('USABLE LINEAR FEET: ' + usableLF.toFixed(2) + ' lf  (after '+lfWasteVal+'% waste)');
+  }
   if(sgTotalCost>0) lines.push('SHEET GOODS TOTAL: $'+sgTotalCost.toFixed(2));
   lines.push('SUBTOTAL: $' + totalCost.toFixed(2));
   if(budget && totalCost > budget) lines.push('OVER BUDGET BY: $' + (totalCost-budget).toFixed(2));
@@ -2120,6 +2136,17 @@ function exportPDF(p) {
   doc.setDrawColor(200,200,200);
   doc.line(margin,y,pageW-margin,y);
   y += 6;
+  // Waste values
+  const pdfBFWaste = parseFloat(p ? (p.bfWaste||0) : bfWaste)||0;
+  const pdfLFWaste = parseFloat(p ? (p.lfWasteTab||0) : lfWasteTab)||0;
+  const pdfSlabWaste = parseFloat(p ? (p.slabWasteTab||0) : slabWasteTab)||0;
+  const lumberBFPDF = lumberItems.reduce((s,x)=>s+x.bf,0);
+  const slabBFPDF = slabItems.reduce((s,x)=>s+x.bf,0);
+  const usableLumberBFPDF = pdfBFWaste>0 ? lumberBFPDF*(1-pdfBFWaste/100) : lumberBFPDF;
+  const usableSlabBFPDF = pdfSlabWaste>0 ? slabBFPDF*(1-pdfSlabWaste/100) : slabBFPDF;
+  const usableBFPDF = usableLumberBFPDF + usableSlabBFPDF;
+  const usableLFPDF = pdfLFWaste>0 ? lfTotalPDF*(1-pdfLFWaste/100) : lfTotalPDF;
+
   // BF total row
   if(bfTotalPDF > 0) {
     doc.setFont('helvetica','bold');
@@ -2128,6 +2155,13 @@ function exportPDF(p) {
     doc.text('Total Board Feet: '+bfTotalPDF.toFixed(2)+' bf', margin, y);
     doc.text('$'+bfCostPDF.toFixed(2), pageW-margin, y, {align:'right'});
     y += 5;
+    if(pdfBFWaste>0||pdfSlabWaste>0){
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(45,106,45);
+      doc.text('Usable Board Feet: '+usableBFPDF.toFixed(2)+' bf  (after '+Math.max(pdfBFWaste,pdfSlabWaste)+'% waste)', margin, y);
+      doc.setTextColor(44,36,24);
+      y += 5;
+    }
   }
   // LF total row
   if(lfTotalPDF > 0) {
@@ -2137,6 +2171,13 @@ function exportPDF(p) {
     doc.text('Total Linear Feet: '+lfTotalPDF.toFixed(2)+' lf', margin, y);
     doc.text('$'+lfCostPDF.toFixed(2), pageW-margin, y, {align:'right'});
     y += 5;
+    if(pdfLFWaste>0){
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(45,106,45);
+      doc.text('Usable Linear Feet: '+usableLFPDF.toFixed(2)+' lf  (after '+pdfLFWaste+'% waste)', margin, y);
+      doc.setTextColor(44,36,24);
+      y += 5;
+    }
   }
   // Sheet goods total row
   if(sgCostPDF > 0) {
@@ -2399,6 +2440,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
 
     // Actions
     const bAct=document.createElement('div');bAct.className='b-actions';bAct.style.marginTop='8px';
+    bAct.style.justifyContent='flex-end';
     bAct.innerHTML=`<button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="add-piece">+ Piece</button>
       <button class="btn btn-sm" data-lfsid="${s.id}" data-lfaction="dup-piece">&#10697; Last Piece</button>`;
     tContent.appendChild(bAct);
@@ -2997,7 +3039,7 @@ sumHtml+=`<div class="bf-summary-totals" style="display:flex;flex-direction:colu
       ssContent.appendChild(blk);
     });
 
-    const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
+    const atb=document.createElement('div'); atb.style.cssText='margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;';
     atb.innerHTML=`<button class="btn btn-sm" data-slabaction="add-thick" data-slabsid="${s.id}">+ Add Thickness</button>`;
     ssContent.appendChild(atb);
 
