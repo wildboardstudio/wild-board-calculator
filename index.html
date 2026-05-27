@@ -641,7 +641,10 @@
       </div>
       <div id="sg-list"></div>
       <div style="display:flex;justify-content:center;margin-top:6px;"><button class="btn btn-sm" id="add-sg-material">+ Add Sheet</button></div>
-      <div id="sg-total-static" style="font-size:13px;font-weight:700;color:var(--text);text-align:right;margin-top:6px;">Total: $0.00</div>
+      <div class="species-footer" id="sg-grand-total" style="margin-top:12px;">
+        <span>Total Sheets: <strong id="sg-grand-qty">0.00</strong></span>
+        <span style="display:flex;justify-content:space-between;width:100%;"><span>Usable: <strong id="sg-grand-usable" style="color:#2d6a2d;">0.00</strong></span><span>Cost: <strong id="sg-grand-cost">$0.00</strong></span></span>
+      </div>
     </div>
   </div>
 
@@ -832,7 +835,7 @@
   <script>
 
 let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null, bfWaste=0, lfWasteTab=0, slabWasteTab=0, sgWasteTab=0;
-let isPro = true; // set to true when user upgrades
+let isPro = false; // set to true when user upgrades
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 function appConfirm(msg, onYes, okLabel, okColor) {
@@ -3380,10 +3383,15 @@ function remSGMaterial(mid){
 }
 
 function updateSGTotals(){
-  let total=0;
-  sgMaterials.forEach(m=>{ total+=m.price*m.qty; });
+  let total=0, totalQty=0;
+  sgMaterials.forEach(m=>{ total+=m.price*m.qty; totalQty+=parseFloat(m.qty)||0; });
   const el=document.getElementById('sg-total');
   if(el) el.textContent='Total: $'+total.toFixed(2);
+  const sgWasteVal=parseFloat((document.getElementById('sg-waste-input')||{}).value)||0;
+  const sgUsable=sgWasteVal>0?totalQty*(1-sgWasteVal/100):totalQty;
+  const sgGrandQty=document.getElementById('sg-grand-qty');if(sgGrandQty)sgGrandQty.textContent=totalQty.toFixed(2);
+  const sgGrandUsable=document.getElementById('sg-grand-usable');if(sgGrandUsable){sgGrandUsable.textContent=sgUsable.toFixed(2);sgGrandUsable.style.opacity=sgWasteVal>0?'1':'0.25';}
+  const sgGrandCost=document.getElementById('sg-grand-cost');if(sgGrandCost)sgGrandCost.textContent='$'+total.toFixed(2);
   updateTotals();
 }
 
