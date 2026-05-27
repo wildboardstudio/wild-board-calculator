@@ -926,7 +926,12 @@
   <script>
 
 let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null, bfWaste=0, lfWasteTab=0, slabWasteTab=0, sgWasteTab=0;
-let isPro = true; // set to true when user upgrades
+let isPro = false; // set to true when user upgrades
+// Developer access — secret URL parameter
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('dev') === 'wildboard2026') isPro = true;
+})();
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 function appConfirm(msg, onYes, okLabel, okColor) {
