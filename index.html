@@ -823,6 +823,7 @@
   <script>
 
 let species=[], projects=[], uc=0, projName='', editingId=null, pendingSaveOverwrite=undefined, _savedSnapshot=null, bfWaste=0, lfWasteTab=0, slabWasteTab=0, sgWasteTab=0;
+let isPro = false; // set to true when user upgrades
 let calcHistory=[];
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 function appConfirm(msg, onYes, okLabel, okColor) {
@@ -1053,6 +1054,7 @@ function triggerSave(){
 }
 
 function proceedSave(){
+  if(!editingId && !isPro && projects.length>=2){showPaywall("Free saves are capped at 2. Upgrade to Pro for unlimited saved lists.");return;}
   if(editingId){
     // Already saved — show overwrite/new modal
     document.getElementById('modal-msg').textContent=`Editing "${projName}". How would you like to save?`;
@@ -1283,6 +1285,7 @@ function refreshNums(sid,tid){
 
 // --- Data ---
 function addSpecies(){
+  if(!isPro && species.length>=3){showPaywall("Free is capped at 3 species. Upgrade to Pro for unlimited.");return;}
   species.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
   species.push({id:uid(),name:'',waste:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',boards:[{id:uid(),lft:'',lin:'',w:''}]}]});
   renderNoScroll();updateTotals();
@@ -1297,8 +1300,8 @@ function addThick(sid){
   renderNoScroll();
 }
 function remThick(sid,tid){appConfirm("Remove this thickness block and all its boards?",()=>{const s=species.find(x=>x.id===sid);if(s)s.thicknesses=s.thicknesses.filter(t=>t.id!==tid);renderNoScroll();updateTotals();});}
-function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
-function dupBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();if(s)s.thicknesses.forEach(th=>{refreshNums(sid,th.id);});}
+function addBoard(sid,tid){const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(!t)return;if(!isPro&&t.boards.length>=3){showPaywall("Free is capped at 3 boards per thickness. Upgrade to Pro for unlimited.");return;}t.boards.push({id:uid(),lft:'',lin:'',w:''});renderNoScroll();}
+function dupBoard(sid,tid){if(!isPro){showPaywall("Duplicate Last Board is a Pro feature. Upgrade to unlock it.");return;}const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t&&t.boards.length>0){const b=t.boards[t.boards.length-1];t.boards.push({...b,id:uid()});}renderNoScroll();if(s)s.thicknesses.forEach(th=>{refreshNums(sid,th.id);});}
 function remBoard(sid,tid,bid){appConfirm("Remove this board?",()=>{const s=species.find(x=>x.id===sid),t=s&&s.thicknesses.find(x=>x.id===tid);if(t)t.boards=t.boards.filter(b=>b.id!==bid);renderNoScroll();updateTotals();});}
 
 function loadProjectIntoCalc(p){
@@ -1951,6 +1954,7 @@ function buildSummaryText(p) {
 }
 
 function exportPDF(p) {
+  if(!isPro){showPaywall("PDF Export is a Pro feature. Upgrade to unlock it.");return;}
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const pageW = doc.internal.pageSize.getWidth();
@@ -2322,6 +2326,7 @@ function exportPDF(p) {
 }
 
 function shareProject(p) {
+  if(!isPro){showPaywall("Share is a Pro feature. Upgrade to unlock it.");return;}
   const text = buildSummaryText(p);
   if(navigator.share) {
     navigator.share({ title:'Wild Board Calculator — '+(p?p.name:projName||'Project'), text })
@@ -2350,6 +2355,7 @@ function updateLFTotals(){
 function pieceName(i,total){ return total===1?'Board':'Board '+(i+1); }
 
 function addLFSpecies(){
+  if(!isPro && lfSpecies.length>=3){showPaywall("Free is capped at 3 species. Upgrade to Pro for unlimited.");return;}
   lfSpecies.forEach(s=>{s._collapsed=true;});
   lfSpecies.push({id:uid(),name:'',price:'',waste:'',pieces:[{id:uid(),lft:'',lin:''}]});
   renderLFSpecies();updateLFTotals();
@@ -2357,11 +2363,14 @@ function addLFSpecies(){
 function remLFSpecies(sid){appConfirm("Remove this species and all its pieces?",()=>{lfSpecies=lfSpecies.filter(s=>s.id!==sid);renderLFSpeciesNoScroll();updateLFTotals();});}
 function addLFPiece(sid){
   const s=lfSpecies.find(x=>x.id===sid);
-  if(s) s.pieces.push({id:uid(),lft:'',lin:''});
+  if(!s)return;
+  if(!isPro&&s.pieces.length>=3){showPaywall("Free is capped at 3 boards per species. Upgrade to Pro for unlimited.");return;}
+  s.pieces.push({id:uid(),lft:'',lin:''});
   renderLFSpeciesNoScroll();
   if(s)refreshLFNums(sid);updateLFTotals();
 }
 function dupLFPiece(sid){
+  if(!isPro){showPaywall("Duplicate Last Board is a Pro feature. Upgrade to unlock it.");return;}
   const s=lfSpecies.find(x=>x.id===sid);
   if(s&&s.pieces.length>0){const p=s.pieces[s.pieces.length-1];s.pieces.push({...p,id:uid()});}
   renderLFSpeciesNoScroll();updateLFTotals();
@@ -2744,6 +2753,7 @@ function updateSlabTotals(){
 }
 
 function addSlabSpecies(){
+  if(!isPro && slabSpecies.length>=2){showPaywall("Free is capped at 2 species. Upgrade to Pro for unlimited.");return;}
   slabSpecies.forEach(s=>{s._collapsed=true;s.thicknesses.forEach(t=>{t._collapsed=true;});});
   slabSpecies.push({id:uid(),name:'',waste:'',thicknesses:[{id:uid(),tNum:'',price:'',waste:'',slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]}]});
   renderSlabSpeciesNoScroll();updateSlabTotals();
@@ -2751,6 +2761,8 @@ function addSlabSpecies(){
 function remSlabSpecies(sid){ appConfirm("Remove this species and all its slabs?",()=>{ slabSpecies=slabSpecies.filter(s=>s.id!==sid); renderSlabSpeciesNoScroll(); updateSlabTotals(); }); }
 function addSlabThick(sid){
   const s=slabSpecies.find(x=>x.id===sid);
+  if(!s)return;
+  if(!isPro&&s.thicknesses.length>=2){showPaywall("Free is capped at 2 thickness cards. Upgrade to Pro for unlimited.");return;}
   if(s){
     s.thicknesses.forEach(t=>{t._collapsed=true;});
     s.thicknesses.push({id:uid(),tNum:'',price:'',waste:s.waste||0,slabs:[{id:uid(),lft:'',lin:'',measurements:['','','']}]});
@@ -2764,7 +2776,9 @@ function remSlabThick(sid,tid){appConfirm("Remove this thickness block and all i
 });}
 function addSlab(sid,tid){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid);
-  if(t) t.slabs.push({id:uid(),lft:'',lin:'',measurements:['','','']});
+  if(!t)return;
+  if(!isPro&&t.slabs.length>=2){showPaywall("Free is capped at 2 slabs per thickness. Upgrade to Pro for unlimited.");return;}
+  t.slabs.push({id:uid(),lft:'',lin:'',measurements:['','','']});
   renderSlabSpecies();updateSlabTotals();
   const _ss=slabSpecies.find(x=>x.id===sid);if(_ss)_ss.thicknesses.forEach(th=>{refreshSlabNums(sid,th.id);});
 }
@@ -2781,7 +2795,9 @@ function remSlab(sid,tid,bid){appConfirm("Remove this slab?",()=>{
 });}
 function addMeasurement(sid,tid,bid){
   const s=slabSpecies.find(x=>x.id===sid), t=s&&s.thicknesses.find(x=>x.id===tid), b=t&&t.slabs.find(x=>x.id===bid);
-  if(b) b.measurements.push('');
+  if(!b)return;
+  if(!isPro&&b.measurements.length>=5){showPaywall("Free is capped at 5 width measurements per slab. Upgrade to Pro for unlimited.");return;}
+  b.measurements.push('');
   renderSlabSpeciesNoScroll();updateSlabTotals();
 }
 function remMeasurement(sid,tid,bid,mi){
@@ -3326,6 +3342,7 @@ const SG_SIZES = ['4×2','4×8','4×10','4×12','5×5','5×10','Custom'];
 const SG_THICK = ['⅛"','¼"','⅜"','½"','⅝"','¾"','1"','1-¼"','1-½"','Custom'];
 
 function addSGMaterial(){
+  if(!isPro){showPaywall("Sheet Goods is a Pro feature. Upgrade to unlock it.");return;}
   sgMaterials.forEach(m=>{m._collapsed=true;});
   sgMaterials.push({id:uid(),name:'',size:'',thick:'',customSize:'',customThick:'',price:0,qty:0,_collapsed:false});
   renderSG();saveSession();
