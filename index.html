@@ -3855,19 +3855,38 @@ function summaryClose(){
 
 // ============ PAYWALL ============
 function showPaywall(message) {
+  var existing = document.getElementById('paywall-sheet');
+  if(existing) existing.remove();
+  var overlay = document.getElementById('paywall-overlay');
+  if(overlay) { overlay.style.cssText = 'display:block;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(4px);'; }
+
   var msg = message || "That's the limit out here.";
-  document.getElementById('paywall-message').textContent = msg;
-  document.getElementById('paywall-overlay').classList.add('open');
-  var sheet = document.getElementById('paywall-sheet');
-  sheet.classList.add('open');
+  var sheet = document.createElement('div');
+  sheet.id = 'paywall-sheet';
+  sheet.style.cssText = 'position:fixed!important;left:10px!important;right:10px!important;bottom:10px!important;z-index:9999!important;background:#FAF7F2!important;border-radius:16px!important;box-shadow:0 -4px 32px rgba(0,0,0,0.22)!important;padding:16px!important;font-family:sans-serif!important;min-height:420px!important;box-sizing:border-box!important;';
+  sheet.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;padding-bottom:8px;cursor:pointer;" onclick="closePaywall()"><div style="width:36px;height:4px;border-radius:2px;background:#ccc;margin-bottom:4px;"></div></div>'
+    + '<img src="' + SPLINTER_IMG + '" style="width:140px!important;height:140px!important;object-fit:contain!important;display:block!important;margin:0 auto -8px!important;" />'
+    + '<div style="text-align:center;padding:8px 20px 6px;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.4;">' + msg + '</div>'
+    + '<div style="text-align:center;padding:0 20px 14px;font-size:13px;color:#666;line-height:1.4;">Upgrade to Pro to keep going.</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;padding:0 0 8px;">'
+    + '<a href="https://buy.stripe.com/7sYbJ15fWg5H8aa7exgfu01" target="_blank" style="display:block!important;width:100%!important;padding:13px 16px!important;border-radius:10px!important;background:#2C2C2C!important;color:#FAF7F2!important;font-size:15px!important;font-weight:700!important;text-align:center!important;text-decoration:none!important;box-sizing:border-box!important;">Annual — $19.99/yr <span style="background:#8B4513;color:#FAF7F2;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;text-transform:uppercase;vertical-align:middle;">Best Value</span></a>'
+    + '<a href="https://buy.stripe.com/28E00jaAgg5H8aaeGZgfu00" target="_blank" style="display:block!important;width:100%!important;padding:13px 16px!important;border-radius:10px!important;border:1.5px solid #2C2C2C!important;color:#2C2C2C!important;font-size:15px!important;font-weight:700!important;text-align:center!important;text-decoration:none!important;box-sizing:border-box!important;">Monthly — $1.99/mo</a>'
+    + '<button onclick="closePaywall()" style="width:100%!important;padding:11px 16px!important;border-radius:10px!important;border:none!important;background:transparent!important;color:#888!important;font-size:14px!important;font-weight:500!important;cursor:pointer!important;">Stay Free</button>'
+    + '</div>';
+  document.body.appendChild(sheet);
 }
 
 function closePaywall() {
   var sheet = document.getElementById('paywall-sheet');
+  if(sheet) sheet.remove();
   var overlay = document.getElementById('paywall-overlay');
-  sheet.classList.remove('open');
-  overlay.classList.remove('open');
+  if(overlay) overlay.style.display = 'none';
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  var overlay = document.getElementById('paywall-overlay');
+  if(overlay) overlay.addEventListener('click', closePaywall);
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   var overlay = document.getElementById('paywall-overlay');
