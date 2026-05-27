@@ -3865,7 +3865,7 @@ function showPaywall(message) {
   var msg = message || "That's the limit out here.";
   var sheet = document.createElement('div');
   sheet.id = 'paywall-sheet';
-  sheet.style.cssText = 'position:fixed!important;left:10px!important;right:10px!important;bottom:10px!important;z-index:9999!important;background:#FAF7F2!important;border-radius:16px!important;box-shadow:0 -4px 32px rgba(0,0,0,0.22)!important;padding:16px!important;font-family:sans-serif!important;min-height:420px!important;box-sizing:border-box!important;';
+  sheet.style.cssText = 'display:flex!important;flex-direction:column!important;position:fixed!important;left:10px!important;right:10px!important;bottom:10px!important;z-index:9999!important;background:#FAF7F2!important;border-radius:16px!important;box-shadow:0 -4px 32px rgba(0,0,0,0.22)!important;padding:16px!important;font-family:sans-serif!important;min-height:420px!important;box-sizing:border-box!important;';
   sheet.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;padding-bottom:8px;cursor:pointer;" onclick="closePaywall()"><div style="width:36px;height:4px;border-radius:2px;background:#ccc;margin-bottom:4px;"></div></div>'
     + '<img src="' + SPLINTER_IMG + '" style="width:140px!important;height:140px!important;object-fit:contain!important;display:block!important;margin:0 auto -8px!important;" />'
     + '<div style="text-align:center;padding:8px 20px 6px;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.4;">' + msg + '</div>'
