@@ -592,6 +592,10 @@
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-species">+ Add Species</button>
       </div>
+      <div class="species-footer" id="bf-grand-total" style="margin-top:12px;">
+        <span>Total bf: <strong id="bf-grand-raw">0.00</strong></span>
+        <span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="bf-grand-usable" style="color:#2d6a2d;">0.00</strong></span><span>Cost: <strong id="bf-grand-cost">$0.00</strong></span></span>
+      </div>
     </div>
   </div>
   <div class="tab-panel hidden tab-theme-lf" id="tab-lf">
@@ -604,6 +608,10 @@
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-lf-species">+ Add Species</button>
       </div>
+      <div class="species-footer" id="lf-grand-total" style="margin-top:12px;">
+        <span>Total lf: <strong id="lf-grand-raw">0.00</strong></span>
+        <span style="display:flex;justify-content:space-between;width:100%;"><span>Usable lf: <strong id="lf-grand-usable" style="color:#2d6a2d;">0.00</strong></span><span>Cost: <strong id="lf-grand-cost">$0.00</strong></span></span>
+      </div>
     </div>
   </div>
 
@@ -614,11 +622,12 @@
         <div class="waste-input-wrap" style="width:auto;"><input type="number" id="slab-waste-input" inputmode="decimal" min="0" max="100" step="1" placeholder="Optional" /><span class="waste-suffix">%</span></div>
       </div>
       <div id="slab-species-list"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 2px 4px;font-size:13px;font-weight:600;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;">
-        <span>Total</span><span id="t-slab-bf" style="font-weight:700;color:var(--text)">0.00 bf</span>
-      </div>
       <div class="actions" style="margin-bottom:0">
         <button class="btn" id="add-slab-species">+ Add Species</button>
+      </div>
+      <div class="species-footer" id="slab-grand-total" style="margin-top:12px;">
+        <span>Total bf: <strong id="slab-grand-raw">0.00</strong></span>
+        <span style="display:flex;justify-content:space-between;width:100%;"><span>Usable bf: <strong id="slab-grand-usable" style="color:#2d6a2d;">0.00</strong></span><span>Cost: <strong id="slab-grand-cost">$0.00</strong></span></span>
       </div>
     </div>
   </div>
@@ -689,7 +698,7 @@
         <div style="display:flex;align-items:center;gap:2px;">
           <span style="font-size:13px;color:var(--text2);font-weight:600;">$</span>
           <input type="number" id="budget-input" inputmode="decimal" placeholder="Optional" min="0" step="10"
-            style="font-size:13px;font-weight:600;color:var(--text);background:transparent;border:none;border-bottom:1px solid rgba(0,0,0,0.3);outline:none;-webkit-appearance:none;width:76px;padding:0 0 1px;text-align:center;" />
+            style="font-size:13px;font-weight:600;color:var(--text);background:transparent;border:none;border-bottom:1px solid rgba(0,0,0,0.3);outline:none;-webkit-appearance:none;width:76px;padding:0 0 1px;text-align:center;" onfocus="if(!isPro){this.blur();showPaywall('Budget is a Pro feature. Upgrade to unlock it.');}" />
         </div>
       </div>
       <span id="budget-indicator" style="font-size:11px;font-weight:700;display:none;"></span>
@@ -1189,6 +1198,11 @@ function updateTotals(){
   const totalBF=lumberBF+slabBF;
   const totalCost=lumberCost+slabCost+lfCost+sgCost;
   const bfEl=document.getElementById('t-bf'); if(bfEl) bfEl.innerHTML=`<span style="font-weight:700;color:var(--text)">${(lumberBF).toFixed(2)} bf</span>`;
+  const bfWasteVal=parseFloat((document.getElementById('bf-waste-input')||{}).value)||0;
+  const bfUsable=bfWasteVal>0?lumberBF*(1-bfWasteVal/100):lumberBF;
+  const bfGrandRaw=document.getElementById('bf-grand-raw');if(bfGrandRaw)bfGrandRaw.textContent=lumberBF.toFixed(2);
+  const bfGrandUsable=document.getElementById('bf-grand-usable');if(bfGrandUsable){bfGrandUsable.textContent=bfUsable.toFixed(2);bfGrandUsable.style.opacity=bfWasteVal>0?'1':'0.25';}
+  const bfGrandCost=document.getElementById('bf-grand-cost');if(bfGrandCost)bfGrandCost.textContent='$'+lumberCost.toFixed(2);
   const slabBfEl=document.getElementById('t-slab-bf'); if(slabBfEl) slabBfEl.textContent=slabBF.toFixed(2)+' bf';
   document.getElementById('t-cost').textContent='$'+totalCost.toFixed(2);
   const bfBar=document.getElementById('t-bf-bar');
@@ -2349,6 +2363,11 @@ function lfSCost(s){ return lfSTotal(s)*(parseFloat(s.price)||0); }
 function updateLFTotals(){
   const totalLF=lfSpecies.reduce((s,x)=>s+lfSTotal(x),0);
   const totalCost=lfSpecies.reduce((s,x)=>s+lfSCost(x),0);
+  const lfWasteVal=parseFloat((document.getElementById('lf-waste-input')||{}).value)||0;
+  const lfUsable=lfWasteVal>0?totalLF*(1-lfWasteVal/100):totalLF;
+  const lfGrandRaw=document.getElementById('lf-grand-raw');if(lfGrandRaw)lfGrandRaw.textContent=totalLF.toFixed(2);
+  const lfGrandUsable=document.getElementById('lf-grand-usable');if(lfGrandUsable){lfGrandUsable.textContent=lfUsable.toFixed(2);lfGrandUsable.style.opacity=lfWasteVal>0?'1':'0.25';}
+  const lfGrandCost=document.getElementById('lf-grand-cost');if(lfGrandCost)lfGrandCost.textContent='$'+totalCost.toFixed(2);
   updateTotals();
 }
 
@@ -2749,6 +2768,11 @@ function slabSCost(s){ return s.thicknesses.reduce((a,t)=>a+slabTCost(t),0); }
 function updateSlabTotals(){
   const totalBF = slabSpecies.reduce((s,x)=>s+slabSBF(x),0);
   const totalCost = slabSpecies.reduce((s,x)=>s+slabSCost(x),0);
+  const slabWasteVal=parseFloat((document.getElementById('slab-waste-input')||{}).value)||0;
+  const slabUsable=slabWasteVal>0?totalBF*(1-slabWasteVal/100):totalBF;
+  const slabGrandRaw=document.getElementById('slab-grand-raw');if(slabGrandRaw)slabGrandRaw.textContent=totalBF.toFixed(2);
+  const slabGrandUsable=document.getElementById('slab-grand-usable');if(slabGrandUsable){slabGrandUsable.textContent=slabUsable.toFixed(2);slabGrandUsable.style.opacity=slabWasteVal>0?'1':'0.25';}
+  const slabGrandCost=document.getElementById('slab-grand-cost');if(slabGrandCost)slabGrandCost.textContent='$'+totalCost.toFixed(2);
   updateTotals();
 }
 
@@ -3896,6 +3920,7 @@ function showPaywall(message) {
 }
 
 function closePaywall() {
+  document.getElementById("tab-lumber-btn").click();
   var sheet = document.getElementById('paywall-sheet');
   if(sheet) sheet.remove();
   var overlay = document.getElementById('paywall-overlay');
