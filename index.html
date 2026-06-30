@@ -2123,8 +2123,10 @@ function shopUid(){return 'shop'+Date.now()+'_'+Math.random().toString(36).slice
 function boardName(i,total){return 'Board '+(i+1);}
 
 // --- localStorage ---
+let _projectsWriteVersion = 0;
 function persist(){
   try{localStorage.setItem('wbc_projects',JSON.stringify(projects));}catch(e){}
+  _projectsWriteVersion++;
   if(typeof syncAfterSave==='function') syncAfterSave();
 }
 function updateLandingLink(){
@@ -7815,26 +7817,32 @@ function setSyncStatus(msg, color) {
   if(el) { el.textContent = msg; el.style.color = color || 'var(--text2)'; }
 }
 
-// ---- Push: each list as its own row ----
-async function syncToSupabase() {
+// ---- Mutex: serialize push/pull so they never run concurrently and race on localStorage ----
+let _syncChain = Promise.resolve();
+function _runSerialized(fn) {
+  const next = _syncChain.then(fn, fn);
+  // Swallow errors here so one failed sync doesn't permanently break the chain;
+  // the caller's own try/catch still sees and logs the real error.
+  _syncChain = next.catch(() => {});
+  return next;
+}
+
+// ---- Push: each list as its own row (atomic upsert, no delete/insert gap) ----
+async function _syncToSupabaseImpl() {
   if(!_currentUser) return;
   const { data: { session } } = await _supabase.auth.getSession();
   if(!session) return;
-  const headers = _getAuthHeaders(session);
+  const headers = { ...(_getAuthHeaders(session)), 'Prefer': 'resolution=merge-duplicates,return=minimal' };
   setSyncStatus('Syncing...', 'var(--text2)');
   try {
-    // Push each list as its own row
+    // Push each list as its own row via upsert (single atomic request per list)
     const listsRaw = localStorage.getItem('wbc_projects');
     const localLists = listsRaw ? JSON.parse(listsRaw) : [];
     for(const list of localLists) {
       const rowId = _currentUser.id + '_list_' + list.id;
-      await fetch(SUPABASE_URL + '/rest/v1/lists?id=eq.' + rowId, {
-        method: 'DELETE',
-        headers
-      });
-      await fetch(SUPABASE_URL + '/rest/v1/lists', {
+      await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
         method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
+        headers,
         body: JSON.stringify({
           id: rowId,
           user_id: _currentUser.id,
@@ -7844,14 +7852,13 @@ async function syncToSupabase() {
         })
       });
     }
-    // Push shop as single row
+    // Push shop as single row via upsert
     const shopRaw = localStorage.getItem('wbc_shop_inventory_v1');
     if(shopRaw) {
       const shopId = _currentUser.id + '_shop';
-      await fetch(SUPABASE_URL + '/rest/v1/shop?id=eq.' + shopId, { method: 'DELETE', headers });
-      await fetch(SUPABASE_URL + '/rest/v1/shop', {
+      await fetch(SUPABASE_URL + '/rest/v1/shop?on_conflict=id', {
         method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
+        headers,
         body: JSON.stringify({
           id: shopId,
           user_id: _currentUser.id,
@@ -7867,14 +7874,21 @@ async function syncToSupabase() {
     console.error('syncToSupabase error:', e);
   }
 }
+function syncToSupabase() {
+  return _runSerialized(_syncToSupabaseImpl);
+}
 
 // ---- Pull: fetch all list rows, merge into local ----
-async function syncFromSupabase() {
+async function _syncFromSupabaseImpl() {
   if(!_currentUser) return;
   const { data: { session } } = await _supabase.auth.getSession();
   if(!session) return;
   const headers = _getAuthHeaders(session);
   try {
+    // Snapshot the local write version *before* the network round trip so we can
+    // detect (and discard our own merge instead of clobbering) any save that
+    // happens while this pull is in flight.
+    const versionBeforeFetch = _projectsWriteVersion;
     // Fetch all list rows for this user
     const resp = await fetch(
       SUPABASE_URL + '/rest/v1/lists?select=data,updated_at&user_id=eq.' + _currentUser.id + '&order=updated_at.desc',
@@ -7885,19 +7899,25 @@ async function syncFromSupabase() {
       const serverLists = rows.map(r => r.data).filter(Boolean);
       const appScreen = document.getElementById('app-screen');
       const appVisible = appScreen && appScreen.style.display === 'block';
-      // Don't touch localStorage or in-memory projects while user is in the calculator
-      if(!appVisible) {
+      // Don't touch localStorage or in-memory projects while user is in the calculator,
+      // or if a local save happened after we started fetching (avoid clobbering it).
+      if(!appVisible && _projectsWriteVersion === versionBeforeFetch) {
         const localRaw = localStorage.getItem('wbc_projects');
         const localLists = localRaw ? JSON.parse(localRaw) : [];
         const serverIds = new Set(serverLists.map(l => l.id));
         const localOnly = localLists.filter(l => !serverIds.has(l.id));
         const merged = [...serverLists, ...localOnly];
-        localStorage.setItem('wbc_projects', JSON.stringify(merged));
-        if(typeof loadPersisted === 'function') loadPersisted();
-        if(typeof updateLandingLink === 'function') updateLandingLink();
-        const savedScreen = document.getElementById('saved-screen');
-        if(savedScreen && savedScreen.style.display === 'block') {
-          if(typeof showSaved === 'function') showSaved();
+        // Re-check immediately before the write too — the parse/filter above is
+        // synchronous but cheap insurance against any future await creeping in.
+        if(_projectsWriteVersion === versionBeforeFetch) {
+          localStorage.setItem('wbc_projects', JSON.stringify(merged));
+          _projectsWriteVersion++;
+          if(typeof loadPersisted === 'function') loadPersisted();
+          if(typeof updateLandingLink === 'function') updateLandingLink();
+          const savedScreen = document.getElementById('saved-screen');
+          if(savedScreen && savedScreen.style.display === 'block') {
+            if(typeof showSaved === 'function') showSaved();
+          }
         }
       }
     }
@@ -7918,6 +7938,9 @@ async function syncFromSupabase() {
   } catch(e) {
     console.error('syncFromSupabase error:', e);
   }
+}
+function syncFromSupabase() {
+  return _runSerialized(_syncFromSupabaseImpl);
 }
 
 // Auto-sync after every save
