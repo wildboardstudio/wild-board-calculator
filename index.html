@@ -2119,16 +2119,11 @@ function fmtCalc(n){ const s=String(n); return s.length>10?parseFloat(n.toFixed(
 
 function uid(){return 'x'+(++uc);}
 function shopUid(){return 'shop'+Date.now()+'_'+Math.random().toString(36).slice(2,9);}
+function listUid(){return 'list'+Date.now()+'_'+Math.random().toString(36).slice(2,9);}
 
 function boardName(i,total){return 'Board '+(i+1);}
 
-// --- localStorage ---
-let _projectsWriteVersion = 0;
-function persist(){
-  try{localStorage.setItem('wbc_projects',JSON.stringify(projects));}catch(e){}
-  _projectsWriteVersion++;
-  if(typeof syncAfterSave==='function') syncAfterSave();
-}
+// --- saved lists render layer (populated from Supabase, see SUPABASE AUTH & SYNC below) ---
 function updateLandingLink(){
   const btn=document.getElementById('landing-saved-link');
   if(!btn) return;
@@ -2137,12 +2132,6 @@ function updateLandingLink(){
   } else {
     btn.textContent='Open Saved Lists';
   }
-}
-function loadPersisted(){
-  try{
-    const d=localStorage.getItem('wbc_projects');
-    if(d) projects=JSON.parse(d);
-  }catch(e){}
 }
 
 // --- Inline title ---
@@ -2282,7 +2271,7 @@ function commitSave(overwriteId){
   const totalCost=lumberCost+slabCost+lfCost+sgCost;
   const budget=parseFloat(document.getElementById('budget-input').value)||0;
   const entry={
-    id:overwriteId||uid(), name:projName,
+    id:overwriteId||listUid(), name:projName,
     bf:totalBF, cost:totalCost, budget:budget,
     date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     species:JSON.parse(JSON.stringify(species)),
@@ -2299,8 +2288,11 @@ function commitSave(overwriteId){
     projects.unshift(entry);
   }
   editingId=entry.id; // always track the saved ID so next save overwrites
-  persist();
   updateLandingLink();
+  saveListToSupabase(entry).catch(err=>{
+    console.error('Save list error:', err);
+    appConfirm('Could not save this list to your account — check your connection and try again.',()=>{},'OK','var(--red)');
+  });
   // Show brief saved confirmation without clearing anything
   const saveBtn=document.getElementById('save-btn');
   const saveBtn2=document.getElementById('save-btn2');
@@ -3828,10 +3820,19 @@ function renderSaved(){
     const _rDel=actions.querySelector('[data-del]');
     if(_rDel)_rDel.addEventListener('click',e=>{
       e.stopPropagation();
-      appConfirm(`Delete "${p.name}"?`,()=>{
+      appConfirm(`Delete "${p.name}"?`,async ()=>{
         projects=projects.filter(x=>x.id!==p.id);
-        persist();
+        updateLandingLink();
         renderSaved();
+        try{
+          await deleteListFromSupabase(p.id);
+        }catch(err){
+          console.error('Delete list error:', err);
+          projects.push(p);
+          updateLandingLink();
+          renderSaved();
+          appConfirm('Could not delete — check your connection and try again.',()=>{},'OK','var(--red)');
+        }
       });
     });
 
