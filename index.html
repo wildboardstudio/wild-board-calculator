@@ -4802,6 +4802,12 @@ function saveSession(){
   }catch(e){}
 }
 
+// Set only by a successful loadSession() restore and consumed by start-btn's
+// click handler — NOT the same signal as "species is currently non-empty",
+// which is also true after a normal in-tab save (species/editingId are left
+// populated on purpose so the user can keep editing) and must still wipe on
+// the next "Create New List" tap like before.
+let _sessionRestoredPending=false;
 function loadSession(){
   try{
     const raw=localStorage.getItem('wbc_session');
@@ -4840,6 +4846,7 @@ function loadSession(){
       if(session.lfWasteTab){lfWasteTab=session.lfWasteTab;const el=document.getElementById('lf-waste-input');if(el)el.value=lfWasteTab;}
       if(session.slabWasteTab){slabWasteTab=session.slabWasteTab;const el=document.getElementById('slab-waste-input');if(el)el.value=slabWasteTab;}
       if(session.sgWasteTab){sgWasteTab=session.sgWasteTab;const el=document.getElementById('sg-waste-input');if(el)el.value=sgWasteTab;}
+      _sessionRestoredPending=true;
       return true;
     }
     return false;
@@ -7516,13 +7523,26 @@ document.getElementById('start-btn').addEventListener('click', function(){
   document.getElementById('tax-rate-bar').style.display='block';
   document.getElementById('tab-lumber-btn').style.background='#E0D3C5';
   document.getElementById('tab-lumber-btn').style.borderBottomColor='#E0D3C5';
-  clearProj();
-  clearSession();
-  species=[];
-  slabSpecies=[];
-  lfSpecies=[];
-  sgMaterials=[];
-  addSpecies();
+  if(_sessionRestoredPending){
+    // A working list was silently restored from wbc_session on page load
+    // (see DOMContentLoaded below) — resume it instead of discarding it.
+    // Only fires once: the next "Create New List" tap wipes normally, same
+    // as before, even though species is still non-empty from this resume.
+    _sessionRestoredPending=false;
+    render();
+    renderSlabSpecies();
+    renderLFSpecies();
+    renderSG();
+    updateTotals();
+  } else {
+    clearProj();
+    clearSession();
+    species=[];
+    slabSpecies=[];
+    lfSpecies=[];
+    sgMaterials=[];
+    addSpecies();
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
@@ -7727,23 +7747,13 @@ const SPLINTER_IMG = '/splinter.jpg';
 // ============ PAYWALL ============
 
 
-// Restore an in-progress guest/signed-in working list on refresh — wbc_session
-// is working-state (not saved data) and must survive a reload either way.
+// Silently restore an in-progress guest/signed-in working list from
+// wbc_session so it's there if the user taps into the calculator — this must
+// stay passive. The landing page always shows first; start-btn's click
+// handler (above) is what resumes into the app-screen if species got
+// populated here, instead of wiping it like a normal "new list" click.
 document.addEventListener('DOMContentLoaded', function() {
-  if(loadSession()){
-    document.getElementById('landing-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    document.getElementById('sticky-bar').style.display='flex';
-    document.getElementById('tax-rate-bar').style.display='block';
-    document.getElementById('tab-lumber-btn').style.background='#E0D3C5';
-    document.getElementById('tab-lumber-btn').style.borderBottomColor='#E0D3C5';
-    render();
-    renderSlabSpecies();
-    renderLFSpecies();
-    renderSG();
-    updateTotals();
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
+  loadSession();
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -7893,7 +7903,23 @@ async function _requireAuthHeaders() {
 }
 
 // ---- Saved lists: each list is its own row, keyed by {user_id}_list_{list.id} ----
+// A save/delete kicked off right before a fetch (e.g. tap Save, then
+// immediately tap Open Saved Lists) is otherwise a race: the GET can land
+// before the in-flight write does and overwrite the optimistic in-memory
+// state with pre-write server data. Track in-flight mutations so a fetch
+// always waits for anything already underway before it reads.
+const _pendingListMutations = new Set();
+function _trackListMutation(promise) {
+  _pendingListMutations.add(promise);
+  const clear = () => _pendingListMutations.delete(promise);
+  promise.then(clear, clear);
+  return promise;
+}
+
 async function fetchSavedLists() {
+  if(_pendingListMutations.size) {
+    await Promise.allSettled([..._pendingListMutations]);
+  }
   const headers = await _requireAuthHeaders();
   const resp = await fetch(
     SUPABASE_URL + '/rest/v1/lists?select=data,updated_at&user_id=eq.' + _currentUser.id + '&order=updated_at.desc',
@@ -7904,31 +7930,35 @@ async function fetchSavedLists() {
   projects = (Array.isArray(rows) ? rows : []).map(r => r.data).filter(Boolean);
 }
 
-async function saveListToSupabase(list) {
-  const headers = await _requireAuthHeaders();
-  const rowId = _currentUser.id + '_list_' + list.id;
-  const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
-    method: 'POST',
-    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    body: JSON.stringify({
-      id: rowId,
-      user_id: _currentUser.id,
-      name: list.name || 'Untitled',
-      data: list,
-      updated_at: new Date().toISOString()
-    })
-  });
-  await _checkSupabaseResp(resp, 'Save list "' + (list.name || rowId) + '"');
+function saveListToSupabase(list) {
+  return _trackListMutation((async () => {
+    const headers = await _requireAuthHeaders();
+    const rowId = _currentUser.id + '_list_' + list.id;
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
+      method: 'POST',
+      headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        id: rowId,
+        user_id: _currentUser.id,
+        name: list.name || 'Untitled',
+        data: list,
+        updated_at: new Date().toISOString()
+      })
+    });
+    await _checkSupabaseResp(resp, 'Save list "' + (list.name || rowId) + '"');
+  })());
 }
 
-async function deleteListFromSupabase(listId) {
-  const headers = await _requireAuthHeaders();
-  const rowId = _currentUser.id + '_list_' + listId;
-  const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?id=eq.' + encodeURIComponent(rowId), {
-    method: 'DELETE',
-    headers
-  });
-  await _checkSupabaseResp(resp, 'Delete list');
+function deleteListFromSupabase(listId) {
+  return _trackListMutation((async () => {
+    const headers = await _requireAuthHeaders();
+    const rowId = _currentUser.id + '_list_' + listId;
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?id=eq.' + encodeURIComponent(rowId), {
+      method: 'DELETE',
+      headers
+    });
+    await _checkSupabaseResp(resp, 'Delete list');
+  })());
 }
 
 // ---- Your Shop: single row per user, keyed by {user_id}_shop ----
@@ -7967,6 +7997,25 @@ async function saveShopToSupabase() {
 }
 
 // ---- One-time migration of pre-account localStorage data on sign-in ----
+// Idempotency is based on server *content*, not on trusting that a locally
+// persisted "already repaired" id survived — a local list whose content
+// already exists on the server (from any prior migration attempt, even one
+// that mid-flight generated a different id for it) is skipped rather than
+// re-pushed as a duplicate row. This is deliberately more defensive than
+// relying on id stability across retries, sign-outs, or interrupted runs.
+function _stableStringify(v) {
+  if(Array.isArray(v)) return '[' + v.map(_stableStringify).join(',') + ']';
+  if(v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + _stableStringify(v[k])).join(',') + '}';
+  }
+  return JSON.stringify(v);
+}
+function _migrationSignature(list) {
+  if(!list || typeof list !== 'object') return _stableStringify(list);
+  const { id, ...rest } = list;
+  return _stableStringify(rest);
+}
+
 let _migrating = false;
 async function migrateLocalDataIfNeeded() {
   if(_migrating) return;
@@ -7986,28 +8035,19 @@ async function migrateLocalDataIfNeeded() {
 
   _migrating = true;
   try {
-    // Repair legacy/colliding list IDs once, persisting the repair back to
-    // localStorage so a retry after a partial failure below re-sends the
-    // same IDs (idempotent upsert) instead of minting new ones and
-    // duplicating already-migrated rows.
     if(hasLists) {
-      let changed = false;
-      const seen = new Set();
-      localLists.forEach(l => {
-        if(!l.id || !/^list\d+_/.test(l.id) || seen.has(l.id)) {
-          l.id = listUid();
-          changed = true;
-        }
-        seen.add(l.id);
-      });
-      if(changed) {
-        try { localStorage.setItem('wbc_projects', JSON.stringify(localLists)); } catch(e) {}
-      }
-    }
+      const headers = await _requireAuthHeaders();
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?select=data&user_id=eq.' + _currentUser.id, { headers });
+      await _checkSupabaseResp(resp, 'Fetch existing lists for migration check');
+      const existingRows = await resp.json();
+      const existingSignatures = new Set((Array.isArray(existingRows) ? existingRows : []).map(r => _migrationSignature(r.data)));
 
-    if(hasLists) {
       for(const list of localLists) {
+        const sig = _migrationSignature(list);
+        if(existingSignatures.has(sig)) continue; // this exact list is already on the server
+        if(!list.id || !/^list\d+_/.test(list.id)) list.id = listUid();
         await saveListToSupabase(list);
+        existingSignatures.add(sig);
       }
     }
 
@@ -8020,7 +8060,7 @@ async function migrateLocalDataIfNeeded() {
       }
     }
 
-    // Confirmed server write succeeded for everything above — safe to drop local copies.
+    // Confirmed server state accounts for everything above — safe to drop local copies.
     localStorage.removeItem('wbc_projects');
     localStorage.removeItem('wbc_shop_inventory_v1');
   } catch(e) {
