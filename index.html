@@ -651,7 +651,7 @@
       <button class="btn-saved" id="landing-account-btn" style="margin-top:0;">Sign In / Create Account</button>
       <div class="landing-pro-wrap">
         <p id="landing-account-status" class="landing-pro-sub" style="color:var(--text2);font-size:12px;display:none;"></p>
-        <p class="landing-pro-sub" style="color:var(--text2);font-size:12px;">Beta &nbsp;&bull;&nbsp; Data syncs across your devices when signed in</p>
+        <p class="landing-pro-sub" style="color:var(--text2);font-size:12px;">Beta &nbsp;&bull;&nbsp; Saving lists and Your Shop requires a free account</p>
       </div>
     </div>
   </div>
@@ -1044,6 +1044,7 @@
     <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Total Inventory Value</div>
     <div id="shop-total-value" style="font-size:28px;font-weight:700;color:var(--text);line-height:1;">$0.00</div>
   </div>
+  <p id="shop-sync-status" style="font-size:11px;color:var(--text2);text-align:center;margin:-8px 0 12px;min-height:14px;"></p>
 
   <div id="shop-sections"></div>
 </div>
@@ -1100,6 +1101,7 @@
   <div class="modal">
     <h3 id="auth-modal-title" style="text-align:center;">Sign In</h3>
     <div id="auth-modal-body">
+      <p id="auth-context-msg" style="font-size:13px;color:var(--text2);text-align:center;margin:0 0 12px;display:none;"></p>
       <div style="margin-bottom:10px;">
         <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Email</label>
         <input type="email" id="auth-email" placeholder="your@email.com" style="width:100%;font-size:15px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" />
@@ -1120,10 +1122,8 @@
     <!-- Signed in state -->
     <div id="auth-signed-in-body" style="display:none;text-align:center;">
       <p id="auth-signed-in-email" style="font-size:13px;color:var(--text2);margin-bottom:6px;"></p>
-      <p id="auth-sync-status" style="font-size:11px;color:var(--text2);margin-bottom:16px;">Your lists and shop sync automatically across devices.</p>
-      <p id="auth-debug-info" style="font-size:11px;color:var(--text2);margin-bottom:10px;word-break:break-all;"></p>
+      <p id="auth-sync-status" style="font-size:11px;color:var(--text2);margin-bottom:16px;">Your lists and shop are saved to your account.</p>
       <div class="modal-btns">
-        <button class="btn" id="auth-debug-btn">Check Local Data</button>
         <button class="btn" id="auth-signout-btn">Sign Out</button>
         <button class="btn" id="auth-close-btn">Close</button>
       </div>
@@ -6221,10 +6221,31 @@ function renderSG(){
 
 
 
-function showSaved(){
-  loadPersisted(); // Always reload from localStorage before showing
+async function showSaved(){
+  if(!_currentUser){
+    openAuthModal('Sign in to view your saved lists');
+    return;
+  }
+  document.getElementById('landing-screen').style.display='none';
+  document.getElementById('saved-screen').style.display='block';
+  const listEl=document.getElementById('saved-list-screen');
+  if(listEl) listEl.innerHTML='<p class="empty">Loading...</p>';
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{
+    await fetchSavedLists();
+  }catch(e){
+    console.error('fetchSavedLists error:', e);
+    if(listEl){
+      listEl.innerHTML='<p class="empty">Couldn\'t load — check connection.<br><button class="btn btn-sm" id="saved-retry-btn" style="margin-top:10px;">Retry</button></p>';
+      const retryBtn=document.getElementById('saved-retry-btn');
+      if(retryBtn) retryBtn.addEventListener('click', showSaved);
+    }
+    return;
+  }
   updateLandingLink();
   if(!projects.length){
+    document.getElementById('saved-screen').style.display='none';
+    document.getElementById('landing-screen').style.display='';
     appConfirm('<img src="/splinter.jpg" style="width:220px;max-width:90%;margin:0 auto 10px;display:block;" /><span style="display:block;text-align:center;">You have nothing saved!<br>Click <strong>Create</strong> and get to work!</span>',()=>{
       document.getElementById('landing-screen').style.display='none';
       document.getElementById('app-screen').style.display='block';
@@ -6236,18 +6257,13 @@ function showSaved(){
     },'Create','var(--green)');
     return;
   }
-  document.getElementById('landing-screen').style.display='none';
-  document.getElementById('saved-screen').style.display='block';
   renderSaved();
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // Wire landing saved link after showSaved is defined
 (function(){
   const btn=document.getElementById('landing-saved-link');
   if(btn) btn.addEventListener('click', showSaved);
-  // Load persisted projects then update button
-  loadPersisted();
   updateLandingLink();
 
   // Wire saved-back-btn
@@ -6260,37 +6276,34 @@ function showSaved(){
 
 // ============ YOUR SHOP ============
 function _buildSnapshot(){ return null; } // stub — snapshot tracking not yet implemented
-const SHOP_KEY='wbc_shop_inventory_v1';
 let shopData=null; // { bf:[...], lf:[...], slab:[...], sg:[...] }
 let shopSectionState={lumber:false, slab:false, sg:false}; // collapsed by default
 
+// Ensures in-memory shopData is well-formed and IDs are unique. Does not
+// touch localStorage or the network — shopData itself is populated by
+// fetchShopIntoMemory() (see SUPABASE AUTH & SYNC).
 function loadShopData(){
-  try{
-    const raw=localStorage.getItem(SHOP_KEY);
-    if(raw){shopData=JSON.parse(raw);}
-  }catch(e){}
   if(!shopData) shopData={bf:[],lf:[],slab:[],sg:[]};
   ['bf','lf','slab','sg'].forEach(k=>{if(!Array.isArray(shopData[k]))shopData[k]=[];});
   if(typeof shopData.kerf!=='number') shopData.kerf=0;
 
-  // Repair any duplicate/colliding IDs from older sessions
   const seenIds=new Set();
-  let needsSave=false;
   ['bf','lf','slab','sg'].forEach(k=>{
     shopData[k].forEach(item=>{
       if(!item.id||seenIds.has(item.id)){
         item.id=shopUid();
-        needsSave=true;
       }
       seenIds.add(item.id);
     });
   });
-  if(needsSave) saveShopData();
 }
 
 function saveShopData(){
-  try{localStorage.setItem(SHOP_KEY, JSON.stringify(shopData));}catch(e){}
-  if(typeof syncAfterSave==='function') syncAfterSave();
+  saveShopToSupabase().catch(e=>{
+    console.error('saveShopData error:', e);
+    const statusEl=document.getElementById('shop-sync-status');
+    if(statusEl){ statusEl.textContent='Could not save — check connection.'; statusEl.style.color='var(--red)'; }
+  });
 }
 
 let _shopReturnTo='landing'; // 'landing' or 'app'
@@ -6338,8 +6351,11 @@ function initShopKerfControl(onUpdate){
   }
 }
 
-function showShop(){
-  loadShopData();
+async function showShop(){
+  if(!_currentUser){
+    openAuthModal('Sign in to view your shop');
+    return;
+  }
   const landing=document.getElementById('landing-screen');
   const appScreen=document.getElementById('app-screen');
   const stickyBar=document.getElementById('sticky-bar');
@@ -6348,8 +6364,23 @@ function showShop(){
   if(appScreen) appScreen.style.display='none';
   if(stickyBar) stickyBar.style.display='none';
   document.getElementById('shop-screen').style.display='block';
-  renderShop();
+  const container=document.getElementById('shop-sections');
+  if(container) container.innerHTML='<p class="empty">Loading...</p>';
+  const statusEl=document.getElementById('shop-sync-status');
+  if(statusEl){ statusEl.textContent=''; }
   window.scrollTo({top:0,behavior:'smooth'});
+  try{
+    await fetchShopIntoMemory();
+  }catch(e){
+    console.error('fetchShopIntoMemory error:', e);
+    if(container){
+      container.innerHTML='<p class="empty">Couldn\'t load — check connection.<br><button class="btn btn-sm" id="shop-retry-btn" style="margin-top:10px;">Retry</button></p>';
+      const retryBtn=document.getElementById('shop-retry-btn');
+      if(retryBtn) retryBtn.addEventListener('click', showShop);
+    }
+    return;
+  }
+  renderShop();
 }
 
 // Wire shop-back-btn
@@ -6374,8 +6405,16 @@ function showShop(){
 })();
 
 // "Add to Your Shop" — robust single entry point used by save-modal and name-modal
-function addToShopFlow(){
-  loadShopData();
+async function addToShopFlow(){
+  if(!_currentUser) return; // unreachable in the UI (Save button is hidden for guests) — defensive only
+  try{
+    if(!shopData) await fetchShopIntoMemory();
+    else loadShopData();
+  }catch(e){
+    console.error('addToShopFlow fetch error:', e);
+    appConfirm('Could not reach Your Shop — check your connection and try again.',()=>{},'OK','var(--red)');
+    return;
+  }
   openShopCheckoutGate();
 }
 
@@ -7799,9 +7838,7 @@ let _currentUser = null;
 _supabase.auth.onAuthStateChange((event, session) => {
   _currentUser = session ? session.user : null;
   updateAuthUI();
-  if(_currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-    syncFromSupabase();
-  }
+  if(_currentUser) migrateLocalDataIfNeeded();
 });
 
 // ---- Helpers ----
@@ -7832,149 +7869,158 @@ async function _checkSupabaseResp(resp, label) {
   return resp;
 }
 
-// ---- Mutex: serialize push/pull so they never run concurrently and race on localStorage ----
-let _syncChain = Promise.resolve();
-function _runSerialized(fn) {
-  const next = _syncChain.then(fn, fn);
-  // Swallow errors here so one failed sync doesn't permanently break the chain;
-  // the caller's own try/catch still sees and logs the real error.
-  _syncChain = next.catch(() => {});
-  return next;
+async function _requireAuthHeaders() {
+  if(!_currentUser) throw new Error('Not signed in');
+  const { data: { session } } = await _supabase.auth.getSession();
+  if(!session) throw new Error('Not signed in');
+  return _getAuthHeaders(session);
 }
 
-// ---- Push: each list as its own row (atomic upsert, no delete/insert gap) ----
-async function _syncToSupabaseImpl() {
-  if(!_currentUser) return;
-  const { data: { session } } = await _supabase.auth.getSession();
-  if(!session) return;
-  const headers = { ...(_getAuthHeaders(session)), 'Prefer': 'resolution=merge-duplicates,return=minimal' };
-  setSyncStatus('Syncing...', 'var(--text2)');
-  try {
-    // Push each list as its own row via upsert (single atomic request per list)
-    const listsRaw = localStorage.getItem('wbc_projects');
-    const localLists = listsRaw ? JSON.parse(listsRaw) : [];
-    for(const list of localLists) {
-      const rowId = _currentUser.id + '_list_' + list.id;
-      const listResp = await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          id: rowId,
-          user_id: _currentUser.id,
-          name: list.name || 'Untitled',
-          data: list,
-          updated_at: new Date().toISOString()
-        })
-      });
-      await _checkSupabaseResp(listResp, 'Push list "' + (list.name || rowId) + '"');
-    }
-    // Push shop as single row via upsert
-    const shopRaw = localStorage.getItem('wbc_shop_inventory_v1');
-    if(shopRaw) {
-      const shopId = _currentUser.id + '_shop';
-      const shopResp = await fetch(SUPABASE_URL + '/rest/v1/shop?on_conflict=id', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          id: shopId,
-          user_id: _currentUser.id,
-          data: JSON.parse(shopRaw),
-          updated_at: new Date().toISOString()
-        })
-      });
-      await _checkSupabaseResp(shopResp, 'Push shop data');
-    }
-    setSyncStatus('Synced ✓', 'var(--green)');
-    setTimeout(()=>setSyncStatus('Your lists and shop sync automatically across devices.'), 3000);
-  } catch(e) {
-    setSyncStatus('Sync error: ' + e.message, 'var(--red)');
-    console.error('syncToSupabase error:', e);
-  }
-}
-function syncToSupabase() {
-  return _runSerialized(_syncToSupabaseImpl);
+// ---- Saved lists: each list is its own row, keyed by {user_id}_list_{list.id} ----
+async function fetchSavedLists() {
+  const headers = await _requireAuthHeaders();
+  const resp = await fetch(
+    SUPABASE_URL + '/rest/v1/lists?select=data,updated_at&user_id=eq.' + _currentUser.id + '&order=updated_at.desc',
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch saved lists');
+  const rows = await resp.json();
+  projects = (Array.isArray(rows) ? rows : []).map(r => r.data).filter(Boolean);
 }
 
-// ---- Pull: fetch all list rows, merge into local ----
-async function _syncFromSupabaseImpl() {
-  if(!_currentUser) return;
-  const { data: { session } } = await _supabase.auth.getSession();
-  if(!session) return;
-  const headers = _getAuthHeaders(session);
+async function saveListToSupabase(list) {
+  const headers = await _requireAuthHeaders();
+  const rowId = _currentUser.id + '_list_' + list.id;
+  const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: rowId,
+      user_id: _currentUser.id,
+      name: list.name || 'Untitled',
+      data: list,
+      updated_at: new Date().toISOString()
+    })
+  });
+  await _checkSupabaseResp(resp, 'Save list "' + (list.name || rowId) + '"');
+}
+
+async function deleteListFromSupabase(listId) {
+  const headers = await _requireAuthHeaders();
+  const rowId = _currentUser.id + '_list_' + listId;
+  const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?id=eq.' + encodeURIComponent(rowId), {
+    method: 'DELETE',
+    headers
+  });
+  await _checkSupabaseResp(resp, 'Delete list');
+}
+
+// ---- Your Shop: single row per user, keyed by {user_id}_shop ----
+async function _fetchShopRow() {
+  const headers = await _requireAuthHeaders();
+  const resp = await fetch(
+    SUPABASE_URL + '/rest/v1/shop?select=data&user_id=eq.' + _currentUser.id + '&limit=1',
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch shop');
+  const rows = await resp.json();
+  if(Array.isArray(rows) && rows.length > 0) return { exists: true, data: rows[0].data || null };
+  return { exists: false, data: null };
+}
+
+async function fetchShopIntoMemory() {
+  const row = await _fetchShopRow();
+  shopData = row.data || {bf:[],lf:[],slab:[],sg:[]};
+  loadShopData(); // ensure defaults + repair collided/missing ids on the freshly fetched data
+}
+
+async function saveShopToSupabase() {
+  const headers = await _requireAuthHeaders();
+  const shopId = _currentUser.id + '_shop';
+  const resp = await fetch(SUPABASE_URL + '/rest/v1/shop?on_conflict=id', {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: shopId,
+      user_id: _currentUser.id,
+      data: shopData,
+      updated_at: new Date().toISOString()
+    })
+  });
+  await _checkSupabaseResp(resp, 'Save shop data');
+}
+
+// ---- One-time migration of pre-account localStorage data on sign-in ----
+let _migrating = false;
+async function migrateLocalDataIfNeeded() {
+  if(_migrating) return;
+  let localLists = [];
   try {
-    // Snapshot the local write version *before* the network round trip so we can
-    // detect (and discard our own merge instead of clobbering) any save that
-    // happens while this pull is in flight.
-    const versionBeforeFetch = _projectsWriteVersion;
-    // Fetch all list rows for this user
-    const resp = await fetch(
-      SUPABASE_URL + '/rest/v1/lists?select=data,updated_at&user_id=eq.' + _currentUser.id + '&order=updated_at.desc',
-      { headers }
-    );
-    await _checkSupabaseResp(resp, 'Pull lists');
-    const rows = await resp.json();
-    if(Array.isArray(rows) && rows.length > 0) {
-      const serverLists = rows.map(r => r.data).filter(Boolean);
-      const appScreen = document.getElementById('app-screen');
-      const appVisible = appScreen && appScreen.style.display === 'block';
-      // Don't touch localStorage or in-memory projects while user is in the calculator,
-      // or if a local save happened after we started fetching (avoid clobbering it).
-      if(!appVisible && _projectsWriteVersion === versionBeforeFetch) {
-        const localRaw = localStorage.getItem('wbc_projects');
-        const localLists = localRaw ? JSON.parse(localRaw) : [];
-        const serverIds = new Set(serverLists.map(l => l.id));
-        const localOnly = localLists.filter(l => !serverIds.has(l.id));
-        const merged = [...serverLists, ...localOnly];
-        // Re-check immediately before the write too — the parse/filter above is
-        // synchronous but cheap insurance against any future await creeping in.
-        if(_projectsWriteVersion === versionBeforeFetch) {
-          localStorage.setItem('wbc_projects', JSON.stringify(merged));
-          _projectsWriteVersion++;
-          if(typeof loadPersisted === 'function') loadPersisted();
-          if(typeof updateLandingLink === 'function') updateLandingLink();
-          const savedScreen = document.getElementById('saved-screen');
-          if(savedScreen && savedScreen.style.display === 'block') {
-            if(typeof showSaved === 'function') showSaved();
-          }
+    const raw = localStorage.getItem('wbc_projects');
+    localLists = raw ? JSON.parse(raw) : [];
+  } catch(e) { localLists = []; }
+  let localShop = null;
+  try {
+    const raw = localStorage.getItem('wbc_shop_inventory_v1');
+    localShop = raw ? JSON.parse(raw) : null;
+  } catch(e) { localShop = null; }
+
+  const hasLists = Array.isArray(localLists) && localLists.length > 0;
+  if(!hasLists && !localShop) return; // nothing to migrate
+
+  _migrating = true;
+  try {
+    // Repair legacy/colliding list IDs once, persisting the repair back to
+    // localStorage so a retry after a partial failure below re-sends the
+    // same IDs (idempotent upsert) instead of minting new ones and
+    // duplicating already-migrated rows.
+    if(hasLists) {
+      let changed = false;
+      const seen = new Set();
+      localLists.forEach(l => {
+        if(!l.id || !/^list\d+_/.test(l.id) || seen.has(l.id)) {
+          l.id = listUid();
+          changed = true;
         }
+        seen.add(l.id);
+      });
+      if(changed) {
+        try { localStorage.setItem('wbc_projects', JSON.stringify(localLists)); } catch(e) {}
       }
     }
-    // Fetch shop
-    const shopResp = await fetch(
-      SUPABASE_URL + '/rest/v1/shop?select=data&user_id=eq.' + _currentUser.id + '&limit=1',
-      { headers }
-    );
-    await _checkSupabaseResp(shopResp, 'Pull shop');
-    const shopRows = await shopResp.json();
-    if(Array.isArray(shopRows) && shopRows.length > 0 && shopRows[0].data) {
-      localStorage.setItem('wbc_shop_inventory_v1', JSON.stringify(shopRows[0].data));
-      const shopScreen = document.getElementById('shop-screen');
-      if(shopScreen && shopScreen.style.display !== 'none') {
-        if(typeof loadShopData === 'function') loadShopData();
-        if(typeof renderShop === 'function') renderShop();
+
+    if(hasLists) {
+      for(const list of localLists) {
+        await saveListToSupabase(list);
       }
     }
+
+    if(localShop) {
+      const existing = await _fetchShopRow();
+      if(!existing.exists) {
+        shopData = localShop;
+        loadShopData();
+        await saveShopToSupabase();
+      }
+    }
+
+    // Confirmed server write succeeded for everything above — safe to drop local copies.
+    localStorage.removeItem('wbc_projects');
+    localStorage.removeItem('wbc_shop_inventory_v1');
   } catch(e) {
-    console.error('syncFromSupabase error:', e);
-    setSyncStatus('Sync error: ' + e.message, 'var(--red)');
+    console.error('Migration to account failed:', e);
+    setSyncStatus('Could not migrate your local data — it has been kept. ' + e.message, 'var(--red)');
+  } finally {
+    _migrating = false;
   }
 }
-function syncFromSupabase() {
-  return _runSerialized(_syncFromSupabaseImpl);
-}
-
-// Auto-sync after every save
-function syncAfterSave() {
-  if(_currentUser) setTimeout(syncToSupabase, 500);
-}
-
-// Poll every 30 seconds
-setInterval(()=>{ if(_currentUser) syncFromSupabase(); }, 30000);
 
 // ---- Auth UI ----
 function updateAuthUI() {
   const btn = document.getElementById('landing-account-btn');
   const status = document.getElementById('landing-account-status');
+  const saveBtn = document.getElementById('save-btn');
+  if(saveBtn) saveBtn.style.display = _currentUser ? 'flex' : 'none';
   if(!btn) return;
   if(_currentUser) {
     btn.textContent = 'My Account';
@@ -7987,10 +8033,11 @@ function updateAuthUI() {
 
 let _authMode = 'signin';
 
-function openAuthModal() {
+function openAuthModal(contextMsg) {
   const modal = document.getElementById('auth-modal');
   const signedInBody = document.getElementById('auth-signed-in-body');
   const mainBody = document.getElementById('auth-modal-body');
+  const ctxEl = document.getElementById('auth-context-msg');
   if(_currentUser) {
     mainBody.style.display = 'none';
     signedInBody.style.display = 'block';
@@ -8004,6 +8051,10 @@ function openAuthModal() {
     const e = document.getElementById('auth-email'); if(e) e.value = '';
     const p = document.getElementById('auth-password'); if(p) p.value = '';
     const err = document.getElementById('auth-error'); if(err) { err.style.display = 'none'; err.textContent = ''; }
+    if(ctxEl) {
+      if(contextMsg) { ctxEl.textContent = contextMsg; ctxEl.style.display = 'block'; }
+      else ctxEl.style.display = 'none';
+    }
   }
   modal.classList.add('open');
 }
@@ -8065,20 +8116,16 @@ function showAuthError(msg) {
   const signoutBtn = document.getElementById('auth-signout-btn');
   if(signoutBtn) signoutBtn.addEventListener('click', async ()=>{
     await _supabase.auth.signOut();
+    projects = [];
+    shopData = null;
+    updateLandingLink();
     document.getElementById('auth-modal').classList.remove('open');
-  });
-
-  const debugBtn = document.getElementById('auth-debug-btn');
-  if(debugBtn) debugBtn.addEventListener('click', async ()=>{
-    const debugEl = document.getElementById('auth-debug-info');
-    const localRaw = localStorage.getItem('wbc_projects');
-    const local = localRaw ? JSON.parse(localRaw) : [];
-    if(debugEl) debugEl.textContent = 'local: ' + local.length + ' lists. Triggering sync...';
-    await syncToSupabase();
-    await syncFromSupabase();
-    const afterRaw = localStorage.getItem('wbc_projects');
-    const after = afterRaw ? JSON.parse(afterRaw) : [];
-    if(debugEl) debugEl.textContent = 'local: ' + after.length + ' lists (after sync)';
+    document.getElementById('saved-screen').style.display='none';
+    document.getElementById('shop-screen').style.display='none';
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('sticky-bar').style.display='none';
+    document.getElementById('landing-screen').style.display='';
+    window.scrollTo({top:0,behavior:'smooth'});
   });
 })();
 </script>
