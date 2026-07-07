@@ -7727,7 +7727,23 @@ const SPLINTER_IMG = '/splinter.jpg';
 // ============ PAYWALL ============
 
 
+// Restore an in-progress guest/signed-in working list on refresh — wbc_session
+// is working-state (not saved data) and must survive a reload either way.
 document.addEventListener('DOMContentLoaded', function() {
+  if(loadSession()){
+    document.getElementById('landing-screen').style.display='none';
+    document.getElementById('app-screen').style.display='block';
+    document.getElementById('sticky-bar').style.display='flex';
+    document.getElementById('tax-rate-bar').style.display='block';
+    document.getElementById('tab-lumber-btn').style.background='#E0D3C5';
+    document.getElementById('tab-lumber-btn').style.borderBottomColor='#E0D3C5';
+    render();
+    renderSlabSpecies();
+    renderLFSpecies();
+    renderSG();
+    updateTotals();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
