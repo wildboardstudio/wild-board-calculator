@@ -7881,6 +7881,19 @@ function setSyncStatus(msg, color) {
   if(el) { el.textContent = msg; el.style.color = color || 'var(--text2)'; }
 }
 
+// fetch() has no default timeout — a stalled connection (backgrounding,
+// cellular handoff, captive portals, all common on mobile) can leave its
+// promise pending forever. Every Supabase REST call goes through this so a
+// hung request eventually rejects instead of wedging its caller (and, for
+// saves/deletes, permanently blocking _pendingListMutations from ever
+// clearing — see fetchSavedLists() below) indefinitely.
+const SUPABASE_FETCH_TIMEOUT_MS = 15000;
+function _fetchWithTimeout(url, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SUPABASE_FETCH_TIMEOUT_MS);
+  return fetch(url, { ...(options || {}), signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 // fetch() only rejects on network failure — it resolves normally for HTTP
 // error statuses (401/403/409/etc). Without this check, a rejected write
 // (e.g. missing UPDATE grant) is silently treated as success.
@@ -7915,13 +7928,22 @@ function _trackListMutation(promise) {
   promise.then(clear, clear);
   return promise;
 }
+// Belt-and-suspenders on top of _fetchWithTimeout: even if some pending
+// mutation's promise never settles for any reason, never let it block a
+// fetch from reaching the network past a few seconds — the UI must always
+// eventually converge on server truth, not get stuck reflecting whatever
+// was last in memory.
+const PENDING_MUTATION_WAIT_MS = 5000;
 
 async function fetchSavedLists() {
   if(_pendingListMutations.size) {
-    await Promise.allSettled([..._pendingListMutations]);
+    await Promise.race([
+      Promise.allSettled([..._pendingListMutations]),
+      new Promise(resolve => setTimeout(resolve, PENDING_MUTATION_WAIT_MS))
+    ]);
   }
   const headers = await _requireAuthHeaders();
-  const resp = await fetch(
+  const resp = await _fetchWithTimeout(
     SUPABASE_URL + '/rest/v1/lists?select=data,updated_at&user_id=eq.' + _currentUser.id + '&order=updated_at.desc',
     { headers }
   );
@@ -7934,7 +7956,7 @@ function saveListToSupabase(list) {
   return _trackListMutation((async () => {
     const headers = await _requireAuthHeaders();
     const rowId = _currentUser.id + '_list_' + list.id;
-    const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
+    const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/lists?on_conflict=id', {
       method: 'POST',
       headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
@@ -7953,7 +7975,7 @@ function deleteListFromSupabase(listId) {
   return _trackListMutation((async () => {
     const headers = await _requireAuthHeaders();
     const rowId = _currentUser.id + '_list_' + listId;
-    const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?id=eq.' + encodeURIComponent(rowId), {
+    const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/lists?id=eq.' + encodeURIComponent(rowId), {
       method: 'DELETE',
       headers
     });
@@ -7964,7 +7986,7 @@ function deleteListFromSupabase(listId) {
 // ---- Your Shop: single row per user, keyed by {user_id}_shop ----
 async function _fetchShopRow() {
   const headers = await _requireAuthHeaders();
-  const resp = await fetch(
+  const resp = await _fetchWithTimeout(
     SUPABASE_URL + '/rest/v1/shop?select=data&user_id=eq.' + _currentUser.id + '&limit=1',
     { headers }
   );
@@ -7983,7 +8005,7 @@ async function fetchShopIntoMemory() {
 async function saveShopToSupabase() {
   const headers = await _requireAuthHeaders();
   const shopId = _currentUser.id + '_shop';
-  const resp = await fetch(SUPABASE_URL + '/rest/v1/shop?on_conflict=id', {
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/shop?on_conflict=id', {
     method: 'POST',
     headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     body: JSON.stringify({
@@ -8037,18 +8059,21 @@ async function migrateLocalDataIfNeeded() {
   try {
     if(hasLists) {
       const headers = await _requireAuthHeaders();
-      const resp = await fetch(SUPABASE_URL + '/rest/v1/lists?select=data&user_id=eq.' + _currentUser.id, { headers });
+      const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/lists?select=data&user_id=eq.' + _currentUser.id, { headers });
       await _checkSupabaseResp(resp, 'Fetch existing lists for migration check');
       const existingRows = await resp.json();
       const existingSignatures = new Set((Array.isArray(existingRows) ? existingRows : []).map(r => _migrationSignature(r.data)));
 
+      let pushedCount = 0, skippedCount = 0;
       for(const list of localLists) {
         const sig = _migrationSignature(list);
-        if(existingSignatures.has(sig)) continue; // this exact list is already on the server
+        if(existingSignatures.has(sig)) { skippedCount++; continue; } // this exact list is already on the server
         if(!list.id || !/^list\d+_/.test(list.id)) list.id = listUid();
-        await saveListToSupabase(list);
+        await saveListToSupabase(list); // throws (and is verified via _checkSupabaseResp) on any non-2xx response
         existingSignatures.add(sig);
+        pushedCount++;
       }
+      console.log('Migration: pushed ' + pushedCount + ' of ' + localLists.length + ' local list(s) (' + skippedCount + ' already on server).');
     }
 
     if(localShop) {
@@ -8057,12 +8082,16 @@ async function migrateLocalDataIfNeeded() {
         shopData = localShop;
         loadShopData();
         await saveShopToSupabase();
+        console.log('Migration: pushed local shop data (server had none).');
+      } else {
+        console.log('Migration: server shop already existed, local shop data skipped.');
       }
     }
 
     // Confirmed server state accounts for everything above — safe to drop local copies.
     localStorage.removeItem('wbc_projects');
     localStorage.removeItem('wbc_shop_inventory_v1');
+    console.log('Migration: complete, local copies cleared.');
   } catch(e) {
     console.error('Migration to account failed:', e);
     setSyncStatus('Could not migrate your local data — it has been kept. ' + e.message, 'var(--red)');
