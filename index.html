@@ -1127,6 +1127,27 @@
         <button class="btn" id="auth-signout-btn">Sign Out</button>
         <button class="btn" id="auth-close-btn">Close</button>
       </div>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <button class="btn" id="auth-delete-account-btn" style="width:100%;color:var(--red);border-color:var(--red);">Delete Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete account modal -->
+<div class="modal-overlay" id="delete-account-modal">
+  <div class="modal">
+    <h3 style="color:var(--red);">Delete Account</h3>
+    <p>This permanently deletes your account, all saved lists, and your entire shop inventory. This cannot be undone.</p>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Confirm your password to continue</label>
+      <input type="password" id="delete-account-password" placeholder="••••••••" autocomplete="current-password"
+        style="width:100%;font-size:15px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" />
+    </div>
+    <p id="delete-account-error" style="font-size:12px;color:var(--red);margin:4px 0 0;display:none;"></p>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn" id="delete-account-confirm-btn" style="background:var(--red);color:#fff;border-color:var(--red);">Permanently Delete My Account</button>
+      <button class="btn" id="delete-account-cancel-btn">Cancel</button>
     </div>
   </div>
 </div>
@@ -8031,6 +8052,22 @@ async function saveShopToSupabase() {
   await _checkSupabaseResp(resp, 'Save shop data');
 }
 
+// ---- Account deletion ----
+// Edge Function URLs are deterministic (project URL + /functions/v1/<name>),
+// so as long as the function is deployed under this exact name, nothing
+// here needs to change to "wire in" its URL.
+async function deleteAccount(accessToken) {
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/functions/v1/delete-account', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + accessToken,
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    }
+  });
+  await _checkSupabaseResp(resp, 'Delete account');
+}
+
 // ---- One-time migration of pre-account localStorage data on sign-in ----
 // Idempotency is based on server *content*, not on trusting that a locally
 // persisted "already repaired" id survived — a local list whose content
@@ -8177,6 +8214,21 @@ function showAuthError(msg) {
   if(el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
+// Shared by sign-out and delete-account success: clear in-memory account
+// state and land back on the guest landing screen.
+function returnToGuestLanding() {
+  projects = [];
+  shopData = null;
+  updateLandingLink();
+  document.getElementById('auth-modal').classList.remove('open');
+  document.getElementById('saved-screen').style.display='none';
+  document.getElementById('shop-screen').style.display='none';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('sticky-bar').style.display='none';
+  document.getElementById('landing-screen').style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 // Wire auth modal buttons
 (()=>{
   const landingBtn = document.getElementById('landing-account-btn');
@@ -8214,16 +8266,66 @@ function showAuthError(msg) {
   const signoutBtn = document.getElementById('auth-signout-btn');
   if(signoutBtn) signoutBtn.addEventListener('click', async ()=>{
     await _supabase.auth.signOut();
-    projects = [];
-    shopData = null;
-    updateLandingLink();
-    document.getElementById('auth-modal').classList.remove('open');
-    document.getElementById('saved-screen').style.display='none';
-    document.getElementById('shop-screen').style.display='none';
-    document.getElementById('app-screen').style.display='none';
-    document.getElementById('sticky-bar').style.display='none';
-    document.getElementById('landing-screen').style.display='';
-    window.scrollTo({top:0,behavior:'smooth'});
+    returnToGuestLanding();
+  });
+
+  // ---- Delete account ----
+  const deleteAccountBtn = document.getElementById('auth-delete-account-btn');
+  if(deleteAccountBtn) deleteAccountBtn.addEventListener('click', ()=>{
+    const pwdEl = document.getElementById('delete-account-password');
+    if(pwdEl) pwdEl.value = '';
+    const errEl = document.getElementById('delete-account-error');
+    if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
+    const confirmBtn = document.getElementById('delete-account-confirm-btn');
+    if(confirmBtn){ confirmBtn.disabled = false; confirmBtn.textContent = 'Permanently Delete My Account'; }
+    document.getElementById('delete-account-modal').classList.add('open');
+    if(pwdEl) setTimeout(()=>pwdEl.focus(), 100);
+  });
+
+  const deleteAccountCancelBtn = document.getElementById('delete-account-cancel-btn');
+  if(deleteAccountCancelBtn) deleteAccountCancelBtn.addEventListener('click', ()=>{
+    document.getElementById('delete-account-modal').classList.remove('open');
+  });
+
+  const deleteAccountModal = document.getElementById('delete-account-modal');
+  if(deleteAccountModal) deleteAccountModal.addEventListener('click', function(e){
+    const confirmBtn = document.getElementById('delete-account-confirm-btn');
+    if(e.target===this && confirmBtn && !confirmBtn.disabled) this.classList.remove('open');
+  });
+
+  const deleteAccountConfirmBtn = document.getElementById('delete-account-confirm-btn');
+  if(deleteAccountConfirmBtn) deleteAccountConfirmBtn.addEventListener('click', async ()=>{
+    const pwdEl = document.getElementById('delete-account-password');
+    const errEl = document.getElementById('delete-account-error');
+    const pwd = (pwdEl||{}).value || '';
+    if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
+    if(!pwd){
+      if(errEl){ errEl.textContent = 'Please enter your password.'; errEl.style.display = 'block'; }
+      return;
+    }
+    if(!_currentUser) return; // defensive — this control is only reachable while signed in
+    deleteAccountConfirmBtn.disabled = true;
+    deleteAccountConfirmBtn.textContent = 'Deleting...';
+    try {
+      const reauth = await _supabase.auth.signInWithPassword({ email: _currentUser.email, password: pwd });
+      if(reauth.error) {
+        if(errEl){ errEl.textContent = 'Incorrect password'; errEl.style.display = 'block'; }
+        deleteAccountConfirmBtn.disabled = false;
+        deleteAccountConfirmBtn.textContent = 'Permanently Delete My Account';
+        return;
+      }
+      await deleteAccount(reauth.data.session.access_token);
+
+      document.getElementById('delete-account-modal').classList.remove('open');
+      await _supabase.auth.signOut().catch(()=>{});
+      returnToGuestLanding();
+      appConfirm('Your account has been deleted.', ()=>{}, 'OK', 'var(--green)');
+    } catch(e) {
+      console.error('Delete account error:', e);
+      if(errEl){ errEl.textContent = 'Something went wrong deleting your account. Please try again or contact contact@wildboardstudio.com'; errEl.style.display = 'block'; }
+      deleteAccountConfirmBtn.disabled = false;
+      deleteAccountConfirmBtn.textContent = 'Permanently Delete My Account';
+    }
   });
 })();
 </script>
