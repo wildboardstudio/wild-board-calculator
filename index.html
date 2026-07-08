@@ -2298,7 +2298,12 @@ function commitSave(overwriteId){
   const saveBtn2=document.getElementById('save-btn2');
   const origText='Save';
   const origText2='Save List';
-  if(saveBtn){ saveBtn.style.background='var(--green)'; saveBtn.style.color='#fff'; saveBtn.disabled=true; const sc=document.getElementById('save-confirmation'); if(sc){sc.style.opacity='1';setTimeout(()=>{sc.style.opacity='0';},1500);} setTimeout(()=>{ saveBtn.style.background=''; saveBtn.style.color=''; saveBtn.disabled=false; },1500); }
+  if(saveBtn){
+    saveBtn.disabled=true;
+    if(!saveBtn.dataset.origIcon) saveBtn.dataset.origIcon = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    setTimeout(()=>{ if(saveBtn.dataset.origIcon) saveBtn.innerHTML = saveBtn.dataset.origIcon; saveBtn.disabled=false; },1500);
+  }
   if(saveBtn2){ saveBtn2.textContent='Saved ✓'; saveBtn2.disabled=true; setTimeout(()=>{ saveBtn2.textContent=origText2; saveBtn2.disabled=false; },1500); }
   // If editing, update the edit bar to reflect saved state
   if(editingId){
@@ -7864,7 +7869,15 @@ let _currentUser = null;
 _supabase.auth.onAuthStateChange((event, session) => {
   _currentUser = session ? session.user : null;
   updateAuthUI();
-  if(_currentUser) migrateLocalDataIfNeeded();
+  if(_currentUser) {
+    migrateLocalDataIfNeeded()
+      .then(() => fetchSavedLists())
+      .then(() => { if(typeof updateLandingLink === 'function') updateLandingLink(); })
+      .catch(e => console.error('Post-signin list load failed:', e));
+  } else {
+    projects = [];
+    if(typeof updateLandingLink === 'function') updateLandingLink();
+  }
 });
 
 // ---- Helpers ----
