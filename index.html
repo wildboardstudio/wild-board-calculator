@@ -535,6 +535,9 @@
       background: transparent;
     }
     .saved-screen { display: none; }
+    body.wbc-loading .app-screen,
+    body.wbc-loading .saved-screen { display: none !important; }
+    body.wbc-loading .landing { display: grid !important; }
     .pro-screen { display: none; }
     .pro-table {
       width: 100%; border-collapse: collapse; font-size: 13px;
@@ -626,7 +629,7 @@
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="wbc-loading">
 <!-- Landing screen -->
 <div class="landing" id="landing-screen">
 
@@ -7991,9 +7994,22 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTotals();
     window.scrollTo({top:0, behavior:'smooth'});
   });
+
+  document.body.classList.remove('wbc-loading');
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+// Chrome's bfcache can restore a previous page state (including which screen
+// was visible) when navigating back or re-opening a tab. The pageshow event
+// fires after bfcache restore — reset to landing when that happens.
+window.addEventListener('pageshow', function(e) {
+  if(e.persisted) {
+    document.getElementById('landing-screen').style.display = '';
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('saved-screen').style.display = 'none';
+    document.getElementById('shop-screen').style.display = 'none';
+    document.getElementById('sticky-bar').style.display = 'none';
+    window.scrollTo({top:0});
+  }
 });
 </script>
 <script>
