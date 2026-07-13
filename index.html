@@ -627,6 +627,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<script>
+// Reset screen state immediately on every load — before Chrome can restore stale state
+document.addEventListener('DOMContentLoaded', function() {
+  ['app-screen','saved-screen','shop-screen'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const landing = document.getElementById('landing-screen');
+  if(landing) landing.style.display = '';
+}, {once: true, capture: true});
+</script>
 <!-- Landing screen -->
 <div class="landing" id="landing-screen">
 
@@ -651,7 +662,7 @@
       <button class="btn-saved" id="landing-account-btn" style="margin-top:0;">Sign In / Create Account</button>
       <div class="landing-pro-wrap">
         <p id="landing-account-status" class="landing-pro-sub" style="color:var(--text2);font-size:12px;display:none;"></p>
-        <p class="landing-pro-sub" style="color:var(--text2);font-size:12px;">Beta &nbsp;&bull;&nbsp; Saving lists and Your Shop requires a free account</p>
+        <p class="landing-pro-sub" style="color:var(--text2);font-size:12px;">Beta &nbsp;&bull;&nbsp; Saving lists and Your Lumber requires a free account</p>
       </div>
     </div>
   </div>
@@ -667,9 +678,9 @@
         <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx="0.5" fill="currentColor"/></svg></div>
         <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">Quick Calc</span>
       </button>
-      <button onclick="showShop()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#4a3f35;" aria-label="Your Shop">
-        <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6L3.5 2H16.5L18 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="2" y="6" width="16" height="2" rx="0.5" fill="currentColor"/><path d="M3 8V17.5C3 17.78 3.22 18 3.5 18H16.5C16.78 18 17 17.78 17 17.5V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="11" x2="13" y2="11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="7" y1="14.5" x2="13" y2="14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">Your Shop</span>
+      <button onclick="showShop()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#4a3f35;" aria-label="Your Lumber">
+        <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="13" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="3" x2="15" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">Your Lumber</span>
       </button>
     </div>
     <div class="footer-line">
@@ -769,7 +780,7 @@
     <div style="flex:1;"></div>
     <button id="pricecheck-btn" style="width:44px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;color:#4a3f35;-webkit-appearance:none;" aria-label="$/BF Check"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="3" x2="3" y2="17"/><line x1="5.7" y1="3" x2="5.7" y2="17"/><line x1="8.4" y1="3" x2="8.4" y2="17" stroke-width="3"/><line x1="11.6" y1="3" x2="11.6" y2="17"/><line x1="14.3" y1="3" x2="14.3" y2="17" stroke-width="3"/><line x1="17" y1="3" x2="17" y2="17"/></g></svg></button>
     <button id="calc-btn" style="width:44px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Calculator"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx="0.5" fill="currentColor"/></svg></button>
-    <button id="shop-header-btn" style="width:44px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Your Shop"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6L3.5 2H16.5L18 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="2" y="6" width="16" height="2" rx="0.5" fill="currentColor"/><path d="M3 8V17.5C3 17.78 3.22 18 3.5 18H16.5C16.78 18 17 17.78 17 17.5V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="11" x2="13" y2="11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="7" y1="14.5" x2="13" y2="14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    <button id="shop-header-btn" style="width:44px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Your Lumber"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="13" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="3" x2="15" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
     <button id="save-btn" style="width:44px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Save Project"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 4a1 1 0 011-1h9.586a1 1 0 01.707.293l2.414 2.414A1 1 0 0117 6.414V16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="3" width="5" height="4" rx="0.5" fill="currentColor"/><rect x="5" y="10" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="7" y="12" width="6" height="3" rx="0.5" fill="currentColor"/></svg></button>
   </div>
 
@@ -1031,12 +1042,12 @@
 </div>
 </div>
 
-<!-- Your Shop screen -->
+<!-- Your Lumber screen -->
 <div class="saved-screen" id="shop-screen">
 <div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="saved-screen-header" style="position:relative;">
     <button class="btn btn-sm" id="shop-back-btn">&#8592; Back</button>
-    <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Your Shop</h1>
+    <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Your Lumber</h1>
   </div>
 
   <!-- Total Inventory Value -->
@@ -1127,8 +1138,8 @@
         <button class="btn" id="auth-signout-btn">Sign Out</button>
         <button class="btn" id="auth-close-btn">Close</button>
       </div>
-      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
-        <button class="btn" id="auth-delete-account-btn" style="width:100%;color:var(--red);border-color:var(--red);">Delete Account</button>
+      <div style="margin-top:20px;">
+        <button id="auth-delete-account-btn" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button>
       </div>
     </div>
   </div>
@@ -1185,7 +1196,7 @@
     <div class="modal-btns">
       <button class="btn btn-primary" id="modal-overwrite">Overwrite Original</button>
       <button class="btn btn-outline" id="modal-new">Save As New List</button>
-      <button class="btn" id="modal-add-shop" type="button" style="background:var(--bg2);">+ Add to Your Shop</button>
+      <button class="btn" id="modal-add-shop" type="button" style="background:var(--bg2);">+ Add to Your Lumber</button>
       <button class="btn" id="modal-cancel">Cancel</button>
     </div>
   </div>
@@ -1205,7 +1216,7 @@
       <button class="btn" id="name-modal-cancel" style="flex:1;">Cancel</button>
       <button class="btn" id="name-modal-save" style="flex:1;background:var(--green);color:#fff;border-color:var(--green);">Save</button>
     </div>
-    <button class="btn" id="name-modal-save-shop" type="button" style="width:100%;margin-top:8px;background:var(--bg2);">Save &amp; Add to Your Shop</button>
+    <button class="btn" id="name-modal-save-shop" type="button" style="width:100%;margin-top:8px;background:var(--bg2);">Save &amp; Add to Your Lumber</button>
   </div>
 </div>
 
@@ -6386,7 +6397,7 @@ function initShopKerfControl(onUpdate){
 
 async function showShop(){
   if(!_currentUser){
-    openAuthModal('Sign in to view your shop');
+    openAuthModal('Sign in to view your lumber');
     return;
   }
   const landing=document.getElementById('landing-screen');
@@ -6437,7 +6448,7 @@ async function showShop(){
   if(shopHeaderBtn) shopHeaderBtn.addEventListener('click', showShop);
 })();
 
-// "Add to Your Shop" — robust single entry point used by save-modal and name-modal
+// "Add to Your Lumber" — robust single entry point used by save-modal and name-modal
 async function addToShopFlow(){
   if(!_currentUser) return; // unreachable in the UI (Save button is hidden for guests) — defensive only
   try{
@@ -6445,7 +6456,7 @@ async function addToShopFlow(){
     else loadShopData();
   }catch(e){
     console.error('addToShopFlow fetch error:', e);
-    appConfirm('Could not reach Your Shop — check your connection and try again.',()=>{},'OK','var(--red)');
+    appConfirm('Could not reach Your Lumber — check your connection and try again.',()=>{},'OK','var(--red)');
     return;
   }
   openShopCheckoutGate();
@@ -6612,7 +6623,7 @@ function renderShop(){
               delBtn.textContent='\u00d7';
               delBtn.addEventListener('click',(e)=>{
                 e.stopPropagation();
-                appConfirm('Remove this item from your shop?',()=>{
+                appConfirm('Remove this item from your lumber?',()=>{
                   shopData[itKey]=shopData[itKey].filter(x=>x.id!==it.id);
                   saveShopData();
                   renderShop();
@@ -6871,20 +6882,20 @@ function addCurrentListToShop(){
 let _shopCheckoutPending=false;
 
 function openShopCheckoutGate(){
-  const msg='<strong>Add to Your Shop</strong><br><br>'+
-    '<span style="font-size:13px;color:var(--text2);">Adding to Your Shop is the final step after you\'ve completed your purchase. Make sure everything in this list matches what you actually bought before continuing.</span><br><br>'+
+  const msg='<strong>Add to Your Lumber</strong><br><br>'+
+    '<span style="font-size:13px;color:var(--text2);">Adding to Your Lumber is the final step after you\'ve completed your purchase. Make sure everything in this list matches what you actually bought before continuing.</span><br><br>'+
     '<strong>Have you completed this purchase?</strong>';
   appConfirm(msg, ()=>{
     loadShopData();
     const count=addCurrentListToShop();
     setTimeout(()=>{
-      appConfirm(`Added ${count} item${count!==1?'s':''} to Your Shop!`, ()=>{}, 'Nice', 'var(--green)');
+      appConfirm(`Added ${count} item${count!==1?'s':''} to Your Lumber!`, ()=>{}, 'Nice', 'var(--green)');
     }, 100);
   }, "Yes, I've Checked Out", 'var(--green)');
 }
 
-// Wire "+ Add to Your Shop" from save-modal (existing saved list)
-// Wire "+ Add to Your Shop" from save-modal
+// Wire "+ Add to Your Lumber" from save-modal (existing saved list)
+// Wire "+ Add to Your Lumber" from save-modal
 (function(){
   const btn=document.getElementById('modal-add-shop');
   if(btn) btn.addEventListener('click',(e)=>{
@@ -6896,7 +6907,7 @@ function openShopCheckoutGate(){
   });
 })();
 
-// Wire "Save & Add to Your Shop" from name-modal (new list)
+// Wire "Save & Add to Your Lumber" from name-modal (new list)
 (function(){
   const btn=document.getElementById('name-modal-save-shop');
   if(btn) btn.addEventListener('click',(e)=>{
@@ -7549,26 +7560,13 @@ document.getElementById('start-btn').addEventListener('click', function(){
   document.getElementById('tax-rate-bar').style.display='block';
   document.getElementById('tab-lumber-btn').style.background='#E0D3C5';
   document.getElementById('tab-lumber-btn').style.borderBottomColor='#E0D3C5';
-  if(_sessionRestoredPending){
-    // A working list was silently restored from wbc_session on page load
-    // (see DOMContentLoaded below) — resume it instead of discarding it.
-    // Only fires once: the next "Create New List" tap wipes normally, same
-    // as before, even though species is still non-empty from this resume.
-    _sessionRestoredPending=false;
-    render();
-    renderSlabSpecies();
-    renderLFSpecies();
-    renderSG();
-    updateTotals();
-  } else {
-    clearProj();
-    clearSession();
-    species=[];
-    slabSpecies=[];
-    lfSpecies=[];
-    sgMaterials=[];
-    addSpecies();
-  }
+  clearProj();
+  clearSession();
+  species=[];
+  slabSpecies=[];
+  lfSpecies=[];
+  sgMaterials=[];
+  addSpecies();
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
@@ -7779,11 +7777,47 @@ const SPLINTER_IMG = '/splinter.jpg';
 // handler (above) is what resumes into the app-screen if species got
 // populated here, instead of wiping it like a normal "new list" click.
 document.addEventListener('DOMContentLoaded', function() {
-  loadSession();
+  // Always reset to landing page first — prevents Chrome from restoring a stale screen state
+  const landingEl = document.getElementById('landing-screen');
+  const appEl = document.getElementById('app-screen');
+  const savedEl = document.getElementById('saved-screen');
+  const shopEl = document.getElementById('shop-screen');
+  if(landingEl) landingEl.style.display = '';
+  if(appEl) appEl.style.display = 'none';
+  if(savedEl) savedEl.style.display = 'none';
+  if(shopEl) shopEl.style.display = 'none';
+  const restored = loadSession();
+  // "Real work" = actual user-entered data, not just empty default rows
+  // (every tab auto-creates an empty shell, so structure checks false-positive)
+  const nz = v => String(v==null?'':v).trim().length > 0 && String(v).trim() !== '0';
+  const hasWork = restored && (
+    nz(projName) ||
+    species.some(s => nz(s.name) || (s.thicknesses||[]).some(t => nz(t.tNum) || nz(t.price) ||
+      (t.boards||[]).some(b => nz(b.w) || nz(b.lft) || nz(b.lin)))) ||
+    slabSpecies.some(s => nz(s.name) || (s.thicknesses||[]).some(t => nz(t.tNum) || nz(t.price) ||
+      (t.slabs||[]).some(sl => nz(sl.lft) || nz(sl.lin) || (sl.measurements||[]).some(m => nz(m))))) ||
+    lfSpecies.some(s => nz(s.name) || nz(s.price) ||
+      (s.pieces||[]).some(p => nz(p.lft) || nz(p.lin))) ||
+    sgMaterials.some(m => nz(m.name) || (m.thicknesses||[]).some(t => nz(t.thick) || nz(t.price) ||
+      (t.sheets||[]).some(sh => nz(sh.size) || nz(sh.customSize))))
+  );
+  if(hasWork) {
+    // Active unsaved work exists — skip landing page and resume directly
+    document.getElementById('landing-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('sticky-bar').style.display = 'flex';
+    document.getElementById('tax-rate-bar').style.display = 'block';
+    document.getElementById('tab-lumber-btn').style.background = '#E0D3C5';
+    document.getElementById('tab-lumber-btn').style.borderBottomColor = '#E0D3C5';
+    render();
+    renderSlabSpecies();
+    renderLFSpecies();
+    renderSG();
+    updateTotals();
+  }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-});
+
 </script>
 <script>
 // ── PWA INSTALL ──────────────────────────────────────────────────
@@ -8017,7 +8051,7 @@ function deleteListFromSupabase(listId) {
   })());
 }
 
-// ---- Your Shop: single row per user, keyed by {user_id}_shop ----
+// ---- Your Lumber: single row per user, keyed by {user_id}_shop ----
 async function _fetchShopRow() {
   const headers = await _requireAuthHeaders();
   const resp = await _fetchWithTimeout(
