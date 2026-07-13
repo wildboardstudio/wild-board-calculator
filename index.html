@@ -627,17 +627,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<script>
-// Reset screen state immediately on every load — before Chrome can restore stale state
-document.addEventListener('DOMContentLoaded', function() {
-  ['app-screen','saved-screen','shop-screen'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = 'none';
-  });
-  const landing = document.getElementById('landing-screen');
-  if(landing) landing.style.display = '';
-}, {once: true, capture: true});
-</script>
 <!-- Landing screen -->
 <div class="landing" id="landing-screen">
 
@@ -658,6 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="landing-cta">
       <button class="btn-create" id="start-btn">+ Create New List</button>
+      <button class="btn-saved" id="resume-btn" style="display:none;">Resume Unsaved List</button>
       <button class="btn-saved" id="landing-saved-link">Open Saved Lists</button>
       <button class="btn-saved" id="landing-account-btn" style="margin-top:0;">Sign In / Create Account</button>
       <div class="landing-pro-wrap">
@@ -1048,6 +1038,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="saved-screen-header" style="position:relative;">
     <button class="btn btn-sm" id="shop-back-btn">&#8592; Back</button>
     <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Your Lumber</h1>
+    <button class="btn btn-sm" id="shop-pdf-btn" style="margin-left:auto;">Download PDF</button>
   </div>
 
   <!-- Total Inventory Value -->
@@ -2258,6 +2249,13 @@ function buildSaveModalSummary(){
 }
 
 function triggerSave(){
+  // Guest intercept — prompt to sign in/create account
+  if(!_currentUser) {
+    if(typeof openAuthModal === 'function') {
+      openAuthModal('Create a free account to save your lists and access them from any device.');
+    }
+    return;
+  }
   const totalCost=species.reduce((s,x)=>s+sCost(x),0);
   const budget=parseFloat(document.getElementById('budget-input').value)||0;
   const _taxRt=parseFloat((document.getElementById('tax-rate-input')||{}).value)||0;
@@ -6440,6 +6438,14 @@ async function showShop(){
       document.getElementById('landing-screen').style.display='';
     }
   });
+
+  // Wire PDF export button
+  const shopPdfBtn=document.getElementById('shop-pdf-btn');
+  if(shopPdfBtn) shopPdfBtn.addEventListener('click',()=>{
+    const totalItems=(shopData.bf||[]).length+(shopData.lf||[]).length+(shopData.slab||[]).length+(shopData.sg||[]).length;
+    if(totalItems===0){ appConfirm('Your Lumber is empty — add some inventory first.',()=>{},'OK'); return; }
+    exportShopPDF(false);
+  });
 })();
 
 // Wire shop-header-btn (calculator header)
@@ -6489,6 +6495,171 @@ function shopSectionTotal(key){
 
 function shopGrandTotal(){
   return SHOP_RENDER_SECTIONS.reduce((s,k)=>s+shopSectionTotal(k),0);
+}
+
+// ---- Your Lumber PDF Export ----
+function exportShopPDF(includeCutHistory) {
+  const { jsPDF } = window.jspdf;
+  if(!jsPDF){ alert('PDF library not loaded'); return; }
+
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const margin = 14;
+  const pageW = 210;
+  const colRight = pageW - margin;
+  let y = 20;
+
+  const checkPage = (needed) => {
+    if(y + needed > 275) { doc.addPage(); y = 20; }
+  };
+
+  const green = [45, 74, 30];
+  const dark = [44, 36, 24];
+  const muted = [100, 90, 75];
+  const light = [200, 190, 175];
+
+  // Header
+  doc.setFillColor(...green);
+  doc.rect(0, 0, 210, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(250,247,242);
+  doc.text('Wild Board Calculator', margin, 8);
+
+  y = 22;
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...dark);
+  doc.text('Your Lumber', margin, y); y += 7;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
+  const dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  doc.text('Inventory Report  \u00B7  ' + dateStr, margin, y); y += 10;
+
+  // Grand total summary bar
+  const grandTotal = shopGrandTotal();
+  const totalItems = (shopData.bf||[]).length + (shopData.lf||[]).length + (shopData.slab||[]).length + (shopData.sg||[]).length;
+  doc.setFillColor(235, 228, 215);
+  doc.rect(margin, y, pageW - margin*2, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...dark);
+  doc.text('Total Inventory Value', margin + 3, y + 5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+  doc.text(totalItems + ' item' + (totalItems!==1?'s':''), margin + 3, y + 10);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
+  doc.text('$' + grandTotal.toFixed(2), colRight - 3, y + 7.5, {align:'right'});
+  y += 18;
+
+  // Section definitions
+  const sections = [
+    { key: 'bf', title: 'Dimensional Lumber', type: 'bf' },
+    { key: 'lf', title: 'Linear Footage', type: 'lf' },
+    { key: 'slab', title: 'Slab', type: 'slab' },
+    { key: 'sg', title: 'Sheet Goods', type: 'sg' }
+  ];
+
+  sections.forEach(sec => {
+    const items = shopData[sec.key] || [];
+    if(items.length === 0) return;
+
+    checkPage(14);
+
+    // Section header
+    doc.setFillColor(...green);
+    doc.rect(margin, y, pageW - margin*2, 7, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(250,247,242);
+    doc.text(sec.title.toUpperCase(), margin + 3, y + 4.8);
+    const secTotal = shopSectionTotal(sec.key);
+    doc.text('$' + secTotal.toFixed(2), colRight - 3, y + 4.8, {align:'right'});
+    y += 10;
+
+    items.forEach((item, idx) => {
+      checkPage(20);
+
+      // Item background (alternating)
+      if(idx % 2 === 0) {
+        doc.setFillColor(248, 245, 240);
+        doc.rect(margin, y - 1, pageW - margin*2, 16, 'F');
+      }
+
+      // Species + date
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...dark);
+      doc.text(item.species || 'Unnamed', margin + 2, y + 4);
+
+      // Cost basis (original value)
+      const costBasis = (item.cuts && item.cuts.length > 0 && item.cuts[0].before)
+        ? parseFloat(item.cuts[0].before.value) || parseFloat(item.value) || 0
+        : parseFloat(item.value) || 0;
+      const currentVal = parseFloat(item.value) || 0;
+
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+      doc.text('Added ' + (item.date||''), margin + 2, y + 9);
+
+      // Dimensions string
+      let dimStr = '';
+      if(sec.key === 'bf') {
+        const thick = item.thickness ? item.thickness + '/4' : '';
+        const totalIn = (parseFloat(item.lft)||0)*12 + (parseFloat(item.lin)||0);
+        dimStr = (thick ? thick + '  \u00B7  ' : '') + totalIn.toFixed(1) + '" L  \u00B7  ' + (parseFloat(item.w)||0).toFixed(1) + '" W';
+      } else if(sec.key === 'lf') {
+        const totalIn = (parseFloat(item.lft)||0)*12 + (parseFloat(item.lin)||0);
+        dimStr = totalIn.toFixed(1) + '" L';
+      } else if(sec.key === 'slab') {
+        const thick = item.thickness ? item.thickness + '/4' : '';
+        const totalIn = (parseFloat(item.lft)||0)*12 + (parseFloat(item.lin)||0);
+        dimStr = (thick ? thick + '  \u00B7  ' : '') + totalIn.toFixed(1) + '" L';
+      } else if(sec.key === 'sg') {
+        dimStr = (item.size||'') + (item.qty > 1 ? '  \u00B7  Qty ' + item.qty : '');
+      }
+      if(dimStr) doc.text(dimStr, margin + 2, y + 13.5);
+
+      // Values on right
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...dark);
+      doc.text('$' + currentVal.toFixed(2), colRight - 2, y + 4, {align:'right'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+      if(Math.abs(costBasis - currentVal) > 0.01) {
+        doc.text('Purchase price: $' + costBasis.toFixed(2), colRight - 2, y + 9, {align:'right'});
+      }
+      if(item.cuts && item.cuts.length > 0) {
+        doc.text(item.cuts.length + ' cut' + (item.cuts.length!==1?'s':''), colRight - 2, y + 13.5, {align:'right'});
+      }
+
+      y += 18;
+
+      // Cut history (if enabled)
+      if(includeCutHistory && item.cuts && item.cuts.length > 0) {
+        y += 2; // gap before cut rows
+        item.cuts.forEach((cut, ci) => {
+          checkPage(10);
+          doc.setFillColor(242, 238, 230);
+          doc.rect(margin + 4, y, pageW - margin*2 - 4, 9, 'F');
+          doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+          const cutLabel = 'Cut ' + (ci+1) + '  \u00B7  ' + (cut.date||'') + '  \u00B7  ' + (cut.amount||'');
+          doc.text(cutLabel, margin + 7, y + 5.5);
+          if(cut.note) {
+            doc.setFont('helvetica','italic');
+            doc.text('  ' + cut.note, margin + 7 + doc.getTextWidth(cutLabel), y + 5.5);
+          }
+          doc.setFont('helvetica','normal'); doc.setTextColor(...dark);
+          doc.text('-$' + (parseFloat(cut.value)||0).toFixed(2), colRight - 2, y + 5.5, {align:'right'});
+          y += 10;
+        });
+        y += 3;
+      }
+
+      // Divider
+      doc.setDrawColor(...light);
+      doc.setLineWidth(0.2);
+      doc.line(margin, y - 2, colRight, y - 2);
+    });
+
+    y += 6;
+  });
+
+  // Footer on each page
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+    doc.text('Wild Board Calculator  \u00B7  Your Lumber Inventory  \u00B7  ' + dateStr, margin, 290);
+    doc.text('Page ' + i + ' of ' + pageCount, colRight, 290, {align:'right'});
+  }
+
+  const fileName = 'Your-Lumber-' + new Date().toISOString().slice(0,10) + '.pdf';
+  doc.save(fileName);
 }
 
 function renderShop(){
@@ -7552,7 +7723,7 @@ if(_backBtn) _backBtn.addEventListener('click', function(){
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
-// Wire start button
+// Wire start button — always starts a fresh blank list
 document.getElementById('start-btn').addEventListener('click', function(){
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
@@ -7567,6 +7738,9 @@ document.getElementById('start-btn').addEventListener('click', function(){
   lfSpecies=[];
   sgMaterials=[];
   addSpecies();
+  // Hide resume button since we're starting fresh
+  const resumeBtn = document.getElementById('resume-btn');
+  if(resumeBtn) resumeBtn.style.display = 'none';
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
@@ -7777,18 +7951,8 @@ const SPLINTER_IMG = '/splinter.jpg';
 // handler (above) is what resumes into the app-screen if species got
 // populated here, instead of wiping it like a normal "new list" click.
 document.addEventListener('DOMContentLoaded', function() {
-  // Always reset to landing page first — prevents Chrome from restoring a stale screen state
-  const landingEl = document.getElementById('landing-screen');
-  const appEl = document.getElementById('app-screen');
-  const savedEl = document.getElementById('saved-screen');
-  const shopEl = document.getElementById('shop-screen');
-  if(landingEl) landingEl.style.display = '';
-  if(appEl) appEl.style.display = 'none';
-  if(savedEl) savedEl.style.display = 'none';
-  if(shopEl) shopEl.style.display = 'none';
   const restored = loadSession();
-  // "Real work" = actual user-entered data, not just empty default rows
-  // (every tab auto-creates an empty shell, so structure checks false-positive)
+  // Check for real user-entered data (not just empty default shells)
   const nz = v => String(v==null?'':v).trim().length > 0 && String(v).trim() !== '0';
   const hasWork = restored && (
     nz(projName) ||
@@ -7801,8 +7965,19 @@ document.addEventListener('DOMContentLoaded', function() {
     sgMaterials.some(m => nz(m.name) || (m.thicknesses||[]).some(t => nz(t.thick) || nz(t.price) ||
       (t.sheets||[]).some(sh => nz(sh.size) || nz(sh.customSize))))
   );
-  if(hasWork) {
-    // Active unsaved work exists — skip landing page and resume directly
+  // Show Resume button if there's real unsaved work
+  const resumeBtn = document.getElementById('resume-btn');
+  if(resumeBtn) {
+    if(hasWork) {
+      const label = projName ? 'Resume "' + projName + '"' : 'Resume Unsaved List';
+      resumeBtn.textContent = label;
+      resumeBtn.style.display = 'flex';
+    } else {
+      resumeBtn.style.display = 'none';
+    }
+  }
+  // Wire resume button click
+  if(resumeBtn) resumeBtn.addEventListener('click', function() {
     document.getElementById('landing-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
     document.getElementById('sticky-bar').style.display = 'flex';
@@ -7814,10 +7989,12 @@ document.addEventListener('DOMContentLoaded', function() {
     renderLFSpecies();
     renderSG();
     updateTotals();
-  }
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
 });
 
-
+document.addEventListener('DOMContentLoaded', function() {
+});
 </script>
 <script>
 // ── PWA INSTALL ──────────────────────────────────────────────────
@@ -8189,7 +8366,10 @@ function updateAuthUI() {
   const btn = document.getElementById('landing-account-btn');
   const status = document.getElementById('landing-account-status');
   const saveBtn = document.getElementById('save-btn');
-  if(saveBtn) saveBtn.style.display = _currentUser ? 'flex' : 'none';
+  if(saveBtn) {
+    saveBtn.style.display = 'flex';
+    saveBtn.style.opacity = _currentUser ? '1' : '0.5';
+  }
   if(!btn) return;
   if(_currentUser) {
     btn.textContent = 'My Account';
@@ -8266,7 +8446,7 @@ function returnToGuestLanding() {
 // Wire auth modal buttons
 (()=>{
   const landingBtn = document.getElementById('landing-account-btn');
-  if(landingBtn) landingBtn.addEventListener('click', openAuthModal);
+  if(landingBtn) landingBtn.addEventListener('click', ()=>openAuthModal());
 
   const cancelBtn = document.getElementById('auth-cancel-btn');
   if(cancelBtn) cancelBtn.addEventListener('click', ()=>document.getElementById('auth-modal').classList.remove('open'));
