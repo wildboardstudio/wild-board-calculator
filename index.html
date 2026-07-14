@@ -535,9 +535,6 @@
       background: transparent;
     }
     .saved-screen { display: none; }
-    body.wbc-loading .app-screen,
-    body.wbc-loading .saved-screen { display: none !important; }
-    body.wbc-loading .landing { display: grid !important; }
     .pro-screen { display: none; }
     .pro-table {
       width: 100%; border-collapse: collapse; font-size: 13px;
@@ -629,7 +626,7 @@
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="wbc-loading">
+<body>
 <!-- Landing screen -->
 <div class="landing" id="landing-screen">
 
@@ -1125,12 +1122,12 @@
       </div>
     </div>
     <!-- Signed in state -->
-    <div id="auth-signed-in-body" style="display:none;text-align:center;">
+    <div id="auth-signed-in-body" style="display:none;text-align:center;position:relative;">
+      <button id="auth-close-btn" style="position:absolute;top:-8px;right:-8px;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;padding:4px;-webkit-appearance:none;">&times;</button>
       <p id="auth-signed-in-email" style="font-size:13px;color:var(--text2);margin-bottom:6px;"></p>
-      <p id="auth-sync-status" style="font-size:11px;color:var(--text2);margin-bottom:16px;">Your lists and shop are saved to your account.</p>
+      <p id="auth-sync-status" style="font-size:11px;color:var(--text2);margin-bottom:16px;">Your lists and lumber are saved to your account.</p>
       <div class="modal-btns">
         <button class="btn" id="auth-signout-btn">Sign Out</button>
-        <button class="btn" id="auth-close-btn">Close</button>
       </div>
       <div style="margin-top:20px;">
         <button id="auth-delete-account-btn" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button>
@@ -7994,22 +7991,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTotals();
     window.scrollTo({top:0, behavior:'smooth'});
   });
-
-  document.body.classList.remove('wbc-loading');
 });
 
-// Chrome's bfcache can restore a previous page state (including which screen
-// was visible) when navigating back or re-opening a tab. The pageshow event
-// fires after bfcache restore — reset to landing when that happens.
-window.addEventListener('pageshow', function(e) {
-  if(e.persisted) {
-    document.getElementById('landing-screen').style.display = '';
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('saved-screen').style.display = 'none';
-    document.getElementById('shop-screen').style.display = 'none';
-    document.getElementById('sticky-bar').style.display = 'none';
-    window.scrollTo({top:0});
-  }
+document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
