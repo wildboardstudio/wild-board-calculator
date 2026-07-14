@@ -430,7 +430,7 @@
     .landing .btn-saved:active { opacity: 0.7; }
     .landing-pro-wrap {
       width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px;
-      padding-top: 4px;
+      padding-top: 12px;
     }
     .landing .btn-gopro {
       width: 100%; padding: 12px 24px;
@@ -445,7 +445,7 @@
       letter-spacing: 0.03em; opacity: 0.8;
     }
     .landing-footer {
-      width: 100%; height: 100%; align-self: stretch; padding: 0 0 20px;
+      width: 100%; height: 100%; align-self: stretch; padding: 16px 0 20px;
       text-align: center;
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-end;
@@ -463,6 +463,21 @@
     .landing-links a {
       color: var(--text2); text-decoration: underline;
     }
+    .feature-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      width: 100%; max-width: 340px; margin: 0 auto 16px;
+    }
+    .feature-card {
+      background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px;
+      padding: 14px 10px 12px; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; gap: 4px; -webkit-appearance: none; font-family: inherit;
+      color: var(--text); transition: opacity 0.15s;
+    }
+    .feature-card:active { opacity: 0.7; }
+    .fc-icon { color: #7a6a52; }
+    .fc-name { font-size: 11px; font-weight: 700; color: var(--text); }
+    .fc-desc { font-size: 10px; color: var(--text2); }
+    .hours-screen { display: none; }
     .landing .saved-link { display: none; }
     .app-screen { display: none; }
     .tabs { display: flex; gap: 0; margin-bottom: 0; position: relative; z-index: 2; align-items: stretch; }
@@ -659,18 +674,26 @@
 
   <!-- Bottom third: footer -->
   <div class="landing-footer">
-    <div style="display:flex;flex:1;justify-content:center;align-items:center;gap:24px;width:100%;min-height:0;flex-wrap:wrap;">
-      <button onclick="priceCheckOpen()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#4a3f35;" aria-label="$/BF Check">
-        <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="3" x2="3" y2="17"/><line x1="5.7" y1="3" x2="5.7" y2="17"/><line x1="8.4" y1="3" x2="8.4" y2="17" stroke-width="3"/><line x1="11.6" y1="3" x2="11.6" y2="17"/><line x1="14.3" y1="3" x2="14.3" y2="17" stroke-width="3"/><line x1="17" y1="3" x2="17" y2="17"/></g></svg></div>
-        <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">$/BF Check</span>
+    <div class="feature-grid">
+      <button class="feature-card" onclick="priceCheckOpen()" aria-label="$/BF Check">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="3" x2="3" y2="17"/><line x1="5.7" y1="3" x2="5.7" y2="17"/><line x1="8.4" y1="3" x2="8.4" y2="17" stroke-width="3"/><line x1="11.6" y1="3" x2="11.6" y2="17"/><line x1="14.3" y1="3" x2="14.3" y2="17" stroke-width="3"/><line x1="17" y1="3" x2="17" y2="17"/></g></svg></div>
+        <span class="fc-name">$/BF Check</span>
+        <span class="fc-desc">Price per board foot</span>
       </button>
-      <button onclick="calcOpen()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#4a3f35;" aria-label="Quick Calc">
-        <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx="0.5" fill="currentColor"/></svg></div>
-        <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">Quick Calc</span>
+      <button class="feature-card" onclick="calcOpen()" aria-label="Quick Calc">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx="0.5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx="0.5" fill="currentColor"/></svg></div>
+        <span class="fc-name">Quick Calc</span>
+        <span class="fc-desc">Fast unit converter</span>
       </button>
-      <button onclick="showShop()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#4a3f35;" aria-label="Your Lumber">
-        <div style="width:45px;height:45px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="13" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="3" x2="15" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
-        <span style="font-size:9px;font-weight:600;color:#7a6a52;letter-spacing:0.04em;">Your Lumber</span>
+      <button class="feature-card" onclick="showHoursTracker()" aria-label="Hours Tracker">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><polyline points="12,7 12,12 16,14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="fc-name">Hours Tracker</span>
+        <span class="fc-desc">Track time &amp; labor cost</span>
+      </button>
+      <button class="feature-card" onclick="showShop()" aria-label="Your Lumber">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="13" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="3" x2="15" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        <span class="fc-name">Your Lumber</span>
+        <span class="fc-desc">Manage your inventory</span>
       </button>
     </div>
     <div class="footer-line">
@@ -1052,6 +1075,66 @@
 </div>
 </div>
 
+<!-- Hours Tracker screen -->
+<div class="hours-screen" id="hours-screen">
+<div class="wrap" style="padding-top:64px;padding-bottom:80px;">
+  <div class="saved-screen-header" style="position:relative;">
+    <button class="btn btn-sm" id="hours-back-btn">&#8592; Back</button>
+    <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Hours Tracker</h1>
+    <button class="btn btn-sm" id="hours-pdf-btn" style="margin-left:auto;">Download PDF</button>
+  </div>
+
+  <div style="margin:16px 0;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;">Hourly Rate</label>
+      <div style="display:flex;align-items:center;gap:2px;">
+        <span style="font-size:14px;font-weight:600;">$</span>
+        <input type="number" id="hours-rate-input" value="0" min="0" step="0.01" style="width:80px;text-align:left;font-size:14px;padding:6px 8px;" />
+        <span style="font-size:11px;color:var(--text2);">/hr</span>
+      </div>
+    </div>
+    <div id="hours-summary" style="font-size:13px;color:var(--text2);text-align:center;">0 hrs &middot; $0.00 total</div>
+  </div>
+
+  <div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;">
+    <select id="hours-filter" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);min-height:32px;">
+      <option value="all">All sessions</option>
+      <option value="standalone">Standalone only</option>
+    </select>
+  </div>
+
+  <div id="hours-sessions-list"></div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-primary" id="hours-add-btn">+ Log Session</button>
+  </div>
+</div>
+</div>
+
+<!-- Log Session modal -->
+<div class="modal-overlay" id="hours-log-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;">Log Session</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Date</label><input type="date" id="hours-log-date" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Link to a list <span style="font-weight:400;">(optional)</span></label><select id="hours-log-list" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"><option value="">Standalone</option></select></div>
+      <div style="display:flex;gap:10px;"><div style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Start time</label><input type="time" id="hours-log-start" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div><div style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">End time</label><input type="time" id="hours-log-end" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div></div>
+      <div id="hours-breaks-container">
+        <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Breaks</label>
+        <div id="hours-breaks-list"></div>
+        <button class="btn btn-sm" id="hours-add-break-btn" type="button" style="margin-top:6px;font-size:11px;">+ Add Break</button>
+      </div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Note <span style="font-weight:400;">(optional)</span></label><input type="text" id="hours-log-note" placeholder="e.g. Finishing work" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div id="hours-log-preview" style="padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2);text-align:center;">0 hrs 0 min &middot; $0.00 labor</div>
+      <div id="hours-log-error" style="display:none;font-size:12px;color:var(--red);text-align:center;"></div>
+    </div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-primary" id="hours-log-save">Save Session</button>
+      <button class="btn" id="hours-log-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Shop add-item modal -->
 <div class="modal-overlay" id="shop-add-modal">
   <div class="modal">
@@ -1140,7 +1223,7 @@
 <div class="modal-overlay" id="delete-account-modal">
   <div class="modal">
     <h3 style="color:var(--red);">Delete Account</h3>
-    <p>This permanently deletes your account, all saved lists, and your entire shop inventory. This cannot be undone.</p>
+    <p>This permanently deletes your account, all saved lists, lumber inventory, and hours data. This cannot be undone.</p>
     <div style="margin-bottom:10px;">
       <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Confirm your password to continue</label>
       <input type="password" id="delete-account-password" placeholder="••••••••" autocomplete="current-password"
@@ -6269,6 +6352,7 @@ async function showSaved(){
     return;
   }
   document.getElementById('landing-screen').style.display='none';
+  document.getElementById('hours-screen').style.display='none';
   document.getElementById('saved-screen').style.display='block';
   const listEl=document.getElementById('saved-list-screen');
   if(listEl) listEl.innerHTML='<p class="empty">Loading...</p>';
@@ -6405,6 +6489,7 @@ async function showShop(){
   if(landing) landing.style.display='none';
   if(appScreen) appScreen.style.display='none';
   if(stickyBar) stickyBar.style.display='none';
+  document.getElementById('hours-screen').style.display='none';
   document.getElementById('shop-screen').style.display='block';
   const container=document.getElementById('shop-sections');
   if(container) container.innerHTML='<p class="empty">Loading...</p>';
@@ -7942,6 +8027,406 @@ function summaryClose(){
 
 const SPLINTER_IMG = '/splinter.jpg';
 
+// ============ HOURS TRACKER ============
+let hoursData = null;
+let _hoursReturnTo = 'landing';
+
+function hoursUid() {
+  return 'hrs_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function _hoursCalcMinutes(start, end, breaks) {
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  let total = (eh * 60 + em) - (sh * 60 + sm);
+  (breaks || []).forEach(b => {
+    if(b.start && b.end) {
+      const [bs, bm] = b.start.split(':').map(Number);
+      const [be, bem] = b.end.split(':').map(Number);
+      total -= (be * 60 + bem) - (bs * 60 + bm);
+    }
+  });
+  return Math.max(0, total);
+}
+
+async function showHoursTracker() {
+  if(!_currentUser) {
+    openAuthModal('Create a free account to track your hours and labor costs.');
+    return;
+  }
+  const landing = document.getElementById('landing-screen');
+  const appScreen = document.getElementById('app-screen');
+  const stickyBar = document.getElementById('sticky-bar');
+  _hoursReturnTo = (appScreen && appScreen.style.display !== 'none' && appScreen.style.display !== '') ? 'app' : 'landing';
+  if(landing) landing.style.display = 'none';
+  if(appScreen) appScreen.style.display = 'none';
+  if(stickyBar) stickyBar.style.display = 'none';
+  document.getElementById('saved-screen').style.display = 'none';
+  document.getElementById('shop-screen').style.display = 'none';
+  document.getElementById('hours-screen').style.display = 'block';
+  const container = document.getElementById('hours-sessions-list');
+  if(container) container.innerHTML = '<p class="empty">Loading...</p>';
+  window.scrollTo({top:0, behavior:'smooth'});
+  try {
+    await fetchHoursIntoMemory();
+  } catch(e) {
+    console.error('fetchHoursIntoMemory error:', e);
+    if(container) {
+      container.innerHTML = '<p class="empty">Couldn\'t load — check connection.<br><button class="btn btn-sm" id="hours-retry-btn" style="margin-top:10px;">Retry</button></p>';
+      const retryBtn = document.getElementById('hours-retry-btn');
+      if(retryBtn) retryBtn.addEventListener('click', showHoursTracker);
+    }
+    return;
+  }
+  document.getElementById('hours-rate-input').value = hoursData.rate || 0;
+  renderHours();
+}
+
+function renderHours() {
+  if(!hoursData) hoursData = {rate: 0, sessions: []};
+  const rate = parseFloat(hoursData.rate) || 0;
+  const filter = document.getElementById('hours-filter').value;
+  let sessions = (hoursData.sessions || []).slice();
+  if(filter === 'standalone') sessions = sessions.filter(s => !s.listId);
+  else if(filter && filter !== 'all') sessions = sessions.filter(s => s.listId === filter);
+  sessions.sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.start || '').localeCompare(a.start || ''));
+
+  const filterEl = document.getElementById('hours-filter');
+  const currentVal = filterEl.value;
+  const listIds = new Set();
+  (hoursData.sessions || []).forEach(s => { if(s.listId) listIds.add(s.listId); });
+  while(filterEl.options.length > 2) filterEl.remove(2);
+  listIds.forEach(lid => {
+    const s = (hoursData.sessions || []).find(x => x.listId === lid);
+    const opt = document.createElement('option');
+    opt.value = lid;
+    opt.textContent = (s && s.listName) || 'Linked list';
+    filterEl.appendChild(opt);
+  });
+  filterEl.value = currentVal;
+
+  let totalMin = 0;
+  sessions.forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
+  const totalHrs = (totalMin / 60);
+  const totalCost = totalHrs * rate;
+  document.getElementById('hours-summary').textContent =
+    totalHrs.toFixed(1) + ' hrs · $' + totalCost.toFixed(2) + ' total';
+
+  const container = document.getElementById('hours-sessions-list');
+  if(sessions.length === 0) {
+    container.innerHTML = '<p class="empty">No sessions logged yet.</p>';
+    return;
+  }
+
+  let html = '';
+  sessions.forEach(s => {
+    const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
+    const hrs = (mins / 60);
+    const cost = hrs * rate;
+    const linked = s.listName || (s.listId ? 'Linked list' : 'Standalone');
+    const breakCount = (s.breaks || []).filter(b => b.start && b.end).length;
+    html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+    html += '<div>';
+    html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (s.date || '') + '</div>';
+    html += '<div style="font-size:11px;color:var(--text2);">' + linked + '</div>';
+    if(s.note) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px;font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;">';
+    html += '<div style="font-size:13px;font-weight:600;">' + hrs.toFixed(1) + ' hrs</div>';
+    html += '<div style="font-size:12px;color:var(--text2);">$' + cost.toFixed(2) + '</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--text3);">';
+    html += '<span>' + (s.start || '') + ' – ' + (s.end || '');
+    if(breakCount > 0) html += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
+    html += '</span>';
+    html += '<button class="shop-action-btn" data-hours-del="' + s.id + '">Delete</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('[data-hours-del]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.getAttribute('data-hours-del');
+      appConfirm('Delete this session?', () => {
+        hoursData.sessions = hoursData.sessions.filter(s => s.id !== id);
+        saveHoursToSupabase().catch(e => console.error('save hours error', e));
+        renderHours();
+      });
+    });
+  });
+}
+
+// Wire hours back button
+(function() {
+  const btn = document.getElementById('hours-back-btn');
+  if(btn) btn.addEventListener('click', () => {
+    document.getElementById('hours-screen').style.display = 'none';
+    if(_hoursReturnTo === 'app') {
+      document.getElementById('app-screen').style.display = 'block';
+      const stickyBar = document.getElementById('sticky-bar');
+      if(stickyBar) stickyBar.style.display = 'flex';
+    } else {
+      document.getElementById('landing-screen').style.display = '';
+    }
+  });
+})();
+
+// Wire rate change
+(function() {
+  const rateInput = document.getElementById('hours-rate-input');
+  if(rateInput) rateInput.addEventListener('change', function() {
+    if(!hoursData) hoursData = {rate: 0, sessions: []};
+    hoursData.rate = parseFloat(this.value) || 0;
+    saveHoursToSupabase().catch(e => console.error('save hours error', e));
+    renderHours();
+  });
+})();
+
+// Wire filter change
+(function() {
+  const filterEl = document.getElementById('hours-filter');
+  if(filterEl) filterEl.addEventListener('change', renderHours);
+})();
+
+// Wire add session button
+(function() {
+  const addBtn = document.getElementById('hours-add-btn');
+  if(addBtn) addBtn.addEventListener('click', openHoursLogModal);
+})();
+
+// Wire PDF button
+(function() {
+  const pdfBtn = document.getElementById('hours-pdf-btn');
+  if(pdfBtn) pdfBtn.addEventListener('click', () => {
+    if(!hoursData || !hoursData.sessions || hoursData.sessions.length === 0) {
+      appConfirm('No sessions to export.', () => {}, 'OK');
+      return;
+    }
+    exportHoursPDF();
+  });
+})();
+
+let _hoursBreakCount = 0;
+function openHoursLogModal() {
+  const modal = document.getElementById('hours-log-modal');
+  document.getElementById('hours-log-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('hours-log-start').value = '';
+  document.getElementById('hours-log-end').value = '';
+  document.getElementById('hours-log-note').value = '';
+  const errEl = document.getElementById('hours-log-error');
+  errEl.style.display = 'none'; errEl.textContent = '';
+
+  const listSel = document.getElementById('hours-log-list');
+  listSel.innerHTML = '<option value="">Standalone</option>';
+  (typeof projects !== 'undefined' ? projects : []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    listSel.appendChild(opt);
+  });
+
+  _hoursBreakCount = 0;
+  document.getElementById('hours-breaks-list').innerHTML = '';
+  addHoursBreakRow();
+
+  updateHoursLogPreview();
+  modal.classList.add('open');
+}
+
+function addHoursBreakRow() {
+  _hoursBreakCount++;
+  const idx = _hoursBreakCount;
+  const container = document.getElementById('hours-breaks-list');
+  const row = document.createElement('div');
+  row.setAttribute('data-break-idx', idx);
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;';
+  row.innerHTML = '<input type="time" class="hours-break-start" style="flex:1;font-size:13px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" placeholder="Start" />' +
+    '<span style="font-size:11px;color:var(--text3);">to</span>' +
+    '<input type="time" class="hours-break-end" style="flex:1;font-size:13px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" placeholder="End" />' +
+    '<button type="button" class="del-btn" style="min-height:28px;font-size:14px;" data-remove-break="' + idx + '">&times;</button>';
+  container.appendChild(row);
+  row.querySelectorAll('input').forEach(inp => inp.addEventListener('change', updateHoursLogPreview));
+  row.querySelector('[data-remove-break]').addEventListener('click', function() {
+    row.remove();
+    updateHoursLogPreview();
+  });
+}
+
+function getHoursBreaks() {
+  const breaks = [];
+  document.querySelectorAll('#hours-breaks-list > div').forEach(row => {
+    const s = row.querySelector('.hours-break-start');
+    const e = row.querySelector('.hours-break-end');
+    if(s && e && (s.value || e.value)) breaks.push({start: s.value, end: e.value});
+  });
+  return breaks;
+}
+
+function updateHoursLogPreview() {
+  const start = document.getElementById('hours-log-start').value;
+  const end = document.getElementById('hours-log-end').value;
+  const rate = hoursData ? (parseFloat(hoursData.rate) || 0) : 0;
+  const preview = document.getElementById('hours-log-preview');
+  if(!start || !end) { preview.textContent = '0 hrs 0 min · $0.00 labor'; return; }
+  const breaks = getHoursBreaks();
+  const mins = _hoursCalcMinutes(start, end, breaks);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const cost = (mins / 60) * rate;
+  preview.textContent = h + ' hrs ' + m + ' min · $' + cost.toFixed(2) + ' labor';
+}
+
+function validateHoursLog() {
+  const start = document.getElementById('hours-log-start').value;
+  const end = document.getElementById('hours-log-end').value;
+  if(!start || !end) return 'Start and end time are required.';
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+  if(endMin <= startMin) return 'End time must be after start time.';
+  const breaks = getHoursBreaks();
+  for(let i = 0; i < breaks.length; i++) {
+    const b = breaks[i];
+    if(!b.start && !b.end) continue;
+    if(!b.start || !b.end) return 'Break ' + (i+1) + ' is incomplete.';
+    const [bs, bm] = b.start.split(':').map(Number);
+    const [be, bem] = b.end.split(':').map(Number);
+    if((be * 60 + bem) <= (bs * 60 + bm)) return 'Break ' + (i+1) + ' end must be after start.';
+  }
+  const filled = breaks.filter(b => b.start && b.end).map(b => {
+    const [bs, bm] = b.start.split(':').map(Number);
+    const [be, bem] = b.end.split(':').map(Number);
+    return {s: bs*60+bm, e: be*60+bem};
+  }).sort((a,b) => a.s - b.s);
+  for(let i = 1; i < filled.length; i++) {
+    if(filled[i].s < filled[i-1].e) return 'Breaks overlap.';
+  }
+  const totalMin = _hoursCalcMinutes(start, end, breaks);
+  if(totalMin <= 0) return 'Total worked time must be greater than 0.';
+  return null;
+}
+
+// Wire log modal buttons
+(function() {
+  document.getElementById('hours-log-start').addEventListener('change', updateHoursLogPreview);
+  document.getElementById('hours-log-end').addEventListener('change', updateHoursLogPreview);
+  document.getElementById('hours-add-break-btn').addEventListener('click', addHoursBreakRow);
+  document.getElementById('hours-log-cancel').addEventListener('click', () => {
+    document.getElementById('hours-log-modal').classList.remove('open');
+  });
+  document.getElementById('hours-log-save').addEventListener('click', () => {
+    const err = validateHoursLog();
+    const errEl = document.getElementById('hours-log-error');
+    if(err) { errEl.textContent = err; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    if(!hoursData) hoursData = {rate: 0, sessions: []};
+    const listSel = document.getElementById('hours-log-list');
+    const listId = listSel.value || null;
+    const listName = listId ? listSel.options[listSel.selectedIndex].textContent : null;
+    const breaks = getHoursBreaks().filter(b => b.start && b.end);
+    const session = {
+      id: hoursUid(),
+      date: document.getElementById('hours-log-date').value,
+      listId: listId,
+      listName: listName,
+      note: document.getElementById('hours-log-note').value.trim(),
+      start: document.getElementById('hours-log-start').value,
+      end: document.getElementById('hours-log-end').value,
+      breaks: breaks
+    };
+    hoursData.sessions.push(session);
+    saveHoursToSupabase().catch(e => console.error('save hours error', e));
+    document.getElementById('hours-log-modal').classList.remove('open');
+    renderHours();
+  });
+})();
+
+function exportHoursPDF() {
+  const { jsPDF } = window.jspdf;
+  if(!jsPDF) { alert('PDF library not loaded'); return; }
+  const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const margin = 14;
+  const pageW = 210;
+  const colRight = pageW - margin;
+  let y = 20;
+  const checkPage = (needed) => { if(y + needed > 275) { doc.addPage(); y = 20; } };
+  const green = [45, 74, 30];
+  const dark = [44, 36, 24];
+  const muted = [100, 90, 75];
+
+  doc.setFillColor(...green);
+  doc.rect(0, 0, 210, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(250,247,242);
+  doc.text('Wild Board Calculator', margin, 8);
+
+  y = 22;
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...dark);
+  doc.text('Hours Tracker', margin, y); y += 7;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
+  const dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  doc.text('Labor Report  ·  ' + dateStr, margin, y); y += 10;
+
+  const rate = parseFloat(hoursData.rate) || 0;
+  const allSessions = (hoursData.sessions || []).slice().sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  let totalMin = 0;
+  allSessions.forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
+  const totalHrs = totalMin / 60;
+  const totalCost = totalHrs * rate;
+
+  doc.setFillColor(235, 228, 215);
+  doc.rect(margin, y, pageW - margin*2, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...dark);
+  doc.text('Total Labor', margin + 3, y + 5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+  doc.text(allSessions.length + ' session' + (allSessions.length !== 1 ? 's' : '') + '  ·  $' + rate.toFixed(2) + '/hr', margin + 3, y + 10);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
+  doc.text(totalHrs.toFixed(1) + ' hrs  ·  $' + totalCost.toFixed(2), colRight - 3, y + 7.5, {align:'right'});
+  y += 18;
+
+  const groups = {};
+  allSessions.forEach(s => {
+    const key = s.listId || '__standalone__';
+    if(!groups[key]) groups[key] = {name: s.listName || 'Standalone', sessions: []};
+    groups[key].sessions.push(s);
+  });
+
+  Object.entries(groups).forEach(([key, g]) => {
+    checkPage(20);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
+    doc.text(g.name, margin, y); y += 6;
+    g.sessions.forEach(s => {
+      checkPage(14);
+      const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
+      const hrs = mins / 60;
+      const cost = hrs * rate;
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...dark);
+      doc.text(s.date + '  ' + s.start + '–' + s.end, margin + 2, y);
+      doc.text(hrs.toFixed(1) + ' hrs  ·  $' + cost.toFixed(2), colRight - 3, y, {align:'right'});
+      y += 4;
+      if(s.note) {
+        doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...muted);
+        doc.text(s.note, margin + 2, y); y += 4;
+      }
+      y += 2;
+    });
+    y += 4;
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+    doc.text('Page ' + i + ' of ' + pageCount, pageW / 2, 290, {align:'center'});
+  }
+
+  doc.save('hours-tracker.pdf');
+}
+// ============ END HOURS TRACKER ============
+
 // ============ PAYWALL ============
 
 
@@ -8104,6 +8589,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
   if(_currentUser) {
     migrateLocalDataIfNeeded()
       .then(() => fetchSavedLists())
+      .then(() => fetchHoursIntoMemory().catch(e => console.error('Hours fetch on sign-in failed:', e)))
       .then(() => { if(typeof updateLandingLink === 'function') updateLandingLink(); })
       .catch(e => console.error('Post-signin list load failed:', e));
   } else {
@@ -8261,6 +8747,40 @@ async function saveShopToSupabase() {
     })
   });
   await _checkSupabaseResp(resp, 'Save shop data');
+}
+
+// ---- Hours Tracker: single row per user, keyed by {user_id}_hours ----
+async function _fetchHoursRow() {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/hours?select=data&user_id=eq.' + _currentUser.id + '&limit=1',
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch hours');
+  const rows = await resp.json();
+  if(Array.isArray(rows) && rows.length > 0) return { exists: true, data: rows[0].data || null };
+  return { exists: false, data: null };
+}
+
+async function fetchHoursIntoMemory() {
+  const row = await _fetchHoursRow();
+  hoursData = row.data || {rate: 0, sessions: []};
+}
+
+async function saveHoursToSupabase() {
+  const headers = await _requireAuthHeaders();
+  const hoursId = _currentUser.id + '_hours';
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/hours?on_conflict=id', {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: hoursId,
+      user_id: _currentUser.id,
+      data: hoursData,
+      updated_at: new Date().toISOString()
+    })
+  });
+  await _checkSupabaseResp(resp, 'Save hours data');
 }
 
 // ---- Account deletion ----
@@ -8433,10 +8953,12 @@ function showAuthError(msg) {
 function returnToGuestLanding() {
   projects = [];
   shopData = null;
+  hoursData = null;
   updateLandingLink();
   document.getElementById('auth-modal').classList.remove('open');
   document.getElementById('saved-screen').style.display='none';
   document.getElementById('shop-screen').style.display='none';
+  document.getElementById('hours-screen').style.display='none';
   document.getElementById('app-screen').style.display='none';
   document.getElementById('sticky-bar').style.display='none';
   document.getElementById('landing-screen').style.display='';
