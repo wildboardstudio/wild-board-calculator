@@ -478,6 +478,26 @@
     .fc-name { font-size: 11px; font-weight: 700; color: var(--text); }
     .fc-desc { font-size: 10px; color: var(--text2); }
     .hours-screen { display: none; }
+    .projects-screen { display: none; }
+    .project-detail-screen { display: none; }
+    .proj-section { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .proj-section-hdr { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; cursor: pointer; }
+    .proj-section-hdr h3 { font-size: 13px; font-weight: 700; margin: 0; }
+    .proj-section-body { padding: 0 14px 14px; }
+    .proj-section.collapsed .proj-section-body { display: none; }
+    .proj-section.collapsed .proj-section-arrow { transform: rotate(-90deg); }
+    .proj-section-arrow { font-size: 12px; color: var(--text3); transition: transform 0.15s; }
+    .proj-total-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 12px; }
+    .proj-total-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+    .proj-total-row.grand { font-weight: 700; font-size: 15px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+    .proj-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+    .proj-card:active { opacity: 0.7; }
+    .proj-badge { display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .proj-badge-active { background: #e6f0e0; color: #3a5c2e; }
+    .proj-badge-complete { background: #e0dcd6; color: var(--text2); }
+    .proj-options-menu { position: absolute; right: 0; top: 36px; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 180px; overflow: hidden; }
+    .proj-options-menu button { display: block; width: 100%; text-align: left; padding: 10px 14px; font-size: 13px; background: none; border: none; cursor: pointer; color: var(--text); font-family: inherit; }
+    .proj-options-menu button:active { background: var(--bg2); }
     .landing .saved-link { display: none; }
     .app-screen { display: none; }
     .tabs { display: flex; gap: 0; margin-bottom: 0; position: relative; z-index: 2; align-items: stretch; }
@@ -685,10 +705,10 @@
         <span class="fc-name">Quick Calc</span>
         <span class="fc-desc">Fast unit converter</span>
       </button>
-      <button class="feature-card" onclick="showHoursTracker()" aria-label="Hours Tracker">
-        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><polyline points="12,7 12,12 16,14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="fc-name">Hours Tracker</span>
-        <span class="fc-desc">Track time &amp; labor cost</span>
+      <button class="feature-card" onclick="showProjects()" aria-label="Your Projects">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="7" x2="16" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="8" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="8" y1="15" x2="13" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="17" cy="18" r="4.5" fill="var(--bg3)" stroke="currentColor" stroke-width="1.4"/><polyline points="17,16 17,18.2 18.5,19" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="fc-name">Your Projects</span>
+        <span class="fc-desc">Track time &amp; project costs</span>
       </button>
       <button class="feature-card" onclick="showShop()" aria-label="Your Lumber">
         <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="13" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="3" x2="15" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
@@ -1135,6 +1155,83 @@
   </div>
 </div>
 
+<!-- Projects list screen -->
+<div class="projects-screen" id="projects-screen">
+<div class="wrap" style="padding-top:64px;padding-bottom:80px;">
+  <div class="saved-screen-header" style="position:relative;">
+    <button class="btn btn-sm" id="projects-back-btn">&#8592; Back</button>
+    <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Your Projects</h1>
+    <button class="btn btn-sm btn-primary" id="projects-add-btn" style="margin-left:auto;">+ New Project</button>
+  </div>
+  <div id="projects-list" style="margin-top:16px;"></div>
+</div>
+</div>
+
+<!-- Project detail screen -->
+<div class="project-detail-screen" id="project-detail-screen">
+<div class="wrap" style="padding-top:64px;padding-bottom:80px;">
+  <div class="saved-screen-header" style="position:relative;">
+    <button class="btn btn-sm" id="proj-detail-back-btn">&#8592; Projects</button>
+    <h1 id="proj-detail-title" style="font-size:16px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;max-width:50%;overflow:hidden;text-overflow:ellipsis;"></h1>
+    <button class="btn btn-sm" id="proj-detail-options-btn" style="margin-left:auto;font-size:16px;padding:6px 10px;">&#8943;</button>
+    <div class="proj-options-menu" id="proj-options-menu" style="display:none;">
+      <button id="proj-opt-edit">Edit Name / Note</button>
+      <button id="proj-opt-link">Change Linked List</button>
+      <button id="proj-opt-status">Mark Complete</button>
+      <button id="proj-opt-delete" style="color:var(--red);">Delete Project</button>
+    </div>
+  </div>
+
+  <div class="proj-section" id="proj-lumber-section">
+    <div class="proj-section-hdr"><h3>Lumber</h3><span class="proj-section-arrow">&#9660;</span></div>
+    <div class="proj-section-body" id="proj-lumber-body"></div>
+  </div>
+
+  <div class="proj-section" id="proj-hours-section">
+    <div class="proj-section-hdr"><h3>Hours</h3><span class="proj-section-arrow">&#9660;</span></div>
+    <div class="proj-section-body" id="proj-hours-body"></div>
+  </div>
+
+  <div class="proj-section" id="proj-cuts-section">
+    <div class="proj-section-hdr"><h3>Cuts</h3><span class="proj-section-arrow">&#9660;</span></div>
+    <div class="proj-section-body" id="proj-cuts-body"></div>
+  </div>
+
+  <div class="proj-total-card" id="proj-total-card"></div>
+</div>
+</div>
+
+<!-- New/Edit Project modal -->
+<div class="modal-overlay" id="project-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 id="project-modal-title" style="text-align:center;">New Project</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Project Name</label><input type="text" id="proj-name-input" placeholder="e.g. Kitchen Table" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Start Date</label><input type="date" id="proj-date-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Link a List <span style="font-weight:400;">(optional)</span></label><select id="proj-list-select" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"><option value="">None</option></select></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Note <span style="font-weight:400;">(optional)</span></label><input type="text" id="proj-note-input" placeholder="Optional notes" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Hourly Rate <span style="font-weight:400;">($)</span></label><input type="number" id="proj-rate-input" min="0" step="0.01" placeholder="0.00" style="width:100%;font-size:14px;padding:8px;text-align:left;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div id="proj-modal-error" style="display:none;font-size:12px;color:var(--red);text-align:center;"></div>
+    </div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-primary" id="proj-modal-save">Save</button>
+      <button class="btn" id="proj-modal-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Link List modal (for changing linked list) -->
+<div class="modal-overlay" id="proj-link-modal">
+  <div class="modal" style="max-width:340px;">
+    <h3 style="text-align:center;">Link a List</h3>
+    <select id="proj-link-select" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);margin-bottom:12px;"><option value="">None</option></select>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="proj-link-save">Save</button>
+      <button class="btn" id="proj-link-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Shop add-item modal -->
 <div class="modal-overlay" id="shop-add-modal">
   <div class="modal">
@@ -1154,6 +1251,7 @@
     <div id="shop-cut-board-info" style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:10px;"></div>
     <div id="shop-cut-fields"></div>
     <div style="margin-bottom:10px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Note <span style="color:var(--text2);font-weight:400;">(optional)</span></label><input type="text" id="shop-cut-note" placeholder="e.g. Used for table legs" style="width:100%;font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" /></div>
+    <div style="margin-bottom:10px;"><label style="display:block;font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px;">Add to project <span style="font-weight:400;">(optional)</span></label><select id="shop-cut-project" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"><option value="">None</option></select></div>
     <div style="margin-top:12px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--text2);">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Remaining piece value:</span><strong id="shop-cut-remaining-val" style="color:var(--text);">$0.00</strong></div>
       <div style="display:flex;justify-content:space-between;"><span>Cut-off (used) value:</span><strong id="shop-cut-used-val" style="color:var(--text);">$0.00</strong></div>
@@ -1223,7 +1321,7 @@
 <div class="modal-overlay" id="delete-account-modal">
   <div class="modal">
     <h3 style="color:var(--red);">Delete Account</h3>
-    <p>This permanently deletes your account, all saved lists, lumber inventory, and hours data. This cannot be undone.</p>
+    <p>This permanently deletes your account, all saved lists, lumber inventory, projects, and hours data. This cannot be undone.</p>
     <div style="margin-bottom:10px;">
       <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Confirm your password to continue</label>
       <input type="password" id="delete-account-password" placeholder="••••••••" autocomplete="current-password"
@@ -6353,6 +6451,8 @@ async function showSaved(){
   }
   document.getElementById('landing-screen').style.display='none';
   document.getElementById('hours-screen').style.display='none';
+  document.getElementById('projects-screen').style.display='none';
+  document.getElementById('project-detail-screen').style.display='none';
   document.getElementById('saved-screen').style.display='block';
   const listEl=document.getElementById('saved-list-screen');
   if(listEl) listEl.innerHTML='<p class="empty">Loading...</p>';
@@ -6490,6 +6590,8 @@ async function showShop(){
   if(appScreen) appScreen.style.display='none';
   if(stickyBar) stickyBar.style.display='none';
   document.getElementById('hours-screen').style.display='none';
+  document.getElementById('projects-screen').style.display='none';
+  document.getElementById('project-detail-screen').style.display='none';
   document.getElementById('shop-screen').style.display='block';
   const container=document.getElementById('shop-sections');
   if(container) container.innerHTML='<p class="empty">Loading...</p>';
@@ -7424,6 +7526,9 @@ function openShopCutModal(key,itemId,prefill){
 
   const noteEl=document.getElementById('shop-cut-note');
   if(noteEl) noteEl.value=(prefill&&prefill.note)?prefill.note:'';
+  if(typeof populateCutProjectDropdown === 'function') populateCutProjectDropdown();
+  const projSel=document.getElementById('shop-cut-project');
+  if(projSel) projSel.value = (prefill && prefill.projectId) || '';
   document.getElementById('shop-cut-modal').classList.add('open');
 }
 
@@ -7577,6 +7682,9 @@ function openShopCutModal(key,itemId,prefill){
     }
 
     const noteVal=(document.getElementById('shop-cut-note')||{}).value||'';
+    const cutProjSel=document.getElementById('shop-cut-project');
+    const cutProjId=cutProjSel?cutProjSel.value||null:null;
+    const cutProjName=cutProjId&&cutProjSel?cutProjSel.options[cutProjSel.selectedIndex].textContent:null;
     item.cuts.push({
       date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
       amount: cutDesc,
@@ -7585,7 +7693,9 @@ function openShopCutModal(key,itemId,prefill){
       value: usedVal,
       kerf: kerfValue,
       note: noteVal.trim(),
-      before: beforeSnapshot
+      before: beforeSnapshot,
+      projectId: cutProjId,
+      projectName: cutProjName
     });
 
     item.lft=newLft;
@@ -8027,10 +8137,15 @@ function summaryClose(){
 
 const SPLINTER_IMG = '/splinter.jpg';
 
-// ============ HOURS TRACKER ============
+// ============ YOUR PROJECTS ============
 let hoursData = null;
-let _hoursReturnTo = 'landing';
+let projectsData = [];
+let _currentProjectId = null;
+let _projectsReturnTo = 'landing';
 
+function projUid() {
+  return 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
 function hoursUid() {
   return 'hrs_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 }
@@ -8049,168 +8164,527 @@ function _hoursCalcMinutes(start, end, breaks) {
   return Math.max(0, total);
 }
 
-async function showHoursTracker() {
-  if(!_currentUser) {
-    openAuthModal('Create a free account to track your hours and labor costs.');
-    return;
-  }
-  const landing = document.getElementById('landing-screen');
-  const appScreen = document.getElementById('app-screen');
-  const stickyBar = document.getElementById('sticky-bar');
-  _hoursReturnTo = (appScreen && appScreen.style.display !== 'none' && appScreen.style.display !== '') ? 'app' : 'landing';
-  if(landing) landing.style.display = 'none';
-  if(appScreen) appScreen.style.display = 'none';
-  if(stickyBar) stickyBar.style.display = 'none';
-  document.getElementById('saved-screen').style.display = 'none';
-  document.getElementById('shop-screen').style.display = 'none';
-  document.getElementById('hours-screen').style.display = 'block';
-  const container = document.getElementById('hours-sessions-list');
-  if(container) container.innerHTML = '<p class="empty">Loading...</p>';
-  window.scrollTo({top:0, behavior:'smooth'});
-  try {
-    await fetchHoursIntoMemory();
-  } catch(e) {
-    console.error('fetchHoursIntoMemory error:', e);
-    if(container) {
-      container.innerHTML = '<p class="empty">Couldn\'t load — check connection.<br><button class="btn btn-sm" id="hours-retry-btn" style="margin-top:10px;">Retry</button></p>';
-      const retryBtn = document.getElementById('hours-retry-btn');
-      if(retryBtn) retryBtn.addEventListener('click', showHoursTracker);
-    }
-    return;
-  }
-  document.getElementById('hours-rate-input').value = hoursData.rate || 0;
-  renderHours();
+function _projGetRate(proj) {
+  if(proj && proj.rate != null && proj.rate !== '' && parseFloat(proj.rate) > 0) return parseFloat(proj.rate);
+  return (hoursData && parseFloat(hoursData.rate)) || 0;
 }
 
-function renderHours() {
-  if(!hoursData) hoursData = {rate: 0, sessions: []};
-  const rate = parseFloat(hoursData.rate) || 0;
-  const filter = document.getElementById('hours-filter').value;
-  let sessions = (hoursData.sessions || []).slice();
-  if(filter === 'standalone') sessions = sessions.filter(s => !s.listId);
-  else if(filter && filter !== 'all') sessions = sessions.filter(s => s.listId === filter);
-  sessions.sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.start || '').localeCompare(a.start || ''));
+function _projGetSessions(projId) {
+  if(!hoursData || !hoursData.sessions) return [];
+  return hoursData.sessions.filter(s => s.projectId === projId);
+}
 
-  const filterEl = document.getElementById('hours-filter');
-  const currentVal = filterEl.value;
-  const listIds = new Set();
-  (hoursData.sessions || []).forEach(s => { if(s.listId) listIds.add(s.listId); });
-  while(filterEl.options.length > 2) filterEl.remove(2);
-  listIds.forEach(lid => {
-    const s = (hoursData.sessions || []).find(x => x.listId === lid);
-    const opt = document.createElement('option');
-    opt.value = lid;
-    opt.textContent = (s && s.listName) || 'Linked list';
-    filterEl.appendChild(opt);
-  });
-  filterEl.value = currentVal;
-
+function _projLaborCost(proj) {
+  const rate = _projGetRate(proj);
   let totalMin = 0;
-  sessions.forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
-  const totalHrs = (totalMin / 60);
-  const totalCost = totalHrs * rate;
-  document.getElementById('hours-summary').textContent =
-    totalHrs.toFixed(1) + ' hrs · $' + totalCost.toFixed(2) + ' total';
+  _projGetSessions(proj.id).forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
+  return (totalMin / 60) * rate;
+}
 
-  const container = document.getElementById('hours-sessions-list');
-  if(sessions.length === 0) {
-    container.innerHTML = '<p class="empty">No sessions logged yet.</p>';
+function _projLaborHours(proj) {
+  let totalMin = 0;
+  _projGetSessions(proj.id).forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
+  return totalMin / 60;
+}
+
+function _projCutCost(projId) {
+  if(!shopData) return 0;
+  let total = 0;
+  ['bf','lf','slab'].forEach(key => {
+    (shopData[key] || []).forEach(item => {
+      (item.cuts || []).forEach(c => {
+        if(c.projectId === projId) total += (parseFloat(c.value) || 0);
+      });
+    });
+  });
+  return total;
+}
+
+function _projCuts(projId) {
+  const cuts = [];
+  if(!shopData) return cuts;
+  ['bf','lf','slab'].forEach(key => {
+    (shopData[key] || []).forEach(item => {
+      (item.cuts || []).forEach(c => {
+        if(c.projectId === projId) {
+          cuts.push({ species: item.species || item.label || key.toUpperCase(), desc: c.amount || '', date: c.date || '', value: parseFloat(c.value) || 0, note: c.note || '' });
+        }
+      });
+    });
+  });
+  return cuts;
+}
+
+function _projLumberCost(proj) {
+  if(!proj.listId) return 0;
+  const list = (typeof projects !== 'undefined' ? projects : []).find(p => p.id === proj.listId);
+  if(!list) return 0;
+  return _calcListTotal(list);
+}
+
+function _calcListTotal(list) {
+  let total = 0;
+  (list.species || []).forEach(sp => {
+    (sp.items || []).forEach(item => {
+      total += _itemCost(item, sp);
+    });
+  });
+  return total;
+}
+
+function _itemCost(item, sp) {
+  const price = parseFloat(sp.price) || 0;
+  if(item.type === 'bf') {
+    const t = parseFloat(item.thickness) || 4;
+    const w = parseFloat(item.w) || 0;
+    const lft = parseFloat(item.lft) || 0;
+    const lin = parseFloat(item.lin) || 0;
+    const qty = parseFloat(item.qty) || 1;
+    const bf = (t / 4) * w * ((lft * 12 + lin) / 144) * qty;
+    return bf * price;
+  } else if(item.type === 'lf') {
+    const lft = parseFloat(item.lft) || 0;
+    const lin = parseFloat(item.lin) || 0;
+    return ((lft * 12 + lin) / 12) * price;
+  } else if(item.type === 'slab') {
+    const t = parseFloat(item.thickness) || 4;
+    const measurements = item.measurements || [];
+    if(measurements.length === 0) return 0;
+    const avgW = measurements.reduce((s, m) => s + (parseFloat(m) || 0), 0) / measurements.length;
+    const lft = parseFloat(item.lft) || 0;
+    const lin = parseFloat(item.lin) || 0;
+    const bf = (t / 4) * avgW * ((lft * 12 + lin) / 144);
+    return bf * price;
+  } else if(item.type === 'sg') {
+    const qty = parseFloat(item.qty) || 1;
+    return qty * price;
+  }
+  return 0;
+}
+
+function _projTotalCost(proj) {
+  return _projLumberCost(proj) + _projLaborCost(proj) + _projCutCost(proj.id);
+}
+
+function _hideAllScreens() {
+  document.getElementById('landing-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('sticky-bar').style.display = 'none';
+  document.getElementById('saved-screen').style.display = 'none';
+  document.getElementById('shop-screen').style.display = 'none';
+  document.getElementById('hours-screen').style.display = 'none';
+  document.getElementById('projects-screen').style.display = 'none';
+  document.getElementById('project-detail-screen').style.display = 'none';
+}
+
+async function showProjects() {
+  if(!_currentUser) {
+    openAuthModal('Create a free account to track your projects.');
     return;
   }
+  const appScreen = document.getElementById('app-screen');
+  _projectsReturnTo = (appScreen && appScreen.style.display !== 'none' && appScreen.style.display !== '') ? 'app' : 'landing';
+  _hideAllScreens();
+  document.getElementById('projects-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  try {
+    await fetchProjectsFromSupabase();
+    await fetchHoursIntoMemory();
+  } catch(e) {
+    console.error('showProjects fetch error:', e);
+  }
+  renderProjectsList();
+}
 
+function renderProjectsList() {
+  const container = document.getElementById('projects-list');
+  if(!projectsData || projectsData.length === 0) {
+    container.innerHTML = '<p class="empty">No projects yet. Tap + New Project to get started.</p>';
+    return;
+  }
+  const sorted = projectsData.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   let html = '';
-  sessions.forEach(s => {
-    const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
-    const hrs = (mins / 60);
-    const cost = hrs * rate;
-    const linked = s.listName || (s.listId ? 'Linked list' : 'Standalone');
-    const breakCount = (s.breaks || []).filter(b => b.start && b.end).length;
-    html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
-    html += '<div>';
-    html += '<div style="font-size:13px;font-weight:600;color:var(--text);">' + (s.date || '') + '</div>';
-    html += '<div style="font-size:11px;color:var(--text2);">' + linked + '</div>';
-    if(s.note) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px;font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
+  sorted.forEach(p => {
+    const lumberCost = _projLumberCost(p);
+    const laborCost = _projLaborCost(p);
+    const cutCost = _projCutCost(p.id);
+    const total = lumberCost + laborCost + cutCost;
+    const badge = p.status === 'complete'
+      ? '<span class="proj-badge proj-badge-complete">Complete</span>'
+      : '<span class="proj-badge proj-badge-active">Active</span>';
+    html += '<div class="proj-card" data-proj-id="' + p.id + '">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+    html += '<div style="font-size:14px;font-weight:600;">' + (p.name || '').replace(/</g,'&lt;') + ' ' + badge + '</div>';
+    html += '<div style="font-size:14px;font-weight:700;">$' + total.toFixed(2) + '</div>';
     html += '</div>';
-    html += '<div style="text-align:right;">';
-    html += '<div style="font-size:13px;font-weight:600;">' + hrs.toFixed(1) + ' hrs</div>';
-    html += '<div style="font-size:12px;color:var(--text2);">$' + cost.toFixed(2) + '</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--text3);">';
-    html += '<span>' + (s.start || '') + ' – ' + (s.end || '');
-    if(breakCount > 0) html += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
-    html += '</span>';
-    html += '<button class="shop-action-btn" data-hours-del="' + s.id + '">Delete</button>';
-    html += '</div>';
+    html += '<div style="font-size:11px;color:var(--text2);margin-top:4px;">' + (p.date || '') + '</div>';
+    html += '<div style="font-size:11px;color:var(--text3);">' + (p.listName || 'No list linked') + '</div>';
+    html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;">Lumber $' + lumberCost.toFixed(2) + ' · Labor $' + laborCost.toFixed(2) + ' · Cuts $' + cutCost.toFixed(2) + '</div>';
     html += '</div>';
   });
   container.innerHTML = html;
-
-  container.querySelectorAll('[data-hours-del]').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const id = this.getAttribute('data-hours-del');
-      appConfirm('Delete this session?', () => {
-        hoursData.sessions = hoursData.sessions.filter(s => s.id !== id);
-        saveHoursToSupabase().catch(e => console.error('save hours error', e));
-        renderHours();
-      });
+  container.querySelectorAll('.proj-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-proj-id');
+      openProjectDetail(id);
     });
   });
 }
 
-// Wire hours back button
+function openProjectDetail(projId) {
+  const proj = projectsData.find(p => p.id === projId);
+  if(!proj) return;
+  _currentProjectId = projId;
+  _hideAllScreens();
+  document.getElementById('project-detail-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderProjectDetail();
+}
+
+function renderProjectDetail() {
+  const proj = projectsData.find(p => p.id === _currentProjectId);
+  if(!proj) return;
+  document.getElementById('proj-detail-title').textContent = proj.name || '';
+  const statusBtn = document.getElementById('proj-opt-status');
+  if(statusBtn) statusBtn.textContent = proj.status === 'complete' ? 'Mark Active' : 'Mark Complete';
+
+  // Lumber section
+  const lumberBody = document.getElementById('proj-lumber-body');
+  const lumberCost = _projLumberCost(proj);
+  if(proj.listId && proj.listName) {
+    lumberBody.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<div><div style="font-size:12px;font-weight:600;">' + (proj.listName || '').replace(/</g,'&lt;') + '</div>' +
+      '<div style="font-size:11px;color:var(--text2);">Linked list</div></div>' +
+      '<div style="font-size:14px;font-weight:700;">$' + lumberCost.toFixed(2) + '</div></div>';
+  } else {
+    lumberBody.innerHTML = '<div style="text-align:center;"><button class="btn btn-sm" id="proj-link-list-btn">Link a Saved List</button>' +
+      '<div style="font-size:12px;color:var(--text3);margin-top:4px;">$0.00</div></div>';
+    const linkBtn = document.getElementById('proj-link-list-btn');
+    if(linkBtn) linkBtn.addEventListener('click', () => openProjLinkModal());
+  }
+
+  // Hours section
+  const hoursBody = document.getElementById('proj-hours-body');
+  const rate = _projGetRate(proj);
+  const sessions = _projGetSessions(proj.id);
+  const laborHrs = _projLaborHours(proj);
+  const laborCost = _projLaborCost(proj);
+  let hHtml = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+    '<label style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;">Rate</label>' +
+    '<div style="display:flex;align-items:center;gap:2px;">' +
+    '<span style="font-size:13px;font-weight:600;">$</span>' +
+    '<input type="number" id="proj-rate-inline" value="' + rate + '" min="0" step="0.01" style="width:70px;text-align:left;font-size:13px;padding:4px 6px;" />' +
+    '<span style="font-size:10px;color:var(--text2);">/hr</span></div>' +
+    '<div style="margin-left:auto;font-size:12px;color:var(--text2);">' + laborHrs.toFixed(1) + ' hrs · $' + laborCost.toFixed(2) + '</div></div>';
+
+  if(sessions.length > 0) {
+    sessions.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).forEach(s => {
+      const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
+      const hrs = mins / 60;
+      const cost = hrs * rate;
+      const breakCount = (s.breaks || []).filter(b => b.start && b.end).length;
+      hHtml += '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;">';
+      hHtml += '<div style="display:flex;justify-content:space-between;">';
+      hHtml += '<div style="font-size:12px;font-weight:600;">' + (s.date || '') + '</div>';
+      hHtml += '<div style="font-size:12px;font-weight:600;">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</div>';
+      hHtml += '</div>';
+      hHtml += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (s.end||'');
+      if(breakCount > 0) hHtml += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
+      hHtml += '</div>';
+      if(s.note) hHtml += '<div style="font-size:10px;color:var(--text3);font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
+      hHtml += '<button class="shop-action-btn" data-proj-del-session="' + s.id + '" style="margin-top:4px;">Delete</button>';
+      hHtml += '</div>';
+    });
+  } else {
+    hHtml += '<p style="font-size:12px;color:var(--text3);text-align:center;">No sessions logged yet.</p>';
+  }
+  hHtml += '<div style="text-align:center;margin-top:8px;"><button class="btn btn-sm btn-primary" id="proj-log-session-btn">+ Log Session</button></div>';
+  hoursBody.innerHTML = hHtml;
+
+  const rateInline = document.getElementById('proj-rate-inline');
+  if(rateInline) rateInline.addEventListener('change', function() {
+    const proj = projectsData.find(p => p.id === _currentProjectId);
+    if(proj) {
+      proj.rate = parseFloat(this.value) || 0;
+      saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+      renderProjectDetail();
+    }
+  });
+
+  hoursBody.querySelectorAll('[data-proj-del-session]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const sid = this.getAttribute('data-proj-del-session');
+      appConfirm('Delete this session?', () => {
+        hoursData.sessions = hoursData.sessions.filter(s => s.id !== sid);
+        saveHoursToSupabase().catch(e => console.error('save hours error', e));
+        renderProjectDetail();
+      });
+    });
+  });
+
+  const logBtn = document.getElementById('proj-log-session-btn');
+  if(logBtn) logBtn.addEventListener('click', () => openHoursLogModal(_currentProjectId));
+
+  // Cuts section
+  const cutsBody = document.getElementById('proj-cuts-body');
+  const cuts = _projCuts(proj.id);
+  const cutCost = _projCutCost(proj.id);
+  let cHtml = '';
+  if(cuts.length > 0) {
+    cuts.forEach(c => {
+      cHtml += '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;">';
+      cHtml += '<div style="display:flex;justify-content:space-between;">';
+      cHtml += '<div style="font-size:12px;font-weight:600;">' + c.species.replace(/</g,'&lt;') + '</div>';
+      cHtml += '<div style="font-size:12px;font-weight:600;">$' + c.value.toFixed(2) + '</div>';
+      cHtml += '</div>';
+      cHtml += '<div style="font-size:10px;color:var(--text3);">' + c.desc + ' · ' + c.date + '</div>';
+      cHtml += '</div>';
+    });
+    cHtml += '<div style="text-align:right;font-size:12px;font-weight:600;">Total: $' + cutCost.toFixed(2) + '</div>';
+  } else {
+    cHtml += '<p style="font-size:12px;color:var(--text3);text-align:center;">No cuts attributed yet.</p>';
+  }
+  cHtml += '<div style="text-align:center;margin-top:8px;"><button class="btn btn-sm" id="proj-goto-lumber-btn">Go to Your Lumber</button></div>';
+  cutsBody.innerHTML = cHtml;
+  const gotoLumberBtn = document.getElementById('proj-goto-lumber-btn');
+  if(gotoLumberBtn) gotoLumberBtn.addEventListener('click', () => showShop());
+
+  // Total card
+  const totalCard = document.getElementById('proj-total-card');
+  totalCard.innerHTML = '<div class="proj-total-row"><span>Lumber:</span><span>$' + lumberCost.toFixed(2) + '</span></div>' +
+    '<div class="proj-total-row"><span>Labor:</span><span>$' + laborCost.toFixed(2) + '</span></div>' +
+    '<div class="proj-total-row"><span>Cuts:</span><span>$' + cutCost.toFixed(2) + '</span></div>' +
+    '<div class="proj-total-row grand"><span>Total:</span><span>$' + (lumberCost + laborCost + cutCost).toFixed(2) + '</span></div>';
+}
+
+// Wire projects back button
 (function() {
-  const btn = document.getElementById('hours-back-btn');
+  const btn = document.getElementById('projects-back-btn');
   if(btn) btn.addEventListener('click', () => {
-    document.getElementById('hours-screen').style.display = 'none';
-    if(_hoursReturnTo === 'app') {
+    document.getElementById('projects-screen').style.display = 'none';
+    if(_projectsReturnTo === 'app') {
       document.getElementById('app-screen').style.display = 'block';
-      const stickyBar = document.getElementById('sticky-bar');
-      if(stickyBar) stickyBar.style.display = 'flex';
+      document.getElementById('sticky-bar').style.display = 'flex';
     } else {
       document.getElementById('landing-screen').style.display = '';
     }
   });
 })();
 
-// Wire rate change
+// Wire project detail back button
 (function() {
-  const rateInput = document.getElementById('hours-rate-input');
-  if(rateInput) rateInput.addEventListener('change', function() {
-    if(!hoursData) hoursData = {rate: 0, sessions: []};
-    hoursData.rate = parseFloat(this.value) || 0;
-    saveHoursToSupabase().catch(e => console.error('save hours error', e));
-    renderHours();
+  const btn = document.getElementById('proj-detail-back-btn');
+  if(btn) btn.addEventListener('click', () => {
+    _currentProjectId = null;
+    document.getElementById('project-detail-screen').style.display = 'none';
+    document.getElementById('projects-screen').style.display = 'block';
+    renderProjectsList();
   });
 })();
 
-// Wire filter change
+// Wire new project button
 (function() {
-  const filterEl = document.getElementById('hours-filter');
-  if(filterEl) filterEl.addEventListener('change', renderHours);
+  const btn = document.getElementById('projects-add-btn');
+  if(btn) btn.addEventListener('click', () => openNewProjectModal());
 })();
 
-// Wire add session button
+// Wire section collapse toggles
 (function() {
-  const addBtn = document.getElementById('hours-add-btn');
-  if(addBtn) addBtn.addEventListener('click', openHoursLogModal);
+  document.querySelectorAll('.proj-section-hdr').forEach(hdr => {
+    hdr.addEventListener('click', () => {
+      hdr.parentElement.classList.toggle('collapsed');
+    });
+  });
 })();
 
-// Wire PDF button
+// Wire project options menu
 (function() {
-  const pdfBtn = document.getElementById('hours-pdf-btn');
-  if(pdfBtn) pdfBtn.addEventListener('click', () => {
-    if(!hoursData || !hoursData.sessions || hoursData.sessions.length === 0) {
-      appConfirm('No sessions to export.', () => {}, 'OK');
-      return;
+  const optBtn = document.getElementById('proj-detail-options-btn');
+  const menu = document.getElementById('proj-options-menu');
+  if(optBtn && menu) {
+    optBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', () => { menu.style.display = 'none'; });
+  }
+
+  document.getElementById('proj-opt-edit').addEventListener('click', () => {
+    menu.style.display = 'none';
+    const proj = projectsData.find(p => p.id === _currentProjectId);
+    if(proj) openEditProjectModal(proj);
+  });
+
+  document.getElementById('proj-opt-link').addEventListener('click', () => {
+    menu.style.display = 'none';
+    openProjLinkModal();
+  });
+
+  document.getElementById('proj-opt-status').addEventListener('click', () => {
+    menu.style.display = 'none';
+    const proj = projectsData.find(p => p.id === _currentProjectId);
+    if(proj) {
+      proj.status = proj.status === 'complete' ? 'active' : 'complete';
+      saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+      renderProjectDetail();
     }
-    exportHoursPDF();
+  });
+
+  document.getElementById('proj-opt-delete').addEventListener('click', () => {
+    menu.style.display = 'none';
+    appConfirm('Delete this project and all its sessions?', async () => {
+      const proj = projectsData.find(p => p.id === _currentProjectId);
+      if(proj) {
+        if(hoursData && hoursData.sessions) {
+          hoursData.sessions = hoursData.sessions.filter(s => s.projectId !== proj.id);
+          saveHoursToSupabase().catch(e => console.error('save hours error', e));
+        }
+        projectsData = projectsData.filter(p => p.id !== proj.id);
+        deleteProjectFromSupabase(proj.id).catch(e => console.error('delete project error', e));
+        _currentProjectId = null;
+        document.getElementById('project-detail-screen').style.display = 'none';
+        document.getElementById('projects-screen').style.display = 'block';
+        renderProjectsList();
+      }
+    });
   });
 })();
 
+function openNewProjectModal() {
+  document.getElementById('project-modal-title').textContent = 'New Project';
+  document.getElementById('proj-name-input').value = '';
+  document.getElementById('proj-date-input').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('proj-note-input').value = '';
+  document.getElementById('proj-rate-input').value = (hoursData && hoursData.rate) ? hoursData.rate : '';
+  const errEl = document.getElementById('proj-modal-error');
+  errEl.style.display = 'none'; errEl.textContent = '';
+
+  const listSel = document.getElementById('proj-list-select');
+  listSel.innerHTML = '<option value="">None</option>';
+  (typeof projects !== 'undefined' ? projects : []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    listSel.appendChild(opt);
+  });
+
+  document.getElementById('proj-modal-save').setAttribute('data-mode', 'new');
+  document.getElementById('project-modal').classList.add('open');
+}
+
+function openEditProjectModal(proj) {
+  document.getElementById('project-modal-title').textContent = 'Edit Project';
+  document.getElementById('proj-name-input').value = proj.name || '';
+  document.getElementById('proj-date-input').value = proj.date || '';
+  document.getElementById('proj-note-input').value = proj.note || '';
+  document.getElementById('proj-rate-input').value = proj.rate || '';
+  const errEl = document.getElementById('proj-modal-error');
+  errEl.style.display = 'none'; errEl.textContent = '';
+
+  const listSel = document.getElementById('proj-list-select');
+  listSel.innerHTML = '<option value="">None</option>';
+  (typeof projects !== 'undefined' ? projects : []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    if(p.id === proj.listId) opt.selected = true;
+    listSel.appendChild(opt);
+  });
+
+  document.getElementById('proj-modal-save').setAttribute('data-mode', 'edit');
+  document.getElementById('proj-modal-save').setAttribute('data-edit-id', proj.id);
+  document.getElementById('project-modal').classList.add('open');
+}
+
+// Wire project modal buttons
+(function() {
+  document.getElementById('proj-modal-cancel').addEventListener('click', () => {
+    document.getElementById('project-modal').classList.remove('open');
+  });
+  document.getElementById('proj-modal-save').addEventListener('click', () => {
+    const name = document.getElementById('proj-name-input').value.trim();
+    const errEl = document.getElementById('proj-modal-error');
+    if(!name) { errEl.textContent = 'Project name is required.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const mode = document.getElementById('proj-modal-save').getAttribute('data-mode');
+    const listSel = document.getElementById('proj-list-select');
+    const listId = listSel.value || null;
+    const listName = listId ? listSel.options[listSel.selectedIndex].textContent : null;
+    const rate = parseFloat(document.getElementById('proj-rate-input').value) || 0;
+
+    if(mode === 'edit') {
+      const editId = document.getElementById('proj-modal-save').getAttribute('data-edit-id');
+      const proj = projectsData.find(p => p.id === editId);
+      if(proj) {
+        proj.name = name;
+        proj.date = document.getElementById('proj-date-input').value;
+        proj.note = document.getElementById('proj-note-input').value.trim();
+        proj.listId = listId;
+        proj.listName = listName;
+        proj.rate = rate;
+        saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+        document.getElementById('project-modal').classList.remove('open');
+        renderProjectDetail();
+        renderProjectsList();
+      }
+    } else {
+      const proj = {
+        id: projUid(),
+        name: name,
+        date: document.getElementById('proj-date-input').value,
+        note: document.getElementById('proj-note-input').value.trim(),
+        listId: listId,
+        listName: listName,
+        status: 'active',
+        rate: rate
+      };
+      projectsData.push(proj);
+      saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+      document.getElementById('project-modal').classList.remove('open');
+      openProjectDetail(proj.id);
+    }
+  });
+})();
+
+// Wire link list modal
+(function() {
+  document.getElementById('proj-link-cancel').addEventListener('click', () => {
+    document.getElementById('proj-link-modal').classList.remove('open');
+  });
+  document.getElementById('proj-link-save').addEventListener('click', () => {
+    const proj = projectsData.find(p => p.id === _currentProjectId);
+    if(!proj) return;
+    const sel = document.getElementById('proj-link-select');
+    proj.listId = sel.value || null;
+    proj.listName = proj.listId ? sel.options[sel.selectedIndex].textContent : null;
+    saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+    document.getElementById('proj-link-modal').classList.remove('open');
+    renderProjectDetail();
+  });
+})();
+
+function openProjLinkModal() {
+  const sel = document.getElementById('proj-link-select');
+  sel.innerHTML = '<option value="">None</option>';
+  (typeof projects !== 'undefined' ? projects : []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    sel.appendChild(opt);
+  });
+  const proj = projectsData.find(p => p.id === _currentProjectId);
+  if(proj && proj.listId) sel.value = proj.listId;
+  document.getElementById('proj-link-modal').classList.add('open');
+}
+
+// ---- Hours Log Modal (shared with project detail) ----
 let _hoursBreakCount = 0;
-function openHoursLogModal() {
+let _hoursLogProjectId = null;
+
+function openHoursLogModal(forProjectId) {
+  _hoursLogProjectId = forProjectId || null;
   const modal = document.getElementById('hours-log-modal');
   document.getElementById('hours-log-date').value = new Date().toISOString().slice(0, 10);
   document.getElementById('hours-log-start').value = '';
@@ -8219,19 +8693,24 @@ function openHoursLogModal() {
   const errEl = document.getElementById('hours-log-error');
   errEl.style.display = 'none'; errEl.textContent = '';
 
-  const listSel = document.getElementById('hours-log-list');
-  listSel.innerHTML = '<option value="">Standalone</option>';
-  (typeof projects !== 'undefined' ? projects : []).forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.name || p.id;
-    listSel.appendChild(opt);
-  });
+  const listDiv = document.getElementById('hours-log-list').parentElement;
+  if(forProjectId) {
+    listDiv.style.display = 'none';
+  } else {
+    listDiv.style.display = '';
+    const listSel = document.getElementById('hours-log-list');
+    listSel.innerHTML = '<option value="">Standalone</option>';
+    (typeof projects !== 'undefined' ? projects : []).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name || p.id;
+      listSel.appendChild(opt);
+    });
+  }
 
   _hoursBreakCount = 0;
   document.getElementById('hours-breaks-list').innerHTML = '';
   addHoursBreakRow();
-
   updateHoursLogPreview();
   modal.classList.add('open');
 }
@@ -8268,7 +8747,13 @@ function getHoursBreaks() {
 function updateHoursLogPreview() {
   const start = document.getElementById('hours-log-start').value;
   const end = document.getElementById('hours-log-end').value;
-  const rate = hoursData ? (parseFloat(hoursData.rate) || 0) : 0;
+  let rate = 0;
+  if(_hoursLogProjectId) {
+    const proj = projectsData.find(p => p.id === _hoursLogProjectId);
+    rate = _projGetRate(proj);
+  } else {
+    rate = hoursData ? (parseFloat(hoursData.rate) || 0) : 0;
+  }
   const preview = document.getElementById('hours-log-preview');
   if(!start || !end) { preview.textContent = '0 hrs 0 min · $0.00 labor'; return; }
   const breaks = getHoursBreaks();
@@ -8324,15 +8809,12 @@ function validateHoursLog() {
     if(err) { errEl.textContent = err; errEl.style.display = 'block'; return; }
     errEl.style.display = 'none';
     if(!hoursData) hoursData = {rate: 0, sessions: []};
-    const listSel = document.getElementById('hours-log-list');
-    const listId = listSel.value || null;
-    const listName = listId ? listSel.options[listSel.selectedIndex].textContent : null;
+    const projectId = _hoursLogProjectId || null;
     const breaks = getHoursBreaks().filter(b => b.start && b.end);
     const session = {
       id: hoursUid(),
+      projectId: projectId,
       date: document.getElementById('hours-log-date').value,
-      listId: listId,
-      listName: listName,
       note: document.getElementById('hours-log-note').value.trim(),
       start: document.getElementById('hours-log-start').value,
       end: document.getElementById('hours-log-end').value,
@@ -8341,11 +8823,28 @@ function validateHoursLog() {
     hoursData.sessions.push(session);
     saveHoursToSupabase().catch(e => console.error('save hours error', e));
     document.getElementById('hours-log-modal').classList.remove('open');
-    renderHours();
+    if(_currentProjectId && projectId === _currentProjectId) {
+      renderProjectDetail();
+    }
   });
 })();
 
-function exportHoursPDF() {
+// ---- Populate project dropdown in Record a Cut modal ----
+function populateCutProjectDropdown() {
+  const sel = document.getElementById('shop-cut-project');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">None</option>';
+  (projectsData || []).filter(p => p.status === 'active').forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    sel.appendChild(opt);
+  });
+}
+
+function exportProjectPDF(projId) {
+  const proj = projectsData.find(p => p.id === projId);
+  if(!proj) return;
   const { jsPDF } = window.jspdf;
   if(!jsPDF) { alert('PDF library not loaded'); return; }
   const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
@@ -8365,56 +8864,85 @@ function exportHoursPDF() {
 
   y = 22;
   doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...dark);
-  doc.text('Hours Tracker', margin, y); y += 7;
+  doc.text(proj.name || 'Project', margin, y); y += 7;
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
-  const dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  doc.text('Labor Report  ·  ' + dateStr, margin, y); y += 10;
+  const badge = proj.status === 'complete' ? 'Complete' : 'Active';
+  doc.text(badge + '  ·  Started ' + (proj.date || ''), margin, y); y += 5;
+  if(proj.listName) {
+    doc.text('Linked list: ' + proj.listName, margin, y); y += 5;
+  }
+  y += 5;
 
-  const rate = parseFloat(hoursData.rate) || 0;
-  const allSessions = (hoursData.sessions || []).slice().sort((a,b) => (a.date||'').localeCompare(b.date||''));
-  let totalMin = 0;
-  allSessions.forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
-  const totalHrs = totalMin / 60;
-  const totalCost = totalHrs * rate;
+  const lumberCost = _projLumberCost(proj);
+  const laborCost = _projLaborCost(proj);
+  const cutCost = _projCutCost(proj.id);
+  const total = lumberCost + laborCost + cutCost;
 
-  doc.setFillColor(235, 228, 215);
-  doc.rect(margin, y, pageW - margin*2, 12, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...dark);
-  doc.text('Total Labor', margin + 3, y + 5);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-  doc.text(allSessions.length + ' session' + (allSessions.length !== 1 ? 's' : '') + '  ·  $' + rate.toFixed(2) + '/hr', margin + 3, y + 10);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
-  doc.text(totalHrs.toFixed(1) + ' hrs  ·  $' + totalCost.toFixed(2), colRight - 3, y + 7.5, {align:'right'});
-  y += 18;
+  // Lumber
+  checkPage(14);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...dark);
+  doc.text('Lumber', margin, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...muted);
+  doc.text(proj.listName || 'No list linked', margin + 2, y);
+  doc.text('$' + lumberCost.toFixed(2), colRight - 3, y, {align:'right'});
+  y += 8;
 
-  const groups = {};
-  allSessions.forEach(s => {
-    const key = s.listId || '__standalone__';
-    if(!groups[key]) groups[key] = {name: s.listName || 'Standalone', sessions: []};
-    groups[key].sessions.push(s);
-  });
-
-  Object.entries(groups).forEach(([key, g]) => {
-    checkPage(20);
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
-    doc.text(g.name, margin, y); y += 6;
-    g.sessions.forEach(s => {
-      checkPage(14);
-      const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
-      const hrs = mins / 60;
-      const cost = hrs * rate;
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...dark);
-      doc.text(s.date + '  ' + s.start + '–' + s.end, margin + 2, y);
-      doc.text(hrs.toFixed(1) + ' hrs  ·  $' + cost.toFixed(2), colRight - 3, y, {align:'right'});
-      y += 4;
-      if(s.note) {
-        doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...muted);
-        doc.text(s.note, margin + 2, y); y += 4;
-      }
-      y += 2;
-    });
+  // Labor
+  checkPage(14);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...dark);
+  doc.text('Labor', margin, y); y += 6;
+  const rate = _projGetRate(proj);
+  const sessions = _projGetSessions(proj.id);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
+  doc.text(sessions.length + ' session' + (sessions.length !== 1 ? 's' : '') + '  ·  $' + rate.toFixed(2) + '/hr  ·  $' + laborCost.toFixed(2) + ' total', margin + 2, y); y += 5;
+  sessions.forEach(s => {
+    checkPage(10);
+    const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
+    const hrs = mins / 60;
+    const cost = hrs * rate;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...dark);
+    doc.text(s.date + '  ' + s.start + '–' + s.end, margin + 4, y);
+    doc.text(hrs.toFixed(1) + ' hrs  ·  $' + cost.toFixed(2), colRight - 3, y, {align:'right'});
     y += 4;
+    if(s.note) {
+      doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...muted);
+      doc.text(s.note, margin + 4, y); y += 4;
+    }
   });
+  y += 4;
+
+  // Cuts
+  checkPage(14);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...dark);
+  doc.text('Cuts', margin, y); y += 6;
+  const cuts = _projCuts(proj.id);
+  if(cuts.length === 0) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
+    doc.text('No cuts attributed', margin + 2, y); y += 5;
+  } else {
+    cuts.forEach(c => {
+      checkPage(8);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...dark);
+      doc.text(c.species + ' — ' + c.desc + ' (' + c.date + ')', margin + 4, y);
+      doc.text('$' + c.value.toFixed(2), colRight - 3, y, {align:'right'});
+      y += 4;
+    });
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...dark);
+    doc.text('Cut total: $' + cutCost.toFixed(2), colRight - 3, y, {align:'right'});
+    y += 6;
+  }
+
+  // Total
+  checkPage(20);
+  y += 4;
+  doc.setFillColor(235, 228, 215);
+  doc.rect(margin, y, pageW - margin*2, 14, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
+  doc.text('Project Total', margin + 3, y + 6);
+  doc.text('Lumber $' + lumberCost.toFixed(2) + '  +  Labor $' + laborCost.toFixed(2) + '  +  Cuts $' + cutCost.toFixed(2), margin + 3, y + 11);
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...dark);
+  doc.text('$' + total.toFixed(2), colRight - 3, y + 8, {align:'right'});
+  y += 20;
 
   const pageCount = doc.internal.getNumberOfPages();
   for(let i = 1; i <= pageCount; i++) {
@@ -8423,9 +8951,9 @@ function exportHoursPDF() {
     doc.text('Page ' + i + ' of ' + pageCount, pageW / 2, 290, {align:'center'});
   }
 
-  doc.save('hours-tracker.pdf');
+  doc.save((proj.name || 'project').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() + '.pdf');
 }
-// ============ END HOURS TRACKER ============
+// ============ END YOUR PROJECTS ============
 
 // ============ PAYWALL ============
 
@@ -8590,6 +9118,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
     migrateLocalDataIfNeeded()
       .then(() => fetchSavedLists())
       .then(() => fetchHoursIntoMemory().catch(e => console.error('Hours fetch on sign-in failed:', e)))
+      .then(() => fetchProjectsFromSupabase().catch(e => console.error('Projects fetch on sign-in failed:', e)))
       .then(() => { if(typeof updateLandingLink === 'function') updateLandingLink(); })
       .catch(e => console.error('Post-signin list load failed:', e));
   } else {
@@ -8783,6 +9312,42 @@ async function saveHoursToSupabase() {
   await _checkSupabaseResp(resp, 'Save hours data');
 }
 
+// ---- Projects: one row per project, keyed by project id ----
+async function fetchProjectsFromSupabase() {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/projects?select=id,data&user_id=eq.' + _currentUser.id,
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch projects');
+  const rows = await resp.json();
+  projectsData = (Array.isArray(rows) ? rows : []).map(r => ({ ...r.data, id: r.id }));
+}
+
+async function saveProjectToSupabase(proj) {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/projects?on_conflict=id', {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: proj.id,
+      user_id: _currentUser.id,
+      data: proj,
+      updated_at: new Date().toISOString()
+    })
+  });
+  await _checkSupabaseResp(resp, 'Save project');
+}
+
+async function deleteProjectFromSupabase(projId) {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/projects?id=eq.' + projId + '&user_id=eq.' + _currentUser.id,
+    { method: 'DELETE', headers }
+  );
+  await _checkSupabaseResp(resp, 'Delete project');
+}
+
 // ---- Account deletion ----
 // Edge Function URLs are deterministic (project URL + /functions/v1/<name>),
 // so as long as the function is deployed under this exact name, nothing
@@ -8954,11 +9519,14 @@ function returnToGuestLanding() {
   projects = [];
   shopData = null;
   hoursData = null;
+  projectsData = [];
   updateLandingLink();
   document.getElementById('auth-modal').classList.remove('open');
   document.getElementById('saved-screen').style.display='none';
   document.getElementById('shop-screen').style.display='none';
   document.getElementById('hours-screen').style.display='none';
+  document.getElementById('projects-screen').style.display='none';
+  document.getElementById('project-detail-screen').style.display='none';
   document.getElementById('app-screen').style.display='none';
   document.getElementById('sticky-bar').style.display='none';
   document.getElementById('landing-screen').style.display='';
