@@ -646,7 +646,7 @@
       </ul>
     </div>
     <div class="landing-cta">
-      <button class="btn-create" id="start-btn">+ Create New List</button>
+      <button class="btn-create" id="start-btn">Calculate Lumber</button>
       <button class="btn-saved" id="resume-btn" style="display:none;">Resume Unsaved List</button>
       <button class="btn-saved" id="landing-saved-link">Open Saved Lists</button>
       <button class="btn-saved" id="landing-account-btn" style="margin-top:0;">Sign In / Create Account</button>
@@ -1100,7 +1100,8 @@
 
 <!-- Auth modal -->
 <div class="modal-overlay" id="auth-modal">
-  <div class="modal">
+  <div class="modal" style="position:relative;">
+    <button id="auth-close-btn" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0;-webkit-appearance:none;">&times;</button>
     <h3 id="auth-modal-title" style="text-align:center;">Sign In</h3>
     <div id="auth-modal-body">
       <p id="auth-context-msg" style="font-size:13px;color:var(--text2);text-align:center;margin:0 0 12px;display:none;"></p>
@@ -1122,8 +1123,7 @@
       </div>
     </div>
     <!-- Signed in state -->
-    <div id="auth-signed-in-body" style="display:none;text-align:center;position:relative;">
-      <button id="auth-close-btn" style="position:absolute;top:-8px;right:-8px;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;padding:4px;-webkit-appearance:none;">&times;</button>
+    <div id="auth-signed-in-body" style="display:none;text-align:center;">
       <p id="auth-signed-in-email" style="font-size:13px;color:var(--text2);margin-bottom:6px;"></p>
       <p id="auth-sync-status" style="font-size:11px;color:var(--text2);margin-bottom:16px;">Your lists and lumber are saved to your account.</p>
       <div class="modal-btns">
