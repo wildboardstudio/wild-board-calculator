@@ -83,6 +83,24 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'Failed to delete shop data — please retry' }, 500);
   }
 
+  const { error: hoursErr } = await admin.from('hours').delete().eq('user_id', userId);
+  if (hoursErr) {
+    console.error('delete-account: failed to delete hours for', userId, hoursErr);
+    return jsonResponse({ error: 'Failed to delete hours data — please retry' }, 500);
+  }
+
+  const { error: projectsErr } = await admin.from('projects').delete().eq('user_id', userId);
+  if (projectsErr) {
+    console.error('delete-account: failed to delete projects for', userId, projectsErr);
+    return jsonResponse({ error: 'Failed to delete projects data — please retry' }, 500);
+  }
+
+  const { error: quotesErr } = await admin.from('quotes').delete().eq('user_id', userId);
+  if (quotesErr) {
+    console.error('delete-account: failed to delete quotes for', userId, quotesErr);
+    return jsonResponse({ error: 'Failed to delete quotes data — please retry' }, 500);
+  }
+
   // DELETE matching zero rows is not an error, so this is a no-op (not a
   // failure) for accounts that never had a profiles row.
   const { error: profileErr } = await admin.from('profiles').delete().eq('id', userId);

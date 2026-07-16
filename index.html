@@ -493,6 +493,55 @@
     .proj-options-menu { position: absolute; right: 0; top: 36px; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 180px; overflow: hidden; }
     .proj-options-menu button { display: block; width: 100%; text-align: left; padding: 10px 14px; font-size: 13px; background: none; border: none; cursor: pointer; color: var(--text); font-family: inherit; }
     .proj-options-menu button:active { background: var(--bg2); }
+    .settings-screen { display: none; }
+    .settings-screen .wrap { padding: 0; }
+    .settings-section { margin-bottom: 20px; }
+    .settings-section h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text2); margin-bottom: 8px; }
+    .settings-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .settings-field label { font-size: 12px; font-weight: 600; color: var(--text2); }
+    .settings-field input { font-size: 14px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); }
+    .settings-tier-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .settings-tier-table th { text-align: left; padding: 4px 6px; font-weight: 600; color: var(--text2); border-bottom: 1px solid var(--border); }
+    .settings-tier-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); }
+    .settings-tier-table td input { width: 70px; font-size: 12px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); text-align: right; }
+    .settings-gear-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--text2); padding: 6px; z-index: 10; -webkit-appearance: none; }
+    .settings-gear-btn:active { opacity: 0.6; }
+    .settings-ro-note { font-size: 11px; color: var(--text3); font-style: italic; margin-bottom: 12px; }
+    .quotes-screen { display: none; }
+    .quote-edit-screen { display: none; }
+    .quote-detail-screen { display: none; }
+    .quote-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+    .quote-card:active { opacity: 0.7; }
+    .quote-badge { display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.02em; }
+    .quote-badge-draft { background: #f5e6c8; color: #8b6914; }
+    .quote-badge-pending { background: #d8e4f0; color: #3a5c8b; }
+    .quote-badge-accepted { background: #e0f0d8; color: #3a5c2e; }
+    .quote-badge-declined { background: #e0dcd6; color: var(--text3); }
+    .quote-section { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .quote-section-hdr { padding: 12px 14px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .quote-section-body { padding: 14px; }
+    .quote-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .quote-field label { font-size: 12px; font-weight: 600; color: var(--text2); }
+    .quote-field input, .quote-field select, .quote-field textarea { font-size: 14px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-family: inherit; }
+    .quote-field textarea { resize: vertical; min-height: 60px; }
+    .quote-pill-group { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .quote-pill { flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; background: var(--bg); color: var(--text2); border: none; border-right: 1px solid var(--border); font-family: inherit; -webkit-appearance: none; }
+    .quote-pill:last-child { border-right: none; }
+    .quote-pill.active { background: var(--text); color: var(--bg); }
+    .quote-breakdown { background: var(--bg2); border-radius: 10px; padding: 12px; margin-top: 10px; }
+    .quote-breakdown-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .quote-breakdown-row.total { font-weight: 700; font-size: 14px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+    .quote-breakdown-row.grand { font-weight: 700; font-size: 18px; border-top: 2px solid var(--border); padding-top: 10px; margin-top: 6px; }
+    .quote-line-item { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .quote-line-item input { flex: 1; font-size: 13px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
+    .quote-alloc-item { background: var(--bg2); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .quote-task-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .quote-task-row input { flex: 1; font-size: 13px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
+    .quote-warn { background: #ffeaea; border: 1px solid var(--red); border-radius: 8px; padding: 10px; font-size: 12px; color: var(--red); text-align: center; margin-top: 8px; }
+    .quote-internal { border: 2px dashed var(--border2); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .quote-internal-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text3); margin-bottom: 8px; }
+    .quote-feature-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .quote-feature-row label { font-size: 13px; flex: 1; }
     .landing .saved-link { display: none; }
     .app-screen { display: none; }
     .tabs { display: flex; gap: 0; margin-bottom: 0; position: relative; z-index: 2; align-items: stretch; }
@@ -658,7 +707,8 @@
 </head>
 <body>
 <!-- Landing screen -->
-<div class="landing" id="landing-screen">
+<div class="landing" id="landing-screen" style="position:relative;">
+  <button class="settings-gear-btn" id="landing-gear-btn" onclick="showSettings()" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 
   <!-- Logo -->
   <div class="landing-logo">
@@ -708,6 +758,11 @@
         <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 256 256" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M214.1,101.3V55.2h-72.8L52.1,90.6v35l-47,22.7v55.6h182.5l63.4-53.2v-49.2H214.1z M133.1,99.3v39h-8.4c0-1.1-0.1-2.3-0.2-3.4c-1-13.5-6.3-25.5-15-35.6H133.1z M60.3,99.3h37.9c10.8,9.4,16.9,21.9,18,36.3c0.1,0.9,0.1,1.8,0.1,2.7H99.3c0-0.5,0-0.9,0-1.4c-0.8-9.9-5.3-19-12.9-25.4c-7.4-6.3-16.4-9.5-25.9-9v-3.1H60.3z M60.3,110.5c7.7-0.5,14.8,2.1,20.6,7.1c5.9,5,9.5,12.1,10,19.9c0,0.2,0,0.5,0,0.7h-9.3c-0.4-5.2-3-9.9-6.9-13.3c-4-3.4-9-5-14.2-4.6c-0.2,0-0.1,0-0.2,0L60.3,110.5L60.3,110.5z M60.3,128.5c0.4-0.1,0.5-0.1,0.8-0.1c3.1-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.5,4.3,3.9,7.2h-13V128.5z M13.2,195.6v-9.3c0.6-0.1,1.2-0.3,1.8-0.3c3-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.6,4.1,3.9,7H13.2z M35.7,195.6c-0.4-5.2-3.1-9.7-7.1-13.1s-9-5-14.2-4.6c-0.4,0-0.8,0.1-1.2,0.2v-9.5c0.1,0,0.3-0.1,0.5-0.1c16-1.2,30,10.8,31.3,26.8c0,0.2,0,0.3,0,0.5C45,195.6,35.7,195.6,35.7,195.6z M53.2,195.6c0-0.5,0-0.7-0.1-1.1c-1.6-20.4-19.5-35.9-39.9-34.4v-3.4h38.5c10.8,9.4,17.3,22.1,18.5,36.5c0.1,0.9,0.1,1.6,0.1,2.5H53.2z M78.4,192.4c-1-13.5-6.3-25.8-15-35.8H86v39h-7.4C78.5,194.5,78.5,193.6,78.4,192.4z M106.5,195.6v-9.4c0.5-0.1,0.7-0.2,1.3-0.2c3-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.4,4.1,3.8,7L106.5,195.6L106.5,195.6z M128,195.6c-0.4-5.2-2.7-9.7-6.7-13.1s-9-5-14.2-4.6c-0.3,0-0.3,0-0.7,0v-9.9c16-1.2,29.9,11.2,31.2,27.2c0,0.2,0,0.3,0,0.5C137.7,195.6,128,195.6,128,195.6z M145.9,195.6c0-0.5,0-0.7-0.1-1.1c-1.5-20.4-19.1-36.1-39.4-34.7v-3.1h37.9c10.8,9.4,17.4,22.1,18.6,36.5c0.1,0.9-0.1,1.6-0.1,2.5H145.9z M179.2,195.6H171c0-1.1,0.1-2.1,0-3.2c-1-13.5-6.7-25.8-15.4-35.8h23.6V195.6z"/></svg></div>
         <span class="fc-name">Your Lumber</span>
         <span class="fc-desc">Manage your inventory</span>
+      </button>
+      <button class="feature-card" onclick="showQuotes()" aria-label="Quotes">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div>
+        <span class="fc-name">Quotes</span>
+        <span class="fc-desc">Build and send project quotes</span>
       </button>
       <button class="feature-card" id="landing-saved-link" style="grid-column:1/-1;" aria-label="Saved Lists">
         <div class="fc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg></div>
@@ -1320,7 +1375,7 @@
 <div class="modal-overlay" id="delete-account-modal">
   <div class="modal">
     <h3 style="color:var(--red);">Delete Account</h3>
-    <p>This permanently deletes your account, all saved lists, lumber inventory, projects, and hours data. This cannot be undone.</p>
+    <p>This permanently deletes your account, all saved lists, lumber inventory, projects, hours data, and quotes. This cannot be undone.</p>
     <div style="margin-bottom:10px;">
       <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Confirm your password to continue</label>
       <input type="password" id="delete-account-password" placeholder="••••••••" autocomplete="current-password"
@@ -1330,6 +1385,123 @@
     <div class="modal-btns" style="margin-top:14px;">
       <button class="btn" id="delete-account-confirm-btn" style="background:var(--red);color:#fff;border-color:var(--red);">Permanently Delete My Account</button>
       <button class="btn" id="delete-account-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings screen -->
+<div class="settings-screen" id="settings-screen">
+  <div class="wrap" style="padding:0 14px;">
+    <div style="display:flex;align-items:center;padding:14px 0 10px;position:relative;">
+      <button class="back-btn" id="settings-back-btn" style="position:absolute;left:0;">&#8592;</button>
+      <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Settings</h1>
+      <button class="btn btn-sm btn-primary" id="settings-save-btn" style="position:absolute;right:0;">Save</button>
+    </div>
+    <div id="settings-ro-note" class="settings-ro-note" style="display:none;">Sign in to save your pricing settings.</div>
+    <div id="settings-body" style="margin-top:40px;"></div>
+  </div>
+</div>
+
+<!-- Quotes list screen -->
+<div class="quotes-screen" id="quotes-screen">
+  <div class="wrap" style="padding:0 14px;">
+    <div style="display:flex;align-items:center;padding:14px 0 10px;position:relative;">
+      <button class="back-btn" id="quotes-back-btn" style="position:absolute;left:0;">&#8592;</button>
+      <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Quotes</h1>
+      <button class="btn btn-sm btn-primary" id="quotes-add-btn" style="position:absolute;right:0;">+ New Quote</button>
+    </div>
+    <div id="quotes-list" style="margin-top:40px;"></div>
+  </div>
+</div>
+
+<!-- Quote detail screen -->
+<div class="quote-detail-screen" id="quote-detail-screen">
+  <div class="wrap" style="padding:0 14px;">
+    <div style="display:flex;align-items:center;padding:14px 0 10px;position:relative;">
+      <button class="back-btn" id="quote-detail-back-btn" style="position:absolute;left:0;">&#8592;</button>
+      <h1 id="quote-detail-title" style="font-size:16px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis;"></h1>
+      <div style="position:absolute;right:0;">
+        <button id="quote-detail-options-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px 8px;">&#x22EF;</button>
+        <div id="quote-options-menu" class="proj-options-menu" style="display:none;">
+          <button id="qopt-edit">Edit</button>
+          <button id="qopt-duplicate">Duplicate</button>
+          <button id="qopt-accepted">Mark Accepted</button>
+          <button id="qopt-declined">Mark Declined</button>
+          <button id="qopt-link-project">Link Project</button>
+          <button id="qopt-delete" style="color:var(--red);">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="quote-detail-body" style="margin-top:40px;"></div>
+  </div>
+</div>
+
+<!-- Quote edit screen -->
+<div class="quote-edit-screen" id="quote-edit-screen">
+  <div class="wrap" style="padding:0 14px;">
+    <div style="display:flex;align-items:center;padding:14px 0 10px;position:relative;">
+      <button class="back-btn" id="quote-edit-back-btn" style="position:absolute;left:0;">&#8592;</button>
+      <h1 id="quote-edit-title" style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">New Quote</h1>
+    </div>
+    <div id="quote-edit-body" style="margin-top:40px;"></div>
+  </div>
+</div>
+
+<!-- Quote send confirmation modal -->
+<div class="modal-overlay" id="quote-send-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;">Send Quote</h3>
+    <p id="quote-send-msg" style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:14px;"></p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="quote-send-pdf">Download PDF</button>
+      <button class="btn btn-primary" id="quote-send-email" style="background:var(--green);border-color:var(--green);">Open Email</button>
+      <button class="btn" id="quote-send-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lumber allocation modal -->
+<div class="modal-overlay" id="quote-alloc-modal">
+  <div class="modal" style="max-width:420px;max-height:80vh;overflow-y:auto;">
+    <h3 style="text-align:center;">Allocate from Your Lumber</h3>
+    <div id="quote-alloc-list" style="margin:12px 0;"></div>
+    <div class="modal-btns">
+      <button class="btn" id="quote-alloc-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lumber allocation type modal -->
+<div class="modal-overlay" id="quote-alloc-type-modal">
+  <div class="modal" style="max-width:360px;">
+    <h3 style="text-align:center;">Allocation Type</h3>
+    <div id="quote-alloc-item-info" style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:12px;"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-primary" id="quote-alloc-full">Full Board</button>
+      <div id="quote-alloc-cut-section">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">Cut and Allocate</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px;">
+          <div class="quote-field" style="flex:1;margin:0;"><label>Length (in)</label><input type="number" id="quote-alloc-cut-length" min="0" step="0.01" /></div>
+          <div class="quote-field" style="flex:1;margin:0;"><label>Width (in)</label><input type="number" id="quote-alloc-cut-width" min="0" step="0.01" /></div>
+        </div>
+        <div id="quote-alloc-cut-info" style="font-size:11px;color:var(--text2);margin-bottom:8px;"></div>
+        <button class="btn btn-primary" id="quote-alloc-cut-confirm">Allocate Cut</button>
+      </div>
+    </div>
+    <div class="modal-btns" style="margin-top:12px;">
+      <button class="btn" id="quote-alloc-type-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quote link project modal -->
+<div class="modal-overlay" id="quote-link-proj-modal">
+  <div class="modal" style="max-width:360px;">
+    <h3 style="text-align:center;">Link Project</h3>
+    <select id="quote-link-proj-select" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);margin-bottom:12px;"><option value="">None</option></select>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="quote-link-proj-save">Save</button>
+      <button class="btn" id="quote-link-proj-cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -8291,6 +8463,10 @@ function _hideAllScreens() {
   document.getElementById('hours-screen').style.display = 'none';
   document.getElementById('projects-screen').style.display = 'none';
   document.getElementById('project-detail-screen').style.display = 'none';
+  document.getElementById('settings-screen').style.display = 'none';
+  document.getElementById('quotes-screen').style.display = 'none';
+  document.getElementById('quote-detail-screen').style.display = 'none';
+  document.getElementById('quote-edit-screen').style.display = 'none';
 }
 
 async function showProjects() {
@@ -8953,6 +9129,1403 @@ function exportProjectPDF(projId) {
 }
 // ============ END YOUR PROJECTS ============
 
+// ============ SETTINGS ============
+let userSettings = null;
+
+function getDefaultSettings() {
+  const diagonalTiers = [];
+  const bases = [50,75,100,125,150,175,200,225,250,275,325,375,425,475,525,575,625,675,725,775,875,975,1075,1175,1275,1375,1475,1575,1675,1775];
+  for(let i = 0; i < bases.length; i++) {
+    const min = i === 0 ? 0 : 12 + (i - 1) * 2;
+    const max = i === 0 ? 12 : 12 + i * 2;
+    diagonalTiers.push({ min, max, price: bases[i] });
+  }
+  const thicknessTiers = [];
+  const thickMods = [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63];
+  for(let i = 0; i < thickMods.length; i++) {
+    const min = i === 0 ? 0 : 1 + (i - 1) * 0.25;
+    const max = i === 0 ? 1 : 1 + i * 0.25;
+    thicknessTiers.push({ min, max, modifier: thickMods[i] / 100 });
+  }
+  return {
+    displayName: '',
+    defaultTaxRate: 0,
+    defaultShopRate: 0,
+    defaultEmployeeRate: 0,
+    diagonalTiers,
+    thicknessTiers,
+    multipliers: {
+      glueUps: [0, 0.05, 0.10, 0.15, 0.20, 0.25],
+      endGrain: 0.25,
+      complexPattern: 0.25
+    },
+    featureAddOns: [
+      { name: 'Juice Groove', price: 50 },
+      { name: 'Finger Holds', price: 25 },
+      { name: 'Feet', price: 15 },
+      { name: 'Custom Engraving', price: 50 }
+    ],
+    minThreshold: 0
+  };
+}
+
+function _getSettings() {
+  if(userSettings) return userSettings;
+  try {
+    const raw = localStorage.getItem('wbc_settings');
+    if(raw) { userSettings = JSON.parse(raw); return userSettings; }
+  } catch(e) {}
+  userSettings = getDefaultSettings();
+  return userSettings;
+}
+
+function _saveSettingsLocal() {
+  try { localStorage.setItem('wbc_settings', JSON.stringify(userSettings)); } catch(e) {}
+}
+
+function showSettings() {
+  _hideAllScreens();
+  document.getElementById('settings-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderSettings();
+}
+
+function renderSettings() {
+  const s = _getSettings();
+  const ro = !_currentUser;
+  const roAttr = ro ? ' disabled' : '';
+  document.getElementById('settings-ro-note').style.display = ro ? 'block' : 'none';
+  let html = '';
+  html += '<div class="settings-section"><h3>Your Info</h3>';
+  html += '<div class="settings-field"><label>Display Name</label><input type="text" id="set-display-name" value="' + (s.displayName || '').replace(/"/g,'&quot;') + '"' + roAttr + ' placeholder="e.g. Wild Board Studio" /></div>';
+  html += '<div class="settings-field"><label>Default Tax Rate (%)</label><input type="number" id="set-tax-rate" value="' + (s.defaultTaxRate || 0) + '" min="0" step="0.1"' + roAttr + ' /></div></div>';
+
+  html += '<div class="settings-section"><h3>Labour Defaults</h3>';
+  html += '<div class="settings-field"><label>Default Shop Rate ($/hr)</label><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01"' + roAttr + ' /></div>';
+  html += '<div class="settings-field"><label>Default Employee Rate ($/hr)</label><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01"' + roAttr + ' /></div></div>';
+
+  html += '<div class="settings-section"><h3>Diagonal Pricing — Base Price Tiers</h3>';
+  html += '<table class="settings-tier-table"><thead><tr><th>Diagonal Range</th><th>Base Price ($)</th></tr></thead><tbody>';
+  (s.diagonalTiers || []).forEach((t, i) => {
+    const label = i === 0 ? '< 12"' : t.min.toFixed(0) + ' – ' + (t.max - 0.1).toFixed(1) + '"';
+    html += '<tr><td style="font-size:11px;">' + label + '</td><td><input type="number" class="set-diag-price" data-idx="' + i + '" value="' + t.price + '" min="0" step="1"' + roAttr + ' /></td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="settings-section"><h3>Thickness Modifiers</h3>';
+  html += '<table class="settings-tier-table"><thead><tr><th>Thickness Range</th><th>Modifier (%)</th></tr></thead><tbody>';
+  (s.thicknessTiers || []).forEach((t, i) => {
+    const label = i === 0 ? '< 1"' : t.min.toFixed(2) + ' – ' + (t.max - 0.01).toFixed(2) + '"';
+    html += '<tr><td style="font-size:11px;">' + label + '</td><td><input type="number" class="set-thick-mod" data-idx="' + i + '" value="' + Math.round(t.modifier * 100) + '" min="0" step="1"' + roAttr + ' /></td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="settings-section"><h3>Detail Multipliers</h3>';
+  html += '<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Glue-up count:</div>';
+  for(let i = 0; i <= 5; i++) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  }
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;"><span style="font-size:12px;">End Grain</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">Complex Pattern</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  html += '</div>';
+
+  html += '<div class="settings-section"><h3>Feature Add-Ons</h3>';
+  (s.featureAddOns || []).forEach((f, i) => {
+    html += '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><input type="text" class="set-feat-name" data-idx="' + i + '" value="' + (f.name || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /><input type="number" class="set-feat-price" data-idx="' + i + '" value="' + (f.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' />';
+    if(!ro) html += '<button class="del-btn" data-del-feat="' + i + '" style="min-height:28px;font-size:14px;">&times;</button>';
+    html += '</div>';
+  });
+  if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
+  html += '</div>';
+
+  html += '<div class="settings-section"><h3>Minimum Quote Threshold</h3>';
+  html += '<div class="settings-field"><label>Default Minimum Quote ($)</label><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
+
+  document.getElementById('settings-body').innerHTML = html;
+
+  if(!ro) {
+    document.querySelectorAll('[data-del-feat]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = parseInt(this.getAttribute('data-del-feat'));
+        const s2 = _getSettings();
+        s2.featureAddOns.splice(idx, 1);
+        renderSettings();
+      });
+    });
+    const addBtn = document.getElementById('set-add-feat');
+    if(addBtn) addBtn.addEventListener('click', () => {
+      const s2 = _getSettings();
+      s2.featureAddOns.push({ name: '', price: 0 });
+      renderSettings();
+    });
+  }
+}
+
+function _collectSettings() {
+  const s = _getSettings();
+  s.displayName = (document.getElementById('set-display-name').value || '').trim();
+  s.defaultTaxRate = parseFloat(document.getElementById('set-tax-rate').value) || 0;
+  s.defaultShopRate = parseFloat(document.getElementById('set-shop-rate').value) || 0;
+  s.defaultEmployeeRate = parseFloat(document.getElementById('set-employee-rate').value) || 0;
+  document.querySelectorAll('.set-diag-price').forEach(inp => {
+    const idx = parseInt(inp.getAttribute('data-idx'));
+    if(s.diagonalTiers[idx]) s.diagonalTiers[idx].price = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.set-thick-mod').forEach(inp => {
+    const idx = parseInt(inp.getAttribute('data-idx'));
+    if(s.thicknessTiers[idx]) s.thicknessTiers[idx].modifier = (parseFloat(inp.value) || 0) / 100;
+  });
+  document.querySelectorAll('.set-glue-mod').forEach(inp => {
+    const idx = parseInt(inp.getAttribute('data-idx'));
+    s.multipliers.glueUps[idx] = (parseFloat(inp.value) || 0) / 100;
+  });
+  s.multipliers.endGrain = (parseFloat(document.getElementById('set-end-grain').value) || 0) / 100;
+  s.multipliers.complexPattern = (parseFloat(document.getElementById('set-complex').value) || 0) / 100;
+  const feats = [];
+  document.querySelectorAll('.set-feat-name').forEach(inp => {
+    const idx = parseInt(inp.getAttribute('data-idx'));
+    const priceInp = document.querySelector('.set-feat-price[data-idx="' + idx + '"]');
+    feats.push({ name: inp.value.trim(), price: parseFloat(priceInp?.value) || 0 });
+  });
+  s.featureAddOns = feats;
+  s.minThreshold = parseFloat(document.getElementById('set-min-threshold').value) || 0;
+  userSettings = s;
+  return s;
+}
+
+(function() {
+  document.getElementById('settings-back-btn').addEventListener('click', () => {
+    document.getElementById('settings-screen').style.display = 'none';
+    document.getElementById('landing-screen').style.display = '';
+  });
+  document.getElementById('settings-save-btn').addEventListener('click', () => {
+    if(!_currentUser) return;
+    _collectSettings();
+    _saveSettingsLocal();
+    saveSettingsToSupabase().catch(e => console.error('save settings error', e));
+    document.getElementById('settings-screen').style.display = 'none';
+    document.getElementById('landing-screen').style.display = '';
+  });
+})();
+
+// ============ QUOTES ============
+let quotesData = [];
+let _currentQuoteId = null;
+
+function quoteUid() {
+  return 'quote_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function generateQuoteNumber(customerName, existingQuotes) {
+  const words = (customerName || '').trim().split(/\s+/).filter(Boolean);
+  const initials = words.map(w => w[0].toUpperCase()).join('');
+  const prefix = initials.length > 0 ? initials : 'WBS';
+  const existing = existingQuotes
+    .filter(q => q.number && q.number.startsWith(prefix + '-'))
+    .map(q => parseInt(q.number.split('-')[1]) || 0);
+  const next = existing.length > 0 ? Math.max(...existing) + 1 : 1;
+  return prefix + '-' + String(next).padStart(3, '0');
+}
+
+function calcDiagonalPrice(quote, settings) {
+  const l = parseFloat(quote.dimensions.length) || 0;
+  const w = parseFloat(quote.dimensions.width) || 0;
+  const thick = parseFloat(quote.dimensions.thickness) || 0;
+  if(l === 0 || w === 0) return 0;
+  const diagonal = Math.sqrt(l * l + w * w);
+  const tier = (settings.diagonalTiers || []).find(t => diagonal >= t.min && diagonal < t.max);
+  const basePrice = tier ? tier.price : 0;
+  const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
+  const thickMod = thickTier ? thickTier.modifier : 0;
+  const grainMod = quote.grainDirection === 'end' ? (settings.multipliers.endGrain || 0) : 0;
+  const glueUpMod = (settings.multipliers.glueUps || [])[quote.glueUps || 0] || 0;
+  const complexMod = quote.complexPattern ? (settings.multipliers.complexPattern || 0) : 0;
+  const totalMod = thickMod + grainMod + glueUpMod + complexMod;
+  const modifiedPrice = basePrice * (1 + totalMod);
+  let featureTotal = 0;
+  (quote.features || []).filter(f => f.enabled).forEach(f => { featureTotal += (parseFloat(f.price) || 0); });
+  if(quote.additionalFeature && quote.additionalFeature.enabled) featureTotal += (parseFloat(quote.additionalFeature.price) || 0);
+  return modifiedPrice + featureTotal;
+}
+
+function _quoteProductTotal(quote, settings) {
+  if(quote.pricingMode === 'custom') {
+    return (quote.lineItems || []).reduce((sum, li) => sum + (parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0), 0);
+  }
+  return calcDiagonalPrice(quote, settings);
+}
+
+function _quoteLabourTotal(quote) {
+  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.shopRate) || 0), 0);
+}
+
+function _quoteExpensesTotal(quote) {
+  const e = quote.expenses || {};
+  const raw = (parseFloat(e.thirdParty) || 0) + (parseFloat(e.addOns) || 0) + (parseFloat(e.delivery) || 0) + (parseFloat(e.other) || 0);
+  const markup = (parseFloat(e.markup) || 0) / 100;
+  return raw * (1 + markup);
+}
+
+function _quoteExpensesRaw(quote) {
+  const e = quote.expenses || {};
+  return (parseFloat(e.thirdParty) || 0) + (parseFloat(e.addOns) || 0) + (parseFloat(e.delivery) || 0) + (parseFloat(e.other) || 0);
+}
+
+function _quoteSubtotal(quote, settings) {
+  return _quoteProductTotal(quote, settings) + _quoteLabourTotal(quote) + _quoteExpensesTotal(quote);
+}
+
+function _quoteDiscount(quote, settings) {
+  const sub = _quoteSubtotal(quote, settings);
+  const d = quote.discount || {};
+  if(d.type === 'percent') return sub * ((parseFloat(d.value) || 0) / 100);
+  return parseFloat(d.value) || 0;
+}
+
+function _quoteTotal(quote, settings) {
+  const sub = _quoteSubtotal(quote, settings);
+  const disc = _quoteDiscount(quote, settings);
+  const afterDisc = sub - disc;
+  const tax = afterDisc * ((parseFloat(quote.taxRate) || 0) / 100);
+  return afterDisc + tax;
+}
+
+function _quoteMaterialCost(quote) {
+  return (quote.lumberAllocations || []).reduce((sum, a) => sum + (parseFloat(a.bfAllocated) || 0) * (parseFloat(a.purchasePricePerBF) || 0), 0);
+}
+
+function _quoteLabourCostInternal(quote) {
+  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.employeeRate) || 0), 0);
+}
+
+function _quoteTotalHours(quote) {
+  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0), 0);
+}
+
+function _quoteProfitData(quote, settings) {
+  const total = _quoteTotal(quote, settings);
+  const matCost = _quoteMaterialCost(quote);
+  const labCost = _quoteLabourCostInternal(quote);
+  const expCost = _quoteExpensesRaw(quote);
+  const totalCost = matCost + labCost + expCost;
+  const profit = total - totalCost;
+  const hours = _quoteTotalHours(quote);
+  const perHour = hours > 0 ? profit / hours : 0;
+  const margin = total > 0 ? (profit / total) * 100 : 0;
+  return { total, matCost, labCost, expCost, totalCost, profit, perHour, margin };
+}
+
+function _newQuote() {
+  const s = _getSettings();
+  const today = new Date().toISOString().slice(0, 10);
+  const validDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  return {
+    id: quoteUid(),
+    number: '',
+    status: 'draft',
+    createdAt: today,
+    validUntil: validDate,
+    customer: { name: '', email: '', phone: '' },
+    description: '',
+    pricingMode: 'diagonal',
+    linkedProjectId: null,
+    linkedProjectName: null,
+    dimensions: { length: '', width: '', thickness: '' },
+    grainDirection: 'edge',
+    glueUps: 0,
+    complexPattern: false,
+    features: (s.featureAddOns || []).map(f => ({ name: f.name, price: f.price, enabled: false })),
+    additionalFeature: { enabled: false, description: '', price: 0 },
+    lineItems: [{ id: 'li_' + Date.now(), description: '', quantity: 1, unitPrice: 0 }],
+    shopRate: s.defaultShopRate || 0,
+    employeeRate: s.defaultEmployeeRate || 0,
+    labourTasks: [],
+    expenses: { thirdParty: 0, addOns: 0, delivery: 0, other: 0, markup: 0 },
+    discount: { type: 'percent', value: 0 },
+    taxRate: s.defaultTaxRate || 0,
+    lumberAllocations: [],
+    notes: '',
+    minThreshold: s.minThreshold || 0,
+    _genProjectName: '',
+    _genProjectStart: today,
+    _genProjectEnd: '',
+    _genProjectRate: s.defaultShopRate || 0,
+    _generateProject: false
+  };
+}
+
+function showQuotes() {
+  if(!_currentUser) {
+    openAuthModal('Create a free account to build and send quotes.');
+    return;
+  }
+  _hideAllScreens();
+  document.getElementById('quotes-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  fetchQuotesFromSupabase().catch(e => console.error('fetch quotes error', e)).then(() => renderQuotesList());
+}
+
+function renderQuotesList() {
+  const container = document.getElementById('quotes-list');
+  if(!quotesData || quotesData.length === 0) {
+    container.innerHTML = '<p class="empty">No quotes yet. Tap + New Quote to get started.</p>';
+    return;
+  }
+  const s = _getSettings();
+  const sorted = quotesData.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  let html = '';
+  sorted.forEach(q => {
+    const total = _quoteTotal(q, s);
+    const badgeClass = 'quote-badge quote-badge-' + (q.status === 'pending_customer' ? 'pending' : q.status);
+    const badgeLabel = q.status === 'pending_customer' ? 'Pending Customer' : q.status.charAt(0).toUpperCase() + q.status.slice(1);
+    html += '<div class="quote-card" data-quote-id="' + q.id + '">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+    html += '<div style="font-size:14px;font-weight:600;">' + (q.customer.name || 'No customer').replace(/</g,'&lt;') + '</div>';
+    html += '<div style="font-size:14px;font-weight:700;">$' + total.toFixed(2) + '</div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">';
+    html += '<div style="font-size:11px;color:var(--text2);">' + (q.number || '') + '</div>';
+    html += '<span class="' + badgeClass + '">' + badgeLabel + '</span>';
+    html += '</div>';
+    if(q.description) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + q.description.replace(/</g,'&lt;').slice(0, 60) + '</div>';
+    html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + (q.createdAt || '') + '</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.quote-card').forEach(card => {
+    card.addEventListener('click', () => openQuoteDetail(card.getAttribute('data-quote-id')));
+  });
+}
+
+function openQuoteDetail(quoteId) {
+  const q = quotesData.find(x => x.id === quoteId);
+  if(!q) return;
+  _currentQuoteId = quoteId;
+  _hideAllScreens();
+  document.getElementById('quote-detail-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderQuoteDetail();
+}
+
+function renderQuoteDetail() {
+  const q = quotesData.find(x => x.id === _currentQuoteId);
+  if(!q) return;
+  const s = _getSettings();
+  const title = (q.number || '') + ' — ' + (q.customer.name || 'Untitled');
+  document.getElementById('quote-detail-title').textContent = title;
+
+  const optMenu = document.getElementById('quote-options-menu');
+  const accBtn = document.getElementById('qopt-accepted');
+  const decBtn = document.getElementById('qopt-declined');
+  accBtn.textContent = q.status === 'accepted' ? 'Mark Draft' : 'Mark Accepted';
+  decBtn.textContent = q.status === 'declined' ? 'Mark Draft' : 'Mark Declined';
+  const linkBtn = document.getElementById('qopt-link-project');
+  linkBtn.textContent = q.linkedProjectId ? 'Change Project' : 'Link Project';
+
+  const total = _quoteTotal(q, s);
+  const product = _quoteProductTotal(q, s);
+  const labour = _quoteLabourTotal(q);
+  const expenses = _quoteExpensesTotal(q);
+
+  let html = '';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Customer & Details</div><div class="quote-section-body">';
+  html += '<div style="font-size:14px;font-weight:600;">' + (q.customer.name || '').replace(/</g,'&lt;') + '</div>';
+  if(q.customer.email) html += '<div style="font-size:12px;color:var(--text2);">' + q.customer.email.replace(/</g,'&lt;') + '</div>';
+  if(q.customer.phone) html += '<div style="font-size:12px;color:var(--text2);">' + q.customer.phone.replace(/</g,'&lt;') + '</div>';
+  if(q.description) html += '<div style="font-size:12px;margin-top:6px;">' + q.description.replace(/</g,'&lt;') + '</div>';
+  html += '<div style="font-size:11px;color:var(--text3);margin-top:6px;">Quote ' + (q.number || '') + ' · Created ' + (q.createdAt || '') + ' · Valid until ' + (q.validUntil || '') + '</div>';
+  if(q.linkedProjectName) html += '<div style="font-size:11px;color:var(--text2);margin-top:4px;">Linked project: ' + q.linkedProjectName.replace(/</g,'&lt;') + '</div>';
+  html += '</div></div>';
+
+  html += '<div class="quote-section"><div class="quote-section-hdr">Pricing</div><div class="quote-section-body">';
+  html += '<div class="quote-breakdown">';
+  html += '<div class="quote-breakdown-row"><span>Product/Items:</span><span>$' + product.toFixed(2) + '</span></div>';
+  html += '<div class="quote-breakdown-row"><span>Labour:</span><span>$' + labour.toFixed(2) + '</span></div>';
+  html += '<div class="quote-breakdown-row"><span>Expenses:</span><span>$' + expenses.toFixed(2) + '</span></div>';
+  const sub = product + labour + expenses;
+  html += '<div class="quote-breakdown-row total"><span>Subtotal:</span><span>$' + sub.toFixed(2) + '</span></div>';
+  const disc = _quoteDiscount(q, s);
+  if(disc > 0) html += '<div class="quote-breakdown-row"><span>Discount:</span><span>-$' + disc.toFixed(2) + '</span></div>';
+  const afterDisc = sub - disc;
+  const tax = afterDisc * ((parseFloat(q.taxRate) || 0) / 100);
+  if(tax > 0) html += '<div class="quote-breakdown-row"><span>Tax (' + (q.taxRate || 0) + '%):</span><span>$' + tax.toFixed(2) + '</span></div>';
+  html += '<div class="quote-breakdown-row grand"><span>Total:</span><span>$' + total.toFixed(2) + '</span></div>';
+  html += '</div></div></div>';
+
+  if(q.lumberAllocations && q.lumberAllocations.length > 0) {
+    html += '<div class="quote-section"><div class="quote-section-hdr">Lumber Allocations</div><div class="quote-section-body">';
+    q.lumberAllocations.forEach(a => {
+      const badge = a.allocationType === 'full' ? 'Full Board' : 'Cut';
+      html += '<div class="quote-alloc-item"><div><div style="font-size:12px;font-weight:600;">' + (a.species || '').replace(/</g,'&lt;') + '</div><div style="font-size:10px;color:var(--text3);">' + badge + ' · ' + (a.bfAllocated || 0).toFixed(2) + ' BF</div></div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  if(q.notes) {
+    html += '<div class="quote-section"><div class="quote-section-hdr">Notes / Terms</div><div class="quote-section-body"><p style="font-size:12px;white-space:pre-wrap;">' + q.notes.replace(/</g,'&lt;') + '</p></div></div>';
+  }
+
+  const isDraftOrPending = q.status === 'draft' || q.status === 'pending_customer';
+  if(isDraftOrPending && q.customer.email) {
+    html += '<button class="btn btn-primary" id="qd-send-btn" style="width:100%;background:var(--green);border-color:var(--green);margin-bottom:8px;">Send Quote</button>';
+  }
+  html += '<div style="display:flex;gap:8px;">';
+  html += '<button class="btn" id="qd-pdf-btn" style="flex:1;">Download PDF</button>';
+  html += '<button class="btn" id="qd-edit-btn" style="flex:1;">Edit</button>';
+  html += '</div>';
+
+  document.getElementById('quote-detail-body').innerHTML = html;
+
+  const sendBtn = document.getElementById('qd-send-btn');
+  if(sendBtn) sendBtn.addEventListener('click', () => openQuoteSendModal(q));
+  document.getElementById('qd-pdf-btn').addEventListener('click', () => exportQuotePDF(q));
+  document.getElementById('qd-edit-btn').addEventListener('click', () => openQuoteEdit(q.id));
+}
+
+// Quote edit screen
+function openQuoteEdit(quoteId) {
+  let q;
+  if(quoteId) {
+    q = quotesData.find(x => x.id === quoteId);
+    if(!q) return;
+    document.getElementById('quote-edit-title').textContent = 'Edit Quote';
+  } else {
+    q = _newQuote();
+    document.getElementById('quote-edit-title').textContent = 'New Quote';
+  }
+  _currentQuoteId = q.id;
+  _hideAllScreens();
+  document.getElementById('quote-edit-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderQuoteEditForm(q);
+}
+
+function renderQuoteEditForm(q) {
+  const s = _getSettings();
+  let html = '';
+
+  // Section 1: Customer & Project Info
+  html += '<div class="quote-section"><div class="quote-section-hdr">Customer & Project Info</div><div class="quote-section-body">';
+  html += '<div class="quote-field"><label>Customer Name *</label><input type="text" id="qe-cust-name" value="' + (q.customer.name || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div class="quote-field"><label>Quote Number</label><input type="text" id="qe-number" value="' + (q.number || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div class="quote-field"><label>Project Description</label><input type="text" id="qe-desc" value="' + (q.description || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div style="display:flex;gap:8px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Phone</label><input type="tel" id="qe-phone" value="' + (q.customer.phone || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Email *</label><input type="email" id="qe-email" value="' + (q.customer.email || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Date</label><input type="date" id="qe-date" value="' + (q.createdAt || '') + '" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Valid Until</label><input type="date" id="qe-valid" value="' + (q.validUntil || '') + '" /></div>';
+  html += '</div>';
+
+  html += '<div class="quote-field"><label>Pricing Mode</label><div class="quote-pill-group">';
+  html += '<button class="quote-pill' + (q.pricingMode === 'diagonal' ? ' active' : '') + '" data-mode="diagonal">Diagonal Pricing</button>';
+  html += '<button class="quote-pill' + (q.pricingMode === 'custom' ? ' active' : '') + '" data-mode="custom">Custom Pricing</button>';
+  html += '</div></div>';
+
+  html += '<div class="quote-field"><label>Link to Project</label><select id="qe-link-project"><option value="">None</option>';
+  html += '<option value="__generate__"' + (q._generateProject ? ' selected' : '') + '>Generate New Project</option>';
+  (projectsData || []).forEach(p => {
+    html += '<option value="' + p.id + '"' + (q.linkedProjectId === p.id ? ' selected' : '') + '>' + (p.name || p.id).replace(/</g,'&lt;') + '</option>';
+  });
+  html += '</select></div>';
+
+  html += '<div id="qe-gen-project-wrap" style="display:' + (q._generateProject ? 'block' : 'none') + ';background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:10px;">';
+  html += '<div class="quote-field"><label>New Project Name</label><input type="text" id="qe-gen-proj-name" value="' + (q._genProjectName || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div style="display:flex;gap:8px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Est. Start</label><input type="date" id="qe-gen-proj-start" value="' + (q._genProjectStart || '') + '" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Est. Completion</label><input type="date" id="qe-gen-proj-end" value="' + (q._genProjectEnd || '') + '" /></div>';
+  html += '</div>';
+  html += '<div class="quote-field"><label>Hourly Rate</label><input type="number" id="qe-gen-proj-rate" value="' + (q._genProjectRate || 0) + '" min="0" step="0.01" /></div>';
+  html += '</div>';
+
+  html += '<div class="quote-field"><label>Notes / Terms</label><textarea id="qe-notes">' + (q.notes || '').replace(/</g,'&lt;') + '</textarea></div>';
+  html += '</div></div>';
+
+  // Section 2A: Diagonal Pricing
+  html += '<div id="qe-diagonal-section" style="display:' + (q.pricingMode === 'diagonal' ? 'block' : 'none') + ';">';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Diagonal Pricing</div><div class="quote-section-body">';
+  html += '<div style="display:flex;gap:8px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Length (in)</label><input type="number" id="qe-dim-l" value="' + (q.dimensions.length || '') + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Width (in)</label><input type="number" id="qe-dim-w" value="' + (q.dimensions.width || '') + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Thickness (in)</label><input type="number" id="qe-dim-t" value="' + (q.dimensions.thickness || '') + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '</div>';
+  const diag = Math.sqrt(Math.pow(parseFloat(q.dimensions.length)||0,2)+Math.pow(parseFloat(q.dimensions.width)||0,2));
+  html += '<div id="qe-diag-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Diagonal: ' + diag.toFixed(1) + '" · Base price: $' + (calcDiagonalPrice({...q, features: q.features.map(f=>({...f, enabled: false})), additionalFeature: {enabled:false}, grainDirection:'edge', glueUps:0, complexPattern: false, dimensions: {...q.dimensions, thickness: '0'}}, s)).toFixed(2) + '</div>';
+
+  html += '<div class="quote-field"><label>Grain Direction</label><div class="quote-pill-group">';
+  html += '<button class="quote-pill' + (q.grainDirection === 'edge' ? ' active' : '') + '" data-grain="edge">Edge Grain</button>';
+  html += '<button class="quote-pill' + (q.grainDirection === 'end' ? ' active' : '') + '" data-grain="end">End Grain</button>';
+  html += '</div></div>';
+
+  html += '<div class="quote-field"><label>Glue-ups</label><div class="quote-pill-group">';
+  for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (q.glueUps === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
+  html += '</div></div>';
+
+  html += '<div class="quote-field"><label>Complex Pattern</label><div class="quote-pill-group">';
+  html += '<button class="quote-pill' + (!q.complexPattern ? ' active' : '') + '" data-complex="no">No</button>';
+  html += '<button class="quote-pill' + (q.complexPattern ? ' active' : '') + '" data-complex="yes">Yes</button>';
+  html += '</div></div>';
+
+  html += '<div style="margin-top:10px;"><div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">Features</div>';
+  (q.features || []).forEach((f, i) => {
+    html += '<div class="quote-feature-row"><input type="checkbox" class="qe-feat-check" data-idx="' + i + '"' + (f.enabled ? ' checked' : '') + ' /><label>' + (f.name || '').replace(/</g,'&lt;') + ' (+$' + (f.price || 0) + ')</label></div>';
+  });
+  html += '<div class="quote-feature-row"><input type="checkbox" id="qe-add-feat-check"' + (q.additionalFeature.enabled ? ' checked' : '') + ' /><label>Additional feature</label></div>';
+  html += '<div id="qe-add-feat-fields" style="display:' + (q.additionalFeature.enabled ? 'flex' : 'none') + ';gap:8px;margin-left:24px;margin-bottom:8px;">';
+  html += '<input type="text" id="qe-add-feat-desc" placeholder="Description" value="' + (q.additionalFeature.description || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" />';
+  html += '<input type="number" id="qe-add-feat-price" placeholder="$0" value="' + (q.additionalFeature.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;" />';
+  html += '</div></div>';
+
+  html += '<div id="qe-diag-breakdown" class="quote-breakdown"></div>';
+  html += '</div></div></div>';
+
+  // Section 2B: Custom Pricing
+  html += '<div id="qe-custom-section" style="display:' + (q.pricingMode === 'custom' ? 'block' : 'none') + ';">';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Custom Pricing</div><div class="quote-section-body">';
+  html += '<div id="qe-line-items">';
+  (q.lineItems || []).forEach((li, i) => {
+    html += '<div class="quote-line-item" data-li-idx="' + i + '"><input type="text" placeholder="Description" value="' + (li.description || '').replace(/"/g,'&quot;') + '" class="qe-li-desc" style="flex:3;" /><input type="number" placeholder="Qty" value="' + (li.quantity || 1) + '" min="1" class="qe-li-qty" style="width:50px;" /><input type="number" placeholder="$0" value="' + (li.unitPrice || 0) + '" min="0" step="0.01" class="qe-li-price" style="width:70px;text-align:right;" /><button class="del-btn qe-li-del" style="min-height:28px;">&times;</button></div>';
+  });
+  html += '</div>';
+  html += '<button class="btn btn-sm" id="qe-add-line-item" style="margin-top:6px;">+ Add Item</button>';
+  html += '<div id="qe-custom-total" style="text-align:right;font-size:13px;font-weight:700;margin-top:8px;"></div>';
+  html += '</div></div></div>';
+
+  // Section 3: Lumber Allocations
+  html += '<div class="quote-section"><div class="quote-section-hdr">Your Lumber Allocations</div><div class="quote-section-body">';
+  html += '<div id="qe-allocs">';
+  (q.lumberAllocations || []).forEach((a, i) => {
+    html += '<div class="quote-alloc-item"><div><div style="font-size:12px;font-weight:600;">' + (a.species || '').replace(/</g,'&lt;') + '</div><div style="font-size:10px;color:var(--text3);">' + (a.allocationType === 'full' ? 'Full Board' : 'Cut') + ' · ' + (a.bfAllocated || 0).toFixed(2) + ' BF · $' + ((a.bfAllocated||0)*(a.purchasePricePerBF||0)).toFixed(2) + '</div></div><button class="del-btn qe-alloc-del" data-idx="' + i + '" style="min-height:28px;">&times;</button></div>';
+  });
+  html += '</div>';
+  html += '<button class="btn btn-sm btn-primary" id="qe-add-alloc" style="margin-top:6px;">+ Allocate from Your Lumber</button>';
+  html += '</div></div>';
+
+  // Section 4: Labour
+  html += '<div class="quote-section"><div class="quote-section-hdr">Labour Estimation</div><div class="quote-section-body">';
+  html += '<div style="display:flex;gap:8px;margin-bottom:10px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Shop Rate ($/hr)</label><input type="number" id="qe-shop-rate" value="' + (q.shopRate || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Employee Rate ($/hr)</label><input type="number" id="qe-emp-rate" value="' + (q.employeeRate || 0) + '" min="0" step="0.01" class="qe-live" /><div style="font-size:9px;color:var(--text3);">Enter 0 if owner-operated</div></div>';
+  html += '</div>';
+  html += '<div id="qe-tasks">';
+  (q.labourTasks || []).forEach((t, i) => {
+    html += '<div class="quote-task-row" data-task-idx="' + i + '"><input type="text" placeholder="Task description" value="' + (t.description || '').replace(/"/g,'&quot;') + '" class="qe-task-desc" style="flex:3;" /><input type="number" placeholder="Hrs" value="' + (t.hours || 0) + '" min="0" step="0.25" class="qe-task-hrs qe-live" style="width:60px;" /><button class="del-btn qe-task-del" style="min-height:28px;">&times;</button></div>';
+  });
+  html += '</div>';
+  html += '<button class="btn btn-sm" id="qe-add-task" style="margin-top:6px;">+ Add Labour Task</button>';
+  html += '<div id="qe-labour-summary" style="text-align:right;font-size:12px;color:var(--text2);margin-top:8px;"></div>';
+  html += '</div></div>';
+
+  // Section 5: Expenses
+  html += '<div class="quote-section"><div class="quote-section-hdr">Additional Expenses</div><div class="quote-section-body">';
+  html += '<div class="quote-field"><label>Third-Party Costs ($)</label><input type="number" id="qe-exp-third" value="' + (q.expenses.thirdParty || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field"><label>Add-Ons ($)</label><input type="number" id="qe-exp-addons" value="' + (q.expenses.addOns || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field"><label>Delivery / Shipping ($)</label><input type="number" id="qe-exp-delivery" value="' + (q.expenses.delivery || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field"><label>Other ($)</label><input type="number" id="qe-exp-other" value="' + (q.expenses.other || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field"><label>Markup on Expenses (%)</label><input type="number" id="qe-exp-markup" value="' + (q.expenses.markup || 0) + '" min="0" step="1" class="qe-live" /></div>';
+  html += '<div id="qe-exp-summary" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>';
+  html += '</div></div>';
+
+  // Section 6: Quote Summary
+  html += '<div class="quote-section"><div class="quote-section-hdr">Quote Summary</div><div class="quote-section-body">';
+  html += '<div id="qe-summary" class="quote-breakdown"></div>';
+  html += '<div style="display:flex;gap:8px;margin-top:10px;">';
+  html += '<div class="quote-field" style="flex:1;"><label>Discount</label><div style="display:flex;gap:4px;"><div class="quote-pill-group" style="flex-shrink:0;"><button class="quote-pill qe-disc-type' + ((q.discount.type||'percent') === 'percent' ? ' active' : '') + '" data-disc="percent">%</button><button class="quote-pill qe-disc-type' + (q.discount.type === 'dollar' ? ' active' : '') + '" data-disc="dollar">$</button></div><input type="number" id="qe-disc-val" value="' + (q.discount.value || 0) + '" min="0" step="0.01" class="qe-live" style="flex:1;" /></div></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Tax (%)</label><input type="number" id="qe-tax" value="' + (q.taxRate || 0) + '" min="0" step="0.1" class="qe-live" /></div>';
+  html += '</div>';
+  html += '<div id="qe-threshold-warn" class="quote-warn" style="display:none;"></div>';
+  html += '</div></div>';
+
+  // Section 7: Profit & Analysis
+  html += '<div class="quote-internal"><div class="quote-internal-label">Internal — not shown to customer</div>';
+  html += '<div id="qe-profit"></div></div>';
+
+  html += '<button class="btn btn-primary" id="qe-save-btn" style="width:100%;margin-top:12px;">Save Quote</button>';
+
+  document.getElementById('quote-edit-body').innerHTML = html;
+  _wireQuoteEditEvents(q);
+  _updateQuoteEditLive(q);
+}
+
+function _collectQuoteFromForm(q) {
+  q.customer.name = (document.getElementById('qe-cust-name').value || '').trim();
+  q.number = (document.getElementById('qe-number').value || '').trim();
+  q.description = (document.getElementById('qe-desc').value || '').trim();
+  q.customer.phone = (document.getElementById('qe-phone').value || '').trim();
+  q.customer.email = (document.getElementById('qe-email').value || '').trim();
+  q.createdAt = document.getElementById('qe-date').value || '';
+  q.validUntil = document.getElementById('qe-valid').value || '';
+  q.notes = (document.getElementById('qe-notes').value || '').trim();
+  q.dimensions.length = document.getElementById('qe-dim-l').value || '';
+  q.dimensions.width = document.getElementById('qe-dim-w').value || '';
+  q.dimensions.thickness = document.getElementById('qe-dim-t').value || '';
+  q.shopRate = parseFloat(document.getElementById('qe-shop-rate').value) || 0;
+  q.employeeRate = parseFloat(document.getElementById('qe-emp-rate').value) || 0;
+  q.expenses.thirdParty = parseFloat(document.getElementById('qe-exp-third').value) || 0;
+  q.expenses.addOns = parseFloat(document.getElementById('qe-exp-addons').value) || 0;
+  q.expenses.delivery = parseFloat(document.getElementById('qe-exp-delivery').value) || 0;
+  q.expenses.other = parseFloat(document.getElementById('qe-exp-other').value) || 0;
+  q.expenses.markup = parseFloat(document.getElementById('qe-exp-markup').value) || 0;
+  q.discount.value = parseFloat(document.getElementById('qe-disc-val').value) || 0;
+  q.taxRate = parseFloat(document.getElementById('qe-tax').value) || 0;
+
+  q.features.forEach((f, i) => {
+    const cb = document.querySelector('.qe-feat-check[data-idx="' + i + '"]');
+    if(cb) f.enabled = cb.checked;
+  });
+  const addFeatCb = document.getElementById('qe-add-feat-check');
+  if(addFeatCb) {
+    q.additionalFeature.enabled = addFeatCb.checked;
+    q.additionalFeature.description = (document.getElementById('qe-add-feat-desc').value || '').trim();
+    q.additionalFeature.price = parseFloat(document.getElementById('qe-add-feat-price').value) || 0;
+  }
+
+  const lineItems = [];
+  document.querySelectorAll('#qe-line-items .quote-line-item').forEach(row => {
+    lineItems.push({
+      id: 'li_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      description: (row.querySelector('.qe-li-desc').value || '').trim(),
+      quantity: parseFloat(row.querySelector('.qe-li-qty').value) || 1,
+      unitPrice: parseFloat(row.querySelector('.qe-li-price').value) || 0
+    });
+  });
+  q.lineItems = lineItems;
+
+  const tasks = [];
+  document.querySelectorAll('#qe-tasks .quote-task-row').forEach(row => {
+    tasks.push({
+      id: 'task_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      description: (row.querySelector('.qe-task-desc').value || '').trim(),
+      hours: parseFloat(row.querySelector('.qe-task-hrs').value) || 0
+    });
+  });
+  q.labourTasks = tasks;
+
+  const projSel = document.getElementById('qe-link-project');
+  if(projSel.value === '__generate__') {
+    q._generateProject = true;
+    q._genProjectName = (document.getElementById('qe-gen-proj-name').value || '').trim();
+    q._genProjectStart = document.getElementById('qe-gen-proj-start').value || '';
+    q._genProjectEnd = document.getElementById('qe-gen-proj-end').value || '';
+    q._genProjectRate = parseFloat(document.getElementById('qe-gen-proj-rate').value) || 0;
+    q.linkedProjectId = null;
+    q.linkedProjectName = null;
+  } else if(projSel.value) {
+    q._generateProject = false;
+    q.linkedProjectId = projSel.value;
+    const p = projectsData.find(x => x.id === projSel.value);
+    q.linkedProjectName = p ? p.name : '';
+  } else {
+    q._generateProject = false;
+    q.linkedProjectId = null;
+    q.linkedProjectName = null;
+  }
+  return q;
+}
+
+function _updateQuoteEditLive(q) {
+  _collectQuoteFromForm(q);
+  const s = _getSettings();
+
+  // Diagonal info
+  const l = parseFloat(q.dimensions.length) || 0;
+  const w = parseFloat(q.dimensions.width) || 0;
+  const thick = parseFloat(q.dimensions.thickness) || 0;
+  const diag = Math.sqrt(l * l + w * w);
+  const baseQ = {...q, features: q.features.map(f=>({...f, enabled: false})), additionalFeature: {enabled:false}, grainDirection:'edge', glueUps:0, complexPattern: false, dimensions: {...q.dimensions, thickness: '0'}};
+  const basePrice = calcDiagonalPrice(baseQ, s);
+  const diagInfo = document.getElementById('qe-diag-info');
+  if(diagInfo) diagInfo.textContent = 'Diagonal: ' + diag.toFixed(1) + '" · Base price: $' + basePrice.toFixed(2);
+
+  // Diagonal breakdown
+  const bd = document.getElementById('qe-diag-breakdown');
+  if(bd) {
+    const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
+    const thickMod = thickTier ? Math.round(thickTier.modifier * 100) : 0;
+    const grainMod = q.grainDirection === 'end' ? Math.round((s.multipliers.endGrain || 0) * 100) : 0;
+    const glueUpMod = Math.round(((s.multipliers.glueUps || [])[q.glueUps || 0] || 0) * 100);
+    const complexMod = q.complexPattern ? Math.round((s.multipliers.complexPattern || 0) * 100) : 0;
+    let featureTotal = 0;
+    (q.features || []).filter(f => f.enabled).forEach(f => { featureTotal += (f.price || 0); });
+    if(q.additionalFeature && q.additionalFeature.enabled) featureTotal += (q.additionalFeature.price || 0);
+    const productTotal = calcDiagonalPrice(q, s);
+    let bhtml = '';
+    bhtml += '<div class="quote-breakdown-row"><span>Base price:</span><span>$' + basePrice.toFixed(2) + '</span></div>';
+    if(thickMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Thickness (+' + thickMod + '%):</span><span>+$' + (basePrice * thickMod/100).toFixed(2) + '</span></div>';
+    if(grainMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Grain (+' + grainMod + '%):</span><span>+$' + (basePrice * grainMod/100).toFixed(2) + '</span></div>';
+    if(glueUpMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Glue-up (+' + glueUpMod + '%):</span><span>+$' + (basePrice * glueUpMod/100).toFixed(2) + '</span></div>';
+    if(complexMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Complex (+' + complexMod + '%):</span><span>+$' + (basePrice * complexMod/100).toFixed(2) + '</span></div>';
+    if(featureTotal > 0) bhtml += '<div class="quote-breakdown-row"><span>Features:</span><span>+$' + featureTotal.toFixed(2) + '</span></div>';
+    bhtml += '<div class="quote-breakdown-row total"><span>Product Subtotal:</span><span>$' + productTotal.toFixed(2) + '</span></div>';
+    bd.innerHTML = bhtml;
+  }
+
+  // Custom total
+  const ct = document.getElementById('qe-custom-total');
+  if(ct) ct.textContent = 'Subtotal: $' + _quoteProductTotal(q, s).toFixed(2);
+
+  // Labour summary
+  const ls = document.getElementById('qe-labour-summary');
+  if(ls) {
+    const hrs = _quoteTotalHours(q);
+    const billed = _quoteLabourTotal(q);
+    ls.textContent = 'Total: ' + hrs.toFixed(1) + ' hrs · $' + billed.toFixed(2) + ' billed';
+  }
+
+  // Expenses summary
+  const es = document.getElementById('qe-exp-summary');
+  if(es) {
+    const raw = _quoteExpensesRaw(q);
+    const total = _quoteExpensesTotal(q);
+    es.textContent = 'Your cost: $' + raw.toFixed(2) + ' · Customer price: $' + total.toFixed(2);
+  }
+
+  // Quote summary
+  const sm = document.getElementById('qe-summary');
+  if(sm) {
+    const product = _quoteProductTotal(q, s);
+    const labour = _quoteLabourTotal(q);
+    const expenses = _quoteExpensesTotal(q);
+    const sub = product + labour + expenses;
+    const disc = _quoteDiscount(q, s);
+    const afterDisc = sub - disc;
+    const tax = afterDisc * ((parseFloat(q.taxRate) || 0) / 100);
+    const total = afterDisc + tax;
+    let shtml = '';
+    shtml += '<div class="quote-breakdown-row"><span>Product/Items:</span><span>$' + product.toFixed(2) + '</span></div>';
+    shtml += '<div class="quote-breakdown-row"><span>Labour:</span><span>$' + labour.toFixed(2) + '</span></div>';
+    shtml += '<div class="quote-breakdown-row"><span>Expenses:</span><span>$' + expenses.toFixed(2) + '</span></div>';
+    shtml += '<div class="quote-breakdown-row total"><span>Subtotal:</span><span>$' + sub.toFixed(2) + '</span></div>';
+    if(disc > 0) shtml += '<div class="quote-breakdown-row"><span>Discount:</span><span>-$' + disc.toFixed(2) + '</span></div>';
+    if(tax > 0) shtml += '<div class="quote-breakdown-row"><span>Tax (' + (q.taxRate||0) + '%):</span><span>$' + tax.toFixed(2) + '</span></div>';
+    shtml += '<div class="quote-breakdown-row grand"><span>Total Quote:</span><span>$' + total.toFixed(2) + '</span></div>';
+    sm.innerHTML = shtml;
+
+    const warn = document.getElementById('qe-threshold-warn');
+    if(warn) {
+      if(q.minThreshold > 0 && total < q.minThreshold) {
+        warn.textContent = 'Warning: Total ($' + total.toFixed(2) + ') is below your minimum threshold of $' + q.minThreshold.toFixed(2);
+        warn.style.display = 'block';
+      } else {
+        warn.style.display = 'none';
+      }
+    }
+  }
+
+  // Profit
+  const pp = document.getElementById('qe-profit');
+  if(pp) {
+    const pd = _quoteProfitData(q, s);
+    let phtml = '';
+    phtml += '<div class="quote-breakdown-row"><span>Your material cost:</span><span>$' + pd.matCost.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Your labour cost:</span><span>$' + pd.labCost.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Your expenses:</span><span>$' + pd.expCost.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row total"><span>Your total cost:</span><span>$' + pd.totalCost.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Profit:</span><span>$' + pd.profit.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Profit per hour:</span><span>$' + pd.perHour.toFixed(2) + '/hr</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Profit margin:</span><span>' + pd.margin.toFixed(1) + '%</span></div>';
+    pp.innerHTML = phtml;
+  }
+}
+
+function _wireQuoteEditEvents(q) {
+  const body = document.getElementById('quote-edit-body');
+  const liveUpdate = () => _updateQuoteEditLive(q);
+
+  body.querySelectorAll('.qe-live').forEach(inp => inp.addEventListener('input', liveUpdate));
+  body.querySelectorAll('.qe-feat-check').forEach(cb => cb.addEventListener('change', liveUpdate));
+  const addFeatCb = document.getElementById('qe-add-feat-check');
+  if(addFeatCb) addFeatCb.addEventListener('change', function() {
+    document.getElementById('qe-add-feat-fields').style.display = this.checked ? 'flex' : 'none';
+    liveUpdate();
+  });
+  document.getElementById('qe-add-feat-desc')?.addEventListener('input', liveUpdate);
+  document.getElementById('qe-add-feat-price')?.addEventListener('input', liveUpdate);
+
+  // Pricing mode toggle
+  body.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', function() {
+    q.pricingMode = this.getAttribute('data-mode');
+    body.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === q.pricingMode));
+    document.getElementById('qe-diagonal-section').style.display = q.pricingMode === 'diagonal' ? 'block' : 'none';
+    document.getElementById('qe-custom-section').style.display = q.pricingMode === 'custom' ? 'block' : 'none';
+    liveUpdate();
+  }));
+
+  // Grain toggle
+  body.querySelectorAll('[data-grain]').forEach(btn => btn.addEventListener('click', function() {
+    q.grainDirection = this.getAttribute('data-grain');
+    body.querySelectorAll('[data-grain]').forEach(b => b.classList.toggle('active', b.getAttribute('data-grain') === q.grainDirection));
+    liveUpdate();
+  }));
+
+  // Glue-ups toggle
+  body.querySelectorAll('[data-glue]').forEach(btn => btn.addEventListener('click', function() {
+    q.glueUps = parseInt(this.getAttribute('data-glue'));
+    body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === q.glueUps));
+    liveUpdate();
+  }));
+
+  // Complex toggle
+  body.querySelectorAll('[data-complex]').forEach(btn => btn.addEventListener('click', function() {
+    q.complexPattern = this.getAttribute('data-complex') === 'yes';
+    body.querySelectorAll('[data-complex]').forEach(b => b.classList.toggle('active', (b.getAttribute('data-complex') === 'yes') === q.complexPattern));
+    liveUpdate();
+  }));
+
+  // Discount type toggle
+  body.querySelectorAll('.qe-disc-type').forEach(btn => btn.addEventListener('click', function() {
+    q.discount.type = this.getAttribute('data-disc');
+    body.querySelectorAll('.qe-disc-type').forEach(b => b.classList.toggle('active', b.getAttribute('data-disc') === q.discount.type));
+    liveUpdate();
+  }));
+
+  // Customer name -> quote number
+  document.getElementById('qe-cust-name').addEventListener('blur', function() {
+    const numField = document.getElementById('qe-number');
+    if(!numField.value.trim()) {
+      numField.value = generateQuoteNumber(this.value, quotesData);
+    }
+  });
+
+  // Project link
+  document.getElementById('qe-link-project').addEventListener('change', function() {
+    document.getElementById('qe-gen-project-wrap').style.display = this.value === '__generate__' ? 'block' : 'none';
+    liveUpdate();
+  });
+
+  // Line items
+  body.querySelectorAll('.qe-li-del').forEach(btn => btn.addEventListener('click', function() {
+    this.closest('.quote-line-item').remove();
+    liveUpdate();
+  }));
+  body.querySelectorAll('.qe-li-desc, .qe-li-qty, .qe-li-price').forEach(inp => inp.addEventListener('input', liveUpdate));
+  document.getElementById('qe-add-line-item').addEventListener('click', function() {
+    _collectQuoteFromForm(q);
+    q.lineItems.push({ id: 'li_' + Date.now(), description: '', quantity: 1, unitPrice: 0 });
+    renderQuoteEditForm(q);
+  });
+
+  // Tasks
+  body.querySelectorAll('.qe-task-del').forEach(btn => btn.addEventListener('click', function() {
+    this.closest('.quote-task-row').remove();
+    liveUpdate();
+  }));
+  body.querySelectorAll('.qe-task-desc').forEach(inp => inp.addEventListener('input', liveUpdate));
+  document.getElementById('qe-add-task').addEventListener('click', function() {
+    _collectQuoteFromForm(q);
+    q.labourTasks.push({ id: 'task_' + Date.now(), description: '', hours: 0 });
+    renderQuoteEditForm(q);
+  });
+
+  // Alloc delete
+  body.querySelectorAll('.qe-alloc-del').forEach(btn => btn.addEventListener('click', function() {
+    const idx = parseInt(this.getAttribute('data-idx'));
+    _collectQuoteFromForm(q);
+    q.lumberAllocations.splice(idx, 1);
+    renderQuoteEditForm(q);
+  }));
+
+  // Add allocation
+  document.getElementById('qe-add-alloc').addEventListener('click', () => openQuoteAllocModal(q));
+
+  // Save
+  document.getElementById('qe-save-btn').addEventListener('click', () => {
+    _collectQuoteFromForm(q);
+    if(!q.customer.name) { alert('Customer name is required.'); return; }
+    if(!q.number) q.number = generateQuoteNumber(q.customer.name, quotesData);
+
+    // Generate project if requested
+    if(q._generateProject && q._genProjectName) {
+      const proj = {
+        id: projUid(),
+        name: q._genProjectName,
+        date: q._genProjectStart || q.createdAt,
+        completionDate: q._genProjectEnd || null,
+        note: 'Generated from quote ' + q.number,
+        listId: null,
+        listName: null,
+        status: 'active',
+        rate: q._genProjectRate || 0
+      };
+      projectsData.push(proj);
+      saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+      q.linkedProjectId = proj.id;
+      q.linkedProjectName = proj.name;
+      q._generateProject = false;
+    }
+
+    const existing = quotesData.findIndex(x => x.id === q.id);
+    if(existing >= 0) quotesData[existing] = q;
+    else quotesData.push(q);
+    saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+    openQuoteDetail(q.id);
+  });
+}
+
+// Lumber allocation modal
+let _allocQuote = null;
+function openQuoteAllocModal(q) {
+  _allocQuote = q;
+  _collectQuoteFromForm(q);
+  const container = document.getElementById('quote-alloc-list');
+  if(!shopData || (!shopData.bf?.length && !shopData.lf?.length && !shopData.slab?.length)) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--text3);text-align:center;">Your Lumber is empty.</p>';
+  } else {
+    let html = '';
+    ['bf','lf','slab'].forEach(key => {
+      (shopData[key] || []).forEach(item => {
+        const species = item.species || item.label || key.toUpperCase();
+        let bf = 0;
+        if(key === 'bf') {
+          const t = (parseFloat(item.thickness) || 4) / 4;
+          const w = parseFloat(item.width) || 0;
+          const lft = parseFloat(item.lft) || 0;
+          const lin = parseFloat(item.lin) || 0;
+          bf = t * w * ((lft * 12 + lin) / 144) * (parseFloat(item.qty) || 1);
+        } else if(key === 'slab') {
+          const t = (parseFloat(item.thickness) || 4) / 4;
+          const ms = item.measurements || [];
+          const avgW = ms.length > 0 ? ms.reduce((s,m) => s + (parseFloat(m)||0), 0) / ms.length : 0;
+          const lft = parseFloat(item.lft) || 0;
+          const lin = parseFloat(item.lin) || 0;
+          bf = t * avgW * ((lft * 12 + lin) / 144);
+        }
+        const ppbf = parseFloat(item.pricePerBf) || 0;
+        html += '<div class="quote-card" data-alloc-key="' + key + '" data-alloc-id="' + item.id + '" style="cursor:pointer;">';
+        html += '<div style="font-size:13px;font-weight:600;">' + species.replace(/</g,'&lt;') + '</div>';
+        html += '<div style="font-size:11px;color:var(--text2);">' + bf.toFixed(2) + ' BF · $' + ppbf.toFixed(2) + '/BF</div>';
+        html += '</div>';
+      });
+    });
+    container.innerHTML = html;
+    container.querySelectorAll('.quote-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const key = card.getAttribute('data-alloc-key');
+        const itemId = card.getAttribute('data-alloc-id');
+        openQuoteAllocTypeModal(key, itemId);
+      });
+    });
+  }
+  document.getElementById('quote-alloc-modal').classList.add('open');
+}
+
+let _allocItemKey = null, _allocItemId = null;
+function openQuoteAllocTypeModal(key, itemId) {
+  _allocItemKey = key;
+  _allocItemId = itemId;
+  const item = (shopData[key] || []).find(x => x.id === itemId);
+  if(!item) return;
+  const species = item.species || item.label || key.toUpperCase();
+  let bf = 0;
+  const thick = (parseFloat(item.thickness) || 4) / 4;
+  if(key === 'bf') {
+    const w = parseFloat(item.width) || 0;
+    const lft = parseFloat(item.lft) || 0;
+    const lin = parseFloat(item.lin) || 0;
+    bf = thick * w * ((lft * 12 + lin) / 144) * (parseFloat(item.qty) || 1);
+  } else if(key === 'slab') {
+    const ms = item.measurements || [];
+    const avgW = ms.length > 0 ? ms.reduce((s,m) => s + (parseFloat(m)||0), 0) / ms.length : 0;
+    const lft = parseFloat(item.lft) || 0;
+    const lin = parseFloat(item.lin) || 0;
+    bf = thick * avgW * ((lft * 12 + lin) / 144);
+  }
+  const ppbf = parseFloat(item.pricePerBf) || 0;
+  document.getElementById('quote-alloc-item-info').textContent = species + ' — ' + bf.toFixed(2) + ' BF remaining · $' + ppbf.toFixed(2) + '/BF';
+  document.getElementById('quote-alloc-cut-length').value = '';
+  document.getElementById('quote-alloc-cut-width').value = '';
+  document.getElementById('quote-alloc-cut-info').textContent = '';
+  document.getElementById('quote-alloc-type-modal').classList.add('open');
+}
+
+(function() {
+  document.getElementById('quote-alloc-cancel').addEventListener('click', () => {
+    document.getElementById('quote-alloc-modal').classList.remove('open');
+  });
+  document.getElementById('quote-alloc-type-cancel').addEventListener('click', () => {
+    document.getElementById('quote-alloc-type-modal').classList.remove('open');
+  });
+
+  document.getElementById('quote-alloc-full').addEventListener('click', () => {
+    const item = (shopData[_allocItemKey] || []).find(x => x.id === _allocItemId);
+    if(!item || !_allocQuote) return;
+    const thick = (parseFloat(item.thickness) || 4) / 4;
+    let bf = 0;
+    if(_allocItemKey === 'bf') {
+      const w = parseFloat(item.width) || 0;
+      const lft = parseFloat(item.lft) || 0;
+      const lin = parseFloat(item.lin) || 0;
+      bf = thick * w * ((lft * 12 + lin) / 144) * (parseFloat(item.qty) || 1);
+    } else if(_allocItemKey === 'slab') {
+      const ms = item.measurements || [];
+      const avgW = ms.length > 0 ? ms.reduce((s,m) => s + (parseFloat(m)||0), 0) / ms.length : 0;
+      const lft = parseFloat(item.lft) || 0;
+      const lin = parseFloat(item.lin) || 0;
+      bf = thick * avgW * ((lft * 12 + lin) / 144);
+    }
+    _allocQuote.lumberAllocations.push({
+      id: 'alloc_' + Date.now(),
+      lumberItemId: item.id,
+      species: item.species || item.label || _allocItemKey.toUpperCase(),
+      allocationType: 'full',
+      cutLength: '',
+      cutWidth: '',
+      bfAllocated: bf,
+      purchasePricePerBF: parseFloat(item.pricePerBf) || 0
+    });
+    document.getElementById('quote-alloc-type-modal').classList.remove('open');
+    document.getElementById('quote-alloc-modal').classList.remove('open');
+    renderQuoteEditForm(_allocQuote);
+  });
+
+  document.getElementById('quote-alloc-cut-length').addEventListener('input', _updateAllocCutInfo);
+  document.getElementById('quote-alloc-cut-width').addEventListener('input', _updateAllocCutInfo);
+
+  document.getElementById('quote-alloc-cut-confirm').addEventListener('click', () => {
+    const item = (shopData[_allocItemKey] || []).find(x => x.id === _allocItemId);
+    if(!item || !_allocQuote) return;
+    const cutL = parseFloat(document.getElementById('quote-alloc-cut-length').value) || 0;
+    const cutW = parseFloat(document.getElementById('quote-alloc-cut-width').value) || 0;
+    const thick = parseFloat(item.thickness) || 4;
+    const bfUsed = (cutL * cutW * (thick / 4)) / 144;
+    if(bfUsed <= 0) return;
+    _allocQuote.lumberAllocations.push({
+      id: 'alloc_' + Date.now(),
+      lumberItemId: item.id,
+      species: item.species || item.label || _allocItemKey.toUpperCase(),
+      allocationType: 'cut',
+      cutLength: cutL,
+      cutWidth: cutW,
+      bfAllocated: bfUsed,
+      purchasePricePerBF: parseFloat(item.pricePerBf) || 0
+    });
+    document.getElementById('quote-alloc-type-modal').classList.remove('open');
+    document.getElementById('quote-alloc-modal').classList.remove('open');
+    renderQuoteEditForm(_allocQuote);
+  });
+})();
+
+function _updateAllocCutInfo() {
+  const item = (shopData[_allocItemKey] || []).find(x => x.id === _allocItemId);
+  if(!item) return;
+  const cutL = parseFloat(document.getElementById('quote-alloc-cut-length').value) || 0;
+  const cutW = parseFloat(document.getElementById('quote-alloc-cut-width').value) || 0;
+  const thick = parseFloat(item.thickness) || 4;
+  const bfUsed = (cutL * cutW * (thick / 4)) / 144;
+  document.getElementById('quote-alloc-cut-info').textContent = 'BF used: ' + bfUsed.toFixed(2);
+}
+
+// Wire quote screens
+(function() {
+  document.getElementById('quotes-back-btn').addEventListener('click', () => {
+    document.getElementById('quotes-screen').style.display = 'none';
+    document.getElementById('landing-screen').style.display = '';
+  });
+  document.getElementById('quotes-add-btn').addEventListener('click', () => openQuoteEdit(null));
+  document.getElementById('quote-detail-back-btn').addEventListener('click', () => {
+    _currentQuoteId = null;
+    document.getElementById('quote-detail-screen').style.display = 'none';
+    document.getElementById('quotes-screen').style.display = 'block';
+    renderQuotesList();
+  });
+  document.getElementById('quote-edit-back-btn').addEventListener('click', () => {
+    document.getElementById('quote-edit-screen').style.display = 'none';
+    if(_currentQuoteId && quotesData.find(x => x.id === _currentQuoteId)) {
+      document.getElementById('quote-detail-screen').style.display = 'block';
+      renderQuoteDetail();
+    } else {
+      document.getElementById('quotes-screen').style.display = 'block';
+      renderQuotesList();
+    }
+  });
+
+  // Options menu
+  const optBtn = document.getElementById('quote-detail-options-btn');
+  const menu = document.getElementById('quote-options-menu');
+  optBtn.addEventListener('click', (e) => { e.stopPropagation(); menu.style.display = menu.style.display === 'none' ? 'block' : 'none'; });
+  document.addEventListener('click', () => { menu.style.display = 'none'; });
+
+  document.getElementById('qopt-edit').addEventListener('click', () => { menu.style.display = 'none'; openQuoteEdit(_currentQuoteId); });
+
+  document.getElementById('qopt-duplicate').addEventListener('click', () => {
+    menu.style.display = 'none';
+    const orig = quotesData.find(x => x.id === _currentQuoteId);
+    if(!orig) return;
+    const dup = JSON.parse(JSON.stringify(orig));
+    dup.id = quoteUid();
+    dup.status = 'draft';
+    dup.number = generateQuoteNumber(dup.customer.name, quotesData);
+    dup.createdAt = new Date().toISOString().slice(0, 10);
+    quotesData.push(dup);
+    saveQuoteToSupabase(dup).catch(e => console.error('save quote error', e));
+    openQuoteDetail(dup.id);
+  });
+
+  document.getElementById('qopt-accepted').addEventListener('click', () => {
+    menu.style.display = 'none';
+    const q = quotesData.find(x => x.id === _currentQuoteId);
+    if(!q) return;
+    if(q.status === 'accepted') { q.status = 'draft'; } else {
+      q.status = 'accepted';
+      _handleQuoteAccepted(q);
+    }
+    saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+    renderQuoteDetail();
+  });
+
+  document.getElementById('qopt-declined').addEventListener('click', () => {
+    menu.style.display = 'none';
+    const q = quotesData.find(x => x.id === _currentQuoteId);
+    if(!q) return;
+    q.status = q.status === 'declined' ? 'draft' : 'declined';
+    saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+    renderQuoteDetail();
+  });
+
+  document.getElementById('qopt-link-project').addEventListener('click', () => {
+    menu.style.display = 'none';
+    openQuoteLinkProjectModal();
+  });
+
+  document.getElementById('qopt-delete').addEventListener('click', () => {
+    menu.style.display = 'none';
+    appConfirm('Delete this quote?', async () => {
+      const q = quotesData.find(x => x.id === _currentQuoteId);
+      if(q) {
+        quotesData = quotesData.filter(x => x.id !== q.id);
+        deleteQuoteFromSupabase(q.id).catch(e => console.error('delete quote error', e));
+      }
+      _currentQuoteId = null;
+      document.getElementById('quote-detail-screen').style.display = 'none';
+      document.getElementById('quotes-screen').style.display = 'block';
+      renderQuotesList();
+    });
+  });
+
+  // Link project modal
+  document.getElementById('quote-link-proj-cancel').addEventListener('click', () => {
+    document.getElementById('quote-link-proj-modal').classList.remove('open');
+  });
+  document.getElementById('quote-link-proj-save').addEventListener('click', () => {
+    const q = quotesData.find(x => x.id === _currentQuoteId);
+    if(!q) return;
+    const sel = document.getElementById('quote-link-proj-select');
+    if(sel.value) {
+      q.linkedProjectId = sel.value;
+      const p = projectsData.find(x => x.id === sel.value);
+      q.linkedProjectName = p ? p.name : '';
+    } else {
+      q.linkedProjectId = null;
+      q.linkedProjectName = null;
+    }
+    saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+    document.getElementById('quote-link-proj-modal').classList.remove('open');
+    renderQuoteDetail();
+  });
+
+  // Send modal
+  document.getElementById('quote-send-cancel').addEventListener('click', () => {
+    document.getElementById('quote-send-modal').classList.remove('open');
+  });
+})();
+
+function openQuoteLinkProjectModal() {
+  const sel = document.getElementById('quote-link-proj-select');
+  sel.innerHTML = '<option value="">None</option>';
+  (projectsData || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    sel.appendChild(opt);
+  });
+  const q = quotesData.find(x => x.id === _currentQuoteId);
+  if(q && q.linkedProjectId) sel.value = q.linkedProjectId;
+  document.getElementById('quote-link-proj-modal').classList.add('open');
+}
+
+function _handleQuoteAccepted(q) {
+  if(!q.linkedProjectId) {
+    appConfirm('Create a project for this job?', () => {
+      const proj = {
+        id: projUid(),
+        name: q.customer.name + ' — ' + (q.description || q.number),
+        date: q.createdAt,
+        note: 'Created from quote ' + q.number,
+        listId: null, listName: null, status: 'active', rate: q.shopRate || 0
+      };
+      projectsData.push(proj);
+      saveProjectToSupabase(proj).catch(e => console.error('save project error', e));
+      q.linkedProjectId = proj.id;
+      q.linkedProjectName = proj.name;
+      saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+      renderQuoteDetail();
+    }, 'Create', 'var(--green)', 'Not now');
+  }
+  if(q.lumberAllocations && q.lumberAllocations.length > 0) {
+    appConfirm('Apply lumber allocations to Your Lumber? This will record the cuts and deduct allocated amounts from your inventory.', () => {
+      _applyAllocationsToLumber(q);
+    }, 'Yes', 'var(--green)', 'Not now');
+  }
+}
+
+function _applyAllocationsToLumber(q) {
+  if(!shopData) return;
+  (q.lumberAllocations || []).forEach(a => {
+    ['bf','lf','slab'].forEach(key => {
+      const item = (shopData[key] || []).find(x => x.id === a.lumberItemId);
+      if(!item) return;
+      if(!item.cuts) item.cuts = [];
+      item.cuts.push({
+        date: new Date().toISOString().slice(0, 10),
+        amount: a.allocationType === 'full' ? 'Full allocation' : a.cutLength + '" x ' + a.cutWidth + '"',
+        value: (a.bfAllocated || 0) * (a.purchasePricePerBF || 0),
+        note: 'From quote ' + q.number,
+        projectId: q.linkedProjectId || '',
+        projectName: q.linkedProjectName || ''
+      });
+    });
+  });
+  saveShopToSupabase().catch(e => console.error('save shop error', e));
+}
+
+function openQuoteSendModal(q) {
+  document.getElementById('quote-send-msg').textContent = 'Send this quote to ' + q.customer.email + '? Download the PDF first to attach it.';
+  document.getElementById('quote-send-modal').classList.add('open');
+
+  document.getElementById('quote-send-pdf').onclick = () => {
+    exportQuotePDF(q);
+  };
+  document.getElementById('quote-send-email').onclick = () => {
+    const s = _getSettings();
+    const total = _quoteTotal(q, s);
+    const displayName = s.displayName || 'Wild Board Calculator';
+    const subject = encodeURIComponent('Quote from ' + displayName + ' — ' + q.number);
+    let bodyText = 'Hi ' + (q.customer.name || '') + ',\n\nPlease find your quote attached.\n\nQuote: ' + q.number + '\nProject: ' + (q.description || '') + '\nTotal: $' + total.toFixed(2) + '\nValid until: ' + (q.validUntil || '');
+    if(q.notes) bodyText += '\n\n' + q.notes;
+    bodyText += '\n\n' + displayName;
+    const mailTo = 'mailto:' + encodeURIComponent(q.customer.email) + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
+    window.open(mailTo, '_blank');
+    q.status = 'pending_customer';
+    saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
+    document.getElementById('quote-send-modal').classList.remove('open');
+    renderQuoteDetail();
+  };
+}
+
+function exportQuotePDF(q) {
+  const { jsPDF } = window.jspdf;
+  if(!jsPDF) { alert('PDF library not loaded'); return; }
+  const s = _getSettings();
+  const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const margin = 14;
+  const pageW = 210;
+  const colRight = pageW - margin;
+  let y = 20;
+  const checkPage = (needed) => { if(y + needed > 275) { doc.addPage(); y = 20; } };
+  const green = [45, 74, 30];
+  const dark = [44, 36, 24];
+  const muted = [100, 90, 75];
+
+  doc.setFillColor(...green);
+  doc.rect(0, 0, 210, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(250,247,242);
+  const displayName = s.displayName || 'Wild Board Calculator';
+  doc.text(displayName, margin, 8);
+
+  y = 22;
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...dark);
+  doc.text('Quote', margin, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text(q.number || '', colRight, y, {align:'right'}); y += 7;
+  doc.setFontSize(9); doc.setTextColor(...muted);
+  doc.text('Date: ' + (q.createdAt || '') + '  ·  Valid until: ' + (q.validUntil || ''), margin, y); y += 10;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...dark);
+  doc.text(q.customer.name || '', margin, y); y += 5;
+  if(q.customer.email) { doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(q.customer.email, margin, y); y += 4; }
+  if(q.customer.phone) { doc.text(q.customer.phone, margin, y); y += 4; }
+  if(q.description) { y += 2; doc.text(q.description, margin, y); y += 4; }
+  y += 6;
+
+  // Product price (final only, no breakdown)
+  const product = _quoteProductTotal(q, s);
+  checkPage(8);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+  doc.text('Product / Items', margin, y);
+  doc.text('$' + product.toFixed(2), colRight, y, {align:'right'}); y += 6;
+
+  // Labour tasks
+  const labourTotal = _quoteLabourTotal(q);
+  if(q.labourTasks && q.labourTasks.length > 0) {
+    checkPage(12);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...dark);
+    doc.text('Labour', margin, y); y += 5;
+    q.labourTasks.forEach(t => {
+      checkPage(6);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text((t.description || 'Task') + ' — ' + (t.hours || 0) + ' hrs', margin + 4, y);
+      const amt = (parseFloat(t.hours) || 0) * (parseFloat(q.shopRate) || 0);
+      doc.text('$' + amt.toFixed(2), colRight, y, {align:'right'}); y += 4;
+    });
+    doc.setFont('helvetica','bold');
+    doc.text('$' + labourTotal.toFixed(2), colRight, y, {align:'right'}); y += 6;
+  }
+
+  // Expenses
+  const expTotal = _quoteExpensesTotal(q);
+  if(expTotal > 0) {
+    checkPage(8);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+    doc.text('Expenses', margin, y);
+    doc.text('$' + expTotal.toFixed(2), colRight, y, {align:'right'}); y += 6;
+  }
+
+  // Subtotal, discount, tax, total
+  const sub = product + labourTotal + expTotal;
+  const disc = _quoteDiscount(q, s);
+  const afterDisc = sub - disc;
+  const tax = afterDisc * ((parseFloat(q.taxRate) || 0) / 100);
+  const total = afterDisc + tax;
+
+  checkPage(30);
+  y += 4;
+  doc.setFillColor(235, 228, 215);
+  doc.rect(margin, y, pageW - margin*2, disc > 0 || tax > 0 ? 24 : 14, 'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+  doc.text('Subtotal', margin + 3, y + 5);
+  doc.text('$' + sub.toFixed(2), colRight - 3, y + 5, {align:'right'});
+  let ry = y + 5;
+  if(disc > 0) { ry += 5; doc.text('Discount', margin + 3, ry); doc.text('-$' + disc.toFixed(2), colRight - 3, ry, {align:'right'}); }
+  if(tax > 0) { ry += 5; doc.text('Tax (' + (q.taxRate||0) + '%)', margin + 3, ry); doc.text('$' + tax.toFixed(2), colRight - 3, ry, {align:'right'}); }
+  ry += 6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('Total', margin + 3, ry);
+  doc.text('$' + total.toFixed(2), colRight - 3, ry, {align:'right'});
+  y = ry + 10;
+
+  // Notes
+  if(q.notes) {
+    checkPage(14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
+    const noteLines = doc.splitTextToSize(q.notes, pageW - margin * 2);
+    noteLines.forEach(line => { checkPage(5); doc.text(line, margin, y); y += 4; });
+    y += 4;
+  }
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+  doc.text('Valid until ' + (q.validUntil || ''), margin, y);
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+    doc.text('Page ' + i + ' of ' + pageCount, pageW / 2, 290, {align:'center'});
+  }
+
+  doc.save((q.number || 'quote').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() + '.pdf');
+}
+
 // ============ PAYWALL ============
 
 
@@ -9100,10 +10673,14 @@ _supabase.auth.onAuthStateChange((event, session) => {
       .then(() => fetchSavedLists())
       .then(() => fetchHoursIntoMemory().catch(e => console.error('Hours fetch on sign-in failed:', e)))
       .then(() => fetchProjectsFromSupabase().catch(e => console.error('Projects fetch on sign-in failed:', e)))
+      .then(() => fetchQuotesFromSupabase().catch(e => console.error('Quotes fetch on sign-in failed:', e)))
+      .then(() => fetchSettingsFromSupabase().catch(e => console.error('Settings fetch on sign-in failed:', e)))
       .then(() => { if(typeof updateLandingLink === 'function') updateLandingLink(); })
       .catch(e => console.error('Post-signin list load failed:', e));
   } else {
     projects = [];
+    quotesData = [];
+    userSettings = null;
     if(typeof updateLandingLink === 'function') updateLandingLink();
   }
 });
@@ -9329,6 +10906,67 @@ async function deleteProjectFromSupabase(projId) {
   await _checkSupabaseResp(resp, 'Delete project');
 }
 
+// ---- Quotes: one row per quote ----
+async function fetchQuotesFromSupabase() {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/quotes?select=id,data&user_id=eq.' + _currentUser.id,
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch quotes');
+  const rows = await resp.json();
+  quotesData = (Array.isArray(rows) ? rows : []).map(r => ({ ...r.data, id: r.id }));
+}
+
+async function saveQuoteToSupabase(q) {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/quotes?on_conflict=id', {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: q.id,
+      user_id: _currentUser.id,
+      data: q,
+      updated_at: new Date().toISOString()
+    })
+  });
+  await _checkSupabaseResp(resp, 'Save quote');
+}
+
+async function deleteQuoteFromSupabase(qId) {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/quotes?id=eq.' + qId + '&user_id=eq.' + _currentUser.id,
+    { method: 'DELETE', headers }
+  );
+  await _checkSupabaseResp(resp, 'Delete quote');
+}
+
+// ---- Settings: stored in profiles.settings JSONB column ----
+async function fetchSettingsFromSupabase() {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(
+    SUPABASE_URL + '/rest/v1/profiles?select=settings&id=eq.' + _currentUser.id,
+    { headers }
+  );
+  await _checkSupabaseResp(resp, 'Fetch settings');
+  const rows = await resp.json();
+  if(Array.isArray(rows) && rows.length > 0 && rows[0].settings) {
+    userSettings = rows[0].settings;
+    _saveSettingsLocal();
+  }
+}
+
+async function saveSettingsToSupabase() {
+  const headers = await _requireAuthHeaders();
+  const resp = await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/profiles?id=eq.' + _currentUser.id, {
+    method: 'PATCH',
+    headers: { ...headers, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ settings: _getSettings() })
+  });
+  await _checkSupabaseResp(resp, 'Save settings');
+}
+
 // ---- Account deletion ----
 // Edge Function URLs are deterministic (project URL + /functions/v1/<name>),
 // so as long as the function is deployed under this exact name, nothing
@@ -9508,6 +11146,11 @@ function returnToGuestLanding() {
   document.getElementById('hours-screen').style.display='none';
   document.getElementById('projects-screen').style.display='none';
   document.getElementById('project-detail-screen').style.display='none';
+  document.getElementById('settings-screen').style.display='none';
+  document.getElementById('quotes-screen').style.display='none';
+  document.getElementById('quote-detail-screen').style.display='none';
+  document.getElementById('quote-edit-screen').style.display='none';
+  quotesData = [];
   document.getElementById('app-screen').style.display='none';
   document.getElementById('sticky-bar').style.display='none';
   document.getElementById('landing-screen').style.display='';
