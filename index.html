@@ -1553,7 +1553,7 @@
     <h3>How does tiered pricing work?</h3>
     <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Your quote price is built in layers based on the dimensions of your product:</p>
     <ol>
-      <li><strong>Surface Area</strong> &mdash; We calculate the diagonal of your product from its length and width. The diagonal determines your base price tier.</li>
+      <li><strong>Surface Area</strong> &mdash; We calculate the surface area of your product (length x width = square inches). The surface area determines which pricing tier your product falls into, and each tier has its own $/sq in rate.</li>
       <li><strong>Thickness</strong> &mdash; A percentage is added based on how thick the material is.</li>
       <li><strong>Construction</strong> &mdash; Glue-ups, grain direction, and complex patterns each add a percentage on top.</li>
       <li><strong>Features</strong> &mdash; Flat dollar amounts are added last for things like juice grooves, feet, or custom engraving.</li>
@@ -9309,13 +9309,11 @@ let _settingsReturnScreen = null;
 let _settingsCurrentSub = null;
 
 function getDefaultSettings() {
-  const diagonalTiers = [];
-  const bases = [50,75,100,125,150,175,200,225,250,275,325,375,425,475,525,575,625,675,725,775,875,975,1075,1175,1275,1375,1475,1575,1675,1775];
-  for(let i = 0; i < bases.length; i++) {
-    const min = i === 0 ? 0 : 12 + (i - 1) * 2;
-    const max = i === 0 ? 12 : 12 + i * 2;
-    diagonalTiers.push({ min, max, price: bases[i] });
-  }
+  const surfaceAreaTiers = [
+    { id: 'tier1', label: 'Tier 1', min: 0,    max: 300,   rate: 0.80 },
+    { id: 'tier2', label: 'Tier 2', min: 300,   max: 800,   rate: 0.90 },
+    { id: 'tier3', label: 'Tier 3', min: 800,   max: 99999, rate: 1.00 },
+  ];
   const thicknessTiers = [];
   const thickMods = [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63];
   for(let i = 0; i < thickMods.length; i++) {
@@ -9328,7 +9326,7 @@ function getDefaultSettings() {
     defaultTaxRate: 0,
     defaultShopRate: 0,
     defaultEmployeeRate: 0,
-    diagonalTiers,
+    surfaceAreaTiers,
     thicknessTiers,
     multipliers: {
       glueUps: [0, 0.05, 0.10, 0.15, 0.20, 0.25],
@@ -9345,11 +9343,19 @@ function getDefaultSettings() {
   };
 }
 
+function _migrateSettings(s) {
+  if(!s.surfaceAreaTiers || !Array.isArray(s.surfaceAreaTiers) || s.surfaceAreaTiers.length === 0) {
+    s.surfaceAreaTiers = getDefaultSettings().surfaceAreaTiers;
+    delete s.diagonalTiers;
+  }
+  return s;
+}
+
 function _getSettings() {
   if(userSettings) return userSettings;
   try {
     const raw = localStorage.getItem('wbc_settings');
-    if(raw) { userSettings = JSON.parse(raw); return userSettings; }
+    if(raw) { userSettings = _migrateSettings(JSON.parse(raw)); return userSettings; }
   } catch(e) {}
   userSettings = getDefaultSettings();
   return userSettings;
@@ -9465,13 +9471,24 @@ function _renderSettingsSubBody(idx) {
     html += '</div>';
   } else if(idx === 11) {
     // Surface Area Tiers
-    html += '<div class="settings-hint-toggle" id="diag-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; Price is determined by the diagonal measurement of your product &mdash; calculated from its length and width. A larger diagonal means a larger surface area and a higher base price.</span></span></div>';
-    html += '<table class="settings-tier-table"><thead><tr><th>Diagonal Range</th><th>Base Price ($)</th></tr></thead><tbody>';
-    (s.diagonalTiers || []).forEach((t, i) => {
-      const label = i === 0 ? '< 12&quot;' : t.min.toFixed(0) + '&quot; &ndash; ' + (t.max - 0.1).toFixed(1) + '&quot;';
-      html += '<tr><td style="font-size:11px;">' + label + '</td><td><input type="number" class="set-diag-price" data-idx="' + i + '" value="' + t.price + '" min="0" step="1"' + roAttr + ' /></td></tr>';
+    html += '<div class="settings-hint-toggle" id="sa-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; Price is calculated by multiplying your product\'s surface area (length x width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.</span></span></div>';
+    html += '<table class="settings-tier-table"><thead><tr><th>Label</th><th>Min sq in</th><th>Max sq in</th><th>$/sq in</th><th>Example</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
+    const tiers = s.surfaceAreaTiers || [];
+    tiers.forEach((t, i) => {
+      const minVal = i === 0 ? 0 : tiers[i - 1].max;
+      const midpoint = (i === tiers.length - 1) ? (minVal + 100) : (minVal + t.max) / 2;
+      const example = (midpoint * t.rate).toFixed(2);
+      html += '<tr>';
+      html += '<td><input type="text" class="set-sa-label" data-idx="' + i + '" value="' + (t.label || '').replace(/"/g,'&quot;') + '" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /></td>';
+      html += '<td style="font-size:11px;color:var(--text2);">' + minVal + '</td>';
+      html += '<td><input type="number" class="set-sa-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="1" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+      html += '<td><input type="number" class="set-sa-rate" data-idx="' + i + '" value="' + t.rate + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+      html += '<td style="font-size:11px;color:var(--text2);">$' + example + '</td>';
+      if(!ro) html += '<td>' + (tiers.length > 1 ? '<button class="del-btn set-sa-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
+      html += '</tr>';
     });
     html += '</tbody></table>';
+    if(!ro) html += '<button class="btn btn-sm" id="set-sa-add" style="margin-top:6px;">+ Add Tier</button>';
   } else if(idx === 12) {
     // Thickness Tiers
     html += '<table class="settings-tier-table"><thead><tr><th>Thickness Range</th><th>Modifier (%)</th></tr></thead><tbody>';
@@ -9545,6 +9562,24 @@ function _renderSettingsSubBody(idx) {
     const explainerBtn = document.getElementById('pricing-explainer-open');
     if(explainerBtn) explainerBtn.addEventListener('click', () => {
       document.getElementById('pricing-explainer-modal').classList.add('open');
+    });
+  }
+  if(idx === 11 && !ro) {
+    document.querySelectorAll('.set-sa-del').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const i2 = parseInt(this.getAttribute('data-idx'));
+        const s2 = _getSettings();
+        s2.surfaceAreaTiers.splice(i2, 1);
+        s2.surfaceAreaTiers.forEach((t, j) => { t.min = j === 0 ? 0 : s2.surfaceAreaTiers[j - 1].max; });
+        _renderSettingsSubBody(11);
+      });
+    });
+    const addBtn = document.getElementById('set-sa-add');
+    if(addBtn) addBtn.addEventListener('click', () => {
+      const s2 = _getSettings();
+      const last = s2.surfaceAreaTiers[s2.surfaceAreaTiers.length - 1];
+      s2.surfaceAreaTiers.push({ id: 'tier' + (s2.surfaceAreaTiers.length + 1), label: 'Tier ' + (s2.surfaceAreaTiers.length + 1), min: last.max, max: last.max + 500, rate: 1.00 });
+      _renderSettingsSubBody(11);
     });
   }
   if(idx === 15 && !ro) {
@@ -9626,10 +9661,20 @@ function _collectSettingsSub(idx) {
     s.defaultShopRate = parseFloat(document.getElementById('set-shop-rate').value) || 0;
     s.defaultEmployeeRate = parseFloat(document.getElementById('set-employee-rate').value) || 0;
   } else if(idx === 11) {
-    document.querySelectorAll('.set-diag-price').forEach(inp => {
+    const tiers = s.surfaceAreaTiers || [];
+    document.querySelectorAll('.set-sa-label').forEach(inp => {
       const i2 = parseInt(inp.getAttribute('data-idx'));
-      if(s.diagonalTiers[i2]) s.diagonalTiers[i2].price = parseFloat(inp.value) || 0;
+      if(tiers[i2]) tiers[i2].label = inp.value.trim() || ('Tier ' + (i2 + 1));
     });
+    document.querySelectorAll('.set-sa-max').forEach(inp => {
+      const i2 = parseInt(inp.getAttribute('data-idx'));
+      if(tiers[i2]) tiers[i2].max = parseFloat(inp.value) || 0;
+    });
+    document.querySelectorAll('.set-sa-rate').forEach(inp => {
+      const i2 = parseInt(inp.getAttribute('data-idx'));
+      if(tiers[i2]) tiers[i2].rate = parseFloat(inp.value) || 0;
+    });
+    tiers.forEach((t, i) => { t.min = i === 0 ? 0 : tiers[i - 1].max; });
   } else if(idx === 12) {
     document.querySelectorAll('.set-thick-mod').forEach(inp => {
       const i2 = parseInt(inp.getAttribute('data-idx'));
@@ -9818,14 +9863,14 @@ function generateQuoteNumber(customerName, existingQuotes) {
   return prefix + '-' + String(next).padStart(3, '0');
 }
 
-function calcDiagonalPrice(quote, settings) {
+function calcSurfaceAreaPrice(quote, settings) {
   const l = parseFloat(quote.dimensions.length) || 0;
   const w = parseFloat(quote.dimensions.width) || 0;
   const thick = parseFloat(quote.dimensions.thickness) || 0;
   if(l === 0 || w === 0) return 0;
-  const diagonal = Math.sqrt(l * l + w * w);
-  const tier = (settings.diagonalTiers || []).find(t => diagonal >= t.min && diagonal < t.max);
-  const basePrice = tier ? tier.price : 0;
+  const surfaceArea = l * w;
+  const tier = (settings.surfaceAreaTiers || []).find(t => surfaceArea >= t.min && surfaceArea < t.max);
+  const basePrice = tier ? (surfaceArea * tier.rate) : 0;
   const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
   const thickMod = thickTier ? thickTier.modifier : 0;
   const grainMod = quote.grainDirection === 'end' ? (settings.multipliers.endGrain || 0) : 0;
@@ -9843,7 +9888,7 @@ function _quoteProductTotal(quote, settings) {
   if(quote.pricingMode === 'custom') {
     return (quote.lineItems || []).reduce((sum, li) => sum + (parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0), 0);
   }
-  return calcDiagonalPrice(quote, settings);
+  return calcSurfaceAreaPrice(quote, settings);
 }
 
 function _quoteLabourTotal(quote) {
@@ -9918,7 +9963,7 @@ function _newQuote() {
     validUntil: validDate,
     customer: { name: '', email: '', phone: '' },
     description: '',
-    pricingMode: 'diagonal',
+    pricingMode: 'surface-area',
     linkedProjectId: null,
     linkedProjectName: null,
     dimensions: { length: '', width: '', thickness: '' },
@@ -10110,7 +10155,7 @@ function renderQuoteEditForm(q) {
   html += '</div>';
 
   html += '<div class="quote-field"><label>Pricing Mode</label><div class="quote-pill-group">';
-  html += '<button class="quote-pill' + (q.pricingMode === 'diagonal' ? ' active' : '') + '" data-mode="diagonal">Diagonal Pricing</button>';
+  html += '<button class="quote-pill' + (q.pricingMode === 'surface-area' ? ' active' : '') + '" data-mode="surface-area">Surface Area Pricing</button>';
   html += '<button class="quote-pill' + (q.pricingMode === 'custom' ? ' active' : '') + '" data-mode="custom">Custom Pricing</button>';
   html += '</div></div>';
 
@@ -10133,16 +10178,19 @@ function renderQuoteEditForm(q) {
   html += '<div class="quote-field"><label>Notes / Terms</label><textarea id="qe-notes">' + (q.notes || '').replace(/</g,'&lt;') + '</textarea></div>';
   html += '</div></div>';
 
-  // Section 2A: Diagonal Pricing
-  html += '<div id="qe-diagonal-section" style="display:' + (q.pricingMode === 'diagonal' ? 'block' : 'none') + ';">';
-  html += '<div class="quote-section"><div class="quote-section-hdr">Diagonal Pricing</div><div class="quote-section-body">';
+  // Section 2A: Surface Area Pricing
+  html += '<div id="qe-sa-section" style="display:' + (q.pricingMode === 'surface-area' ? 'block' : 'none') + ';">';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Surface Area Pricing</div><div class="quote-section-body">';
   html += '<div style="display:flex;gap:8px;">';
   html += '<div class="quote-field" style="flex:1;"><label>Length (in)</label><input type="number" id="qe-dim-l" value="' + (q.dimensions.length || '') + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '<div class="quote-field" style="flex:1;"><label>Width (in)</label><input type="number" id="qe-dim-w" value="' + (q.dimensions.width || '') + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '<div class="quote-field" style="flex:1;"><label>Thickness (in)</label><input type="number" id="qe-dim-t" value="' + (q.dimensions.thickness || '') + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '</div>';
-  const diag = Math.sqrt(Math.pow(parseFloat(q.dimensions.length)||0,2)+Math.pow(parseFloat(q.dimensions.width)||0,2));
-  html += '<div id="qe-diag-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Diagonal: ' + diag.toFixed(1) + '" · Base price: $' + (calcDiagonalPrice({...q, features: q.features.map(f=>({...f, enabled: false})), additionalFeature: {enabled:false}, grainDirection:'edge', glueUps:0, complexPattern: false, dimensions: {...q.dimensions, thickness: '0'}}, s)).toFixed(2) + '</div>';
+  const saL = parseFloat(q.dimensions.length) || 0, saW = parseFloat(q.dimensions.width) || 0;
+  const saArea = saL * saW;
+  const saTier = (s.surfaceAreaTiers || []).find(t => saArea >= t.min && saArea < t.max);
+  const saBase = saTier ? (saArea * saTier.rate) : 0;
+  html += '<div id="qe-sa-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '') + ' · Base price: $' + saBase.toFixed(2) + '</div>';
 
   html += '<div class="quote-field"><label>Grain Direction</label><div class="quote-pill-group">';
   html += '<button class="quote-pill' + (q.grainDirection === 'edge' ? ' active' : '') + '" data-grain="edge">Edge Grain</button>';
@@ -10168,7 +10216,7 @@ function renderQuoteEditForm(q) {
   html += '<input type="number" id="qe-add-feat-price" placeholder="$0" value="' + (q.additionalFeature.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;" />';
   html += '</div></div>';
 
-  html += '<div id="qe-diag-breakdown" class="quote-breakdown"></div>';
+  html += '<div id="qe-sa-breakdown" class="quote-breakdown"></div>';
   html += '</div></div></div>';
 
   // Section 2B: Custom Pricing
@@ -10319,18 +10367,18 @@ function _updateQuoteEditLive(q) {
   _collectQuoteFromForm(q);
   const s = _getSettings();
 
-  // Diagonal info
+  // Surface Area info
   const l = parseFloat(q.dimensions.length) || 0;
   const w = parseFloat(q.dimensions.width) || 0;
   const thick = parseFloat(q.dimensions.thickness) || 0;
-  const diag = Math.sqrt(l * l + w * w);
-  const baseQ = {...q, features: q.features.map(f=>({...f, enabled: false})), additionalFeature: {enabled:false}, grainDirection:'edge', glueUps:0, complexPattern: false, dimensions: {...q.dimensions, thickness: '0'}};
-  const basePrice = calcDiagonalPrice(baseQ, s);
-  const diagInfo = document.getElementById('qe-diag-info');
-  if(diagInfo) diagInfo.textContent = 'Diagonal: ' + diag.toFixed(1) + '" · Base price: $' + basePrice.toFixed(2);
+  const saArea = l * w;
+  const saTier = (s.surfaceAreaTiers || []).find(t => saArea >= t.min && saArea < t.max);
+  const basePrice = saTier ? (saArea * saTier.rate) : 0;
+  const saInfo = document.getElementById('qe-sa-info');
+  if(saInfo) saInfo.textContent = 'Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '') + ' · Base price: $' + basePrice.toFixed(2);
 
-  // Diagonal breakdown
-  const bd = document.getElementById('qe-diag-breakdown');
+  // Surface Area breakdown
+  const bd = document.getElementById('qe-sa-breakdown');
   if(bd) {
     const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
     const thickMod = thickTier ? Math.round(thickTier.modifier * 100) : 0;
@@ -10340,7 +10388,7 @@ function _updateQuoteEditLive(q) {
     let featureTotal = 0;
     (q.features || []).filter(f => f.enabled).forEach(f => { featureTotal += (f.price || 0); });
     if(q.additionalFeature && q.additionalFeature.enabled) featureTotal += (q.additionalFeature.price || 0);
-    const productTotal = calcDiagonalPrice(q, s);
+    const productTotal = calcSurfaceAreaPrice(q, s);
     let bhtml = '';
     bhtml += '<div class="quote-breakdown-row"><span>Base price:</span><span>$' + basePrice.toFixed(2) + '</span></div>';
     if(thickMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Thickness (+' + thickMod + '%):</span><span>+$' + (basePrice * thickMod/100).toFixed(2) + '</span></div>';
@@ -10438,7 +10486,7 @@ function _wireQuoteEditEvents(q) {
   body.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', function() {
     q.pricingMode = this.getAttribute('data-mode');
     body.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === q.pricingMode));
-    document.getElementById('qe-diagonal-section').style.display = q.pricingMode === 'diagonal' ? 'block' : 'none';
+    document.getElementById('qe-sa-section').style.display = q.pricingMode === 'surface-area' ? 'block' : 'none';
     document.getElementById('qe-custom-section').style.display = q.pricingMode === 'custom' ? 'block' : 'none';
     liveUpdate();
   }));
@@ -11443,7 +11491,7 @@ async function fetchSettingsFromSupabase() {
   await _checkSupabaseResp(resp, 'Fetch settings');
   const rows = await resp.json();
   if(Array.isArray(rows) && rows.length > 0 && rows[0].settings) {
-    userSettings = rows[0].settings;
+    userSettings = _migrateSettings(rows[0].settings);
     _saveSettingsLocal();
   }
 }
