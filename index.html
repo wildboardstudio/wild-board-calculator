@@ -462,15 +462,15 @@
       color: var(--text2); text-decoration: underline;
     }
     .landing-cta-card {
-      display: flex; align-items: center; gap: 14px; width: 100%; max-width: 340px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 340px;
       margin: 0 auto 10px; padding: 16px 18px; background: var(--bg3);
       border: 1px solid var(--border2); border-radius: 12px; cursor: pointer;
-      -webkit-appearance: none; font-family: inherit; color: var(--text); text-align: left;
+      -webkit-appearance: none; font-family: inherit; color: var(--text); text-align: center;
       transition: opacity 0.15s;
     }
     .landing-cta-card:active { opacity: 0.7; }
     .landing-cta-icon { color: #7a6a52; flex-shrink: 0; }
-    .landing-cta-text { display: flex; flex-direction: column; gap: 2px; }
+    .landing-cta-text { display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .landing-cta-title { font-size: 15px; font-weight: 700; color: var(--text); }
     .landing-cta-desc { font-size: 12px; color: var(--text2); }
     .feature-grid {
@@ -586,6 +586,36 @@
     .pricing-modal-body ol { padding-left: 20px; margin: 0 0 14px; }
     .pricing-modal-body li { font-size: 13px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
     .pricing-modal-body li strong { color: var(--text); }
+    .settings-collapse-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-size: 15px;
+      font-weight: 500; color: var(--text); font-family: inherit; width: 100%;
+      text-align: left; -webkit-appearance: none;
+    }
+    .settings-collapse-hdr:active { opacity: 0.7; }
+    .settings-collapse-chevron { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
+    .settings-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
+    .settings-collapse-body { display: none; padding: 0 4px 16px; }
+    .settings-collapse-body.expanded { display: block; }
+    .settings-sub-collapse-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 6px; cursor: pointer; font-size: 13px;
+      font-weight: 600; color: var(--text); font-family: inherit; width: 100%;
+      text-align: left; -webkit-appearance: none;
+    }
+    .settings-sub-collapse-hdr:active { opacity: 0.7; }
+    .settings-sub-collapse-body { display: none; padding: 8px 4px 12px; }
+    .settings-sub-collapse-body.expanded { display: block; }
+    .settings-info-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--text3);
+      background: none; color: var(--text3); font-size: 11px; font-weight: 700;
+      cursor: pointer; padding: 0; margin-left: 6px; vertical-align: middle;
+      font-family: serif; line-height: 1; -webkit-appearance: none; flex-shrink: 0;
+    }
+    .settings-info-btn:active { opacity: 0.6; }
     .quotes-screen { display: none; }
     .quote-edit-screen { display: none; }
     .quote-detail-screen { display: none; }
@@ -806,7 +836,7 @@
     </div>
     <div class="landing-cta">
       <button class="landing-cta-card" id="start-btn">
-        <span class="landing-cta-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M5.5 5.5L2 22l6-3 3 3 3-3 3 3 3-3 2.5-10.5"/><path d="M12 18V2"/></svg></span>
+        <span class="landing-cta-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v-3"/><path d="M14 15v-3"/><path d="M18 15v-3"/><path d="M2 8V4"/><path d="M22 6H2"/><path d="M22 8V4"/><path d="M6 15v-3"/><rect x="2" y="12" width="20" height="8" rx="2"/></svg></span>
         <span class="landing-cta-text"><span class="landing-cta-title">Calculate Lumber</span><span class="landing-cta-desc">Price out your next project</span></span>
       </button>
       <button class="landing-cta-card" id="resume-btn" style="display:none;">
@@ -953,6 +983,7 @@
   <div id="app-header" class="global-header">
     <button class="btn btn-sm" id="back-btn">&#8592; Back</button>
     <button id="start-over-btn" style="width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Clear"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg></button>
+    <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
     <div class="gh-spacer"></div>
     <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
     <button class="gh-icon-btn gh-quickcalc-btn" id="calc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1210,6 +1241,7 @@
 <div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="global-header" id="saved-header">
     <button class="btn btn-sm" id="saved-back-btn">&#8592; Back</button>
+    <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
     <div class="gh-spacer"></div>
     <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
     <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1225,6 +1257,7 @@
 <div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="global-header" id="shop-header">
     <button class="btn btn-sm" id="shop-back-btn">&#8592; Back</button>
+    <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
     <div class="gh-spacer"></div>
     <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
     <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1312,6 +1345,7 @@
 <div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="global-header" id="projects-header">
     <button class="btn btn-sm" id="projects-back-btn">&#8592; Back</button>
+    <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
     <div class="gh-spacer"></div>
     <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
     <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1331,6 +1365,7 @@
   <div class="global-header" id="proj-detail-header">
     <button class="btn btn-sm" id="proj-detail-back-btn">&#8592; Projects</button>
     <button id="proj-detail-clear-btn" style="width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Clear"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg></button>
+    <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
     <div class="gh-spacer"></div>
     <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
     <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1513,39 +1548,43 @@
   </div>
 </div>
 
-<!-- Settings screen (home) -->
+<!-- Change Email modal -->
+<div class="modal-overlay" id="change-email-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;">Change Email</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Enter your new email address. A verification link will be sent to confirm the change.</p>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">New Email Address</label>
+      <input type="email" id="change-email-input" style="width:100%;font-size:15px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" />
+    </div>
+    <p id="change-email-msg" style="font-size:12px;margin:4px 0 0;display:none;"></p>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-primary" id="change-email-send-btn">Send Verification</button>
+      <button class="btn" id="change-email-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings screen (single page, collapsible sections) -->
 <div class="settings-screen" id="settings-screen">
   <div class="wrap" style="padding:64px 14px 14px;">
     <div class="global-header" id="settings-header">
       <button class="btn btn-sm" id="settings-back-btn">&#8592; Back</button>
+      <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
       <div class="gh-spacer"></div>
       <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
       <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
       <button class="gh-icon-btn gh-settings-btn" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
     <h1 style="font-size:18px;font-weight:700;margin-bottom:12px;">Settings</h1>
-    <div id="settings-menu" style="margin-top:8px;"></div>
+    <div id="settings-ro-note" class="settings-ro-note" style="display:none;">Sign in to save your pricing settings.</div>
+    <div id="settings-body"></div>
+    <button class="btn btn-primary" id="settings-save-btn" style="width:100%;margin-top:20px;margin-bottom:20px;">Save</button>
   </div>
 </div>
 
-<!-- Settings sub-screen -->
-<div class="settings-screen" id="settings-sub-screen" style="display:none;">
-  <div class="wrap" style="padding:64px 14px 14px;">
-    <div class="global-header" id="settings-sub-header">
-      <button class="btn btn-sm" id="settings-sub-back-btn">&#8592; Settings</button>
-      <div class="gh-spacer"></div>
-      <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
-      <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
-      <button class="gh-icon-btn gh-settings-btn" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <h1 id="settings-sub-title" style="font-size:18px;font-weight:700;"></h1>
-      <button class="btn btn-sm btn-primary" id="settings-sub-save-btn">Save</button>
-    </div>
-    <div id="settings-ro-note" class="settings-ro-note" style="display:none;">Sign in to save your pricing settings.</div>
-    <div id="settings-sub-body" style="margin-top:8px;"></div>
-  </div>
-</div>
+<!-- Hidden settings-sub-screen kept for compatibility -->
+<div class="settings-screen" id="settings-sub-screen" style="display:none;"></div>
 
 <!-- Pricing explainer modal -->
 <div class="modal-overlay" id="pricing-explainer-modal">
@@ -1570,6 +1609,7 @@
   <div class="wrap" style="padding:64px 14px 14px;">
     <div class="global-header" id="quotes-header">
       <button class="btn btn-sm" id="quotes-back-btn">&#8592; Back</button>
+      <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
       <div class="gh-spacer"></div>
       <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
       <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1589,6 +1629,7 @@
     <div class="global-header" id="quote-detail-header">
       <button class="btn btn-sm" id="quote-detail-back-btn">&#8592; Quotes</button>
       <button id="quote-detail-clear-btn" style="width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Clear"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg></button>
+      <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
       <div class="gh-spacer"></div>
       <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
       <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -1618,6 +1659,7 @@
     <div class="global-header" id="quote-edit-header">
       <button class="btn btn-sm" id="quote-edit-back-btn">&#8592; Quotes</button>
       <button id="quote-edit-clear-btn" style="width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:#4a3f35;-webkit-appearance:none;" aria-label="Clear"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg></button>
+      <button class="gh-icon-btn gh-home-btn" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
       <div class="gh-spacer"></div>
       <div style="position:relative;"><button class="gh-icon-btn gh-tools-btn" aria-label="Tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button></div>
       <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
@@ -6818,7 +6860,7 @@ async function showSaved(){
   const savedBackBtn=document.getElementById('saved-back-btn');
   if(savedBackBtn) savedBackBtn.addEventListener('click',()=>{
     document.getElementById('saved-screen').style.display='none';
-    document.getElementById('landing-screen').style.display='';
+    showLanding();
   });
 })();
 
@@ -6937,10 +6979,9 @@ async function showShop(){
       const stickyBar=document.getElementById('sticky-bar');
       if(stickyBar) stickyBar.style.display='flex';
     } else if(_shopReturnTo==='project') {
-      // Return to project detail
       document.getElementById('project-detail-screen').style.display='block';
     } else {
-      document.getElementById('landing-screen').style.display='';
+      showLanding();
     }
   });
 
@@ -8237,10 +8278,7 @@ if(_backBtn) _backBtn.addEventListener('click', function(){
     _appReturnTo = 'landing';
     showSaved();
   } else {
-    document.getElementById('landing-screen').style.display='';
-    // Update start button label based on whether real work exists in session
-    const startBtn = document.getElementById('start-btn');
-    if(startBtn) startBtn.textContent = window._hasUnsavedWork ? 'Resume Calculation' : 'Calculate Lumber';
+    showLanding();
   }
   window.scrollTo({top:0,behavior:'smooth'});
 });
@@ -8502,6 +8540,8 @@ const SPLINTER_IMG = '/splinter.jpg';
 let hoursData = null;
 let projectsData = [];
 let _currentProjectId = null;
+let _projDetailReturnTo = null;
+let _quoteDetailReturnTo = null;
 let _projectsReturnTo = 'landing';
 
 function projUid() {
@@ -8643,6 +8683,24 @@ function _hideAllScreens() {
   document.getElementById('quote-edit-screen').style.display = 'none';
 }
 
+function showLanding() {
+  ['app-screen','saved-screen','shop-screen','projects-screen',
+   'project-detail-screen','hours-screen','quotes-screen',
+   'quote-detail-screen','quote-edit-screen','settings-screen',
+   'settings-sub-screen'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const stickyBar = document.getElementById('sticky-bar');
+  if(stickyBar) stickyBar.style.display = 'none';
+  const landing = document.getElementById('landing-screen');
+  if(landing) {
+    landing.style.display = '';
+    landing.classList.remove('wbc-loading');
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
 async function showProjects() {
   if(!_currentUser) {
     openAuthModal('Create a free account to track your projects.');
@@ -8712,7 +8770,35 @@ function renderProjectDetail() {
   const statusBtn = document.getElementById('proj-opt-status');
   if(statusBtn) statusBtn.textContent = proj.status === 'complete' ? 'Mark Active' : 'Mark Complete';
 
-  // Lumber section
+  // Linked Quote card (above Hours)
+  let linkedQuoteEl = document.getElementById('proj-linked-quote-card');
+  if(linkedQuoteEl) linkedQuoteEl.remove();
+  const linkedQuote = (typeof quotesData !== 'undefined' ? quotesData : []).find(q => q.linkedProjectId === proj.id);
+  if(linkedQuote) {
+    const s = _getSettings();
+    const qTotal = _quoteTotal(linkedQuote, s);
+    const statusMap = { draft: 'Draft', pending_customer: 'Pending Customer', accepted: 'Accepted', declined: 'Declined' };
+    const card = document.createElement('div');
+    card.id = 'proj-linked-quote-card';
+    card.className = 'proj-section';
+    card.innerHTML = '<div class="proj-section-hdr"><h3>Linked Quote</h3></div>' +
+      '<div class="proj-section-body"><div id="proj-linked-quote-row" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px;background:var(--bg2);border-radius:8px;">' +
+      '<div><div style="font-size:13px;font-weight:600;">' + ((linkedQuote.number || '') + ' — ' + (linkedQuote.customer.name || 'Untitled')).replace(/</g,'&lt;') + '</div>' +
+      '<div style="font-size:11px;color:var(--text3);">Status: ' + (statusMap[linkedQuote.status] || linkedQuote.status) + '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;font-weight:600;">$' + qTotal.toFixed(2) + '</span><span style="color:var(--text3);">→</span></div>' +
+      '</div></div>';
+    const hoursSection = document.getElementById('proj-hours-section');
+    hoursSection.parentNode.insertBefore(card, hoursSection);
+    document.getElementById('proj-linked-quote-row').addEventListener('click', () => {
+      _quoteDetailReturnTo = 'project-detail';
+      _currentQuoteId = linkedQuote.id;
+      _hideAllScreens();
+      document.getElementById('quote-detail-screen').style.display = 'block';
+      window.scrollTo({top:0, behavior:'smooth'});
+      renderQuoteDetail();
+    });
+  }
+
   // Notes section
   const notesBody = document.getElementById('proj-notes-body');
   if(notesBody) {
@@ -8830,8 +8916,17 @@ function renderProjectDetail() {
       document.getElementById('app-screen').style.display = 'block';
       document.getElementById('sticky-bar').style.display = 'flex';
     } else {
-      document.getElementById('landing-screen').style.display = '';
+      showLanding();
     }
+  });
+})();
+
+// Wire hours back button
+(function() {
+  const btn = document.getElementById('hours-back-btn');
+  if(btn) btn.addEventListener('click', () => {
+    document.getElementById('hours-screen').style.display = 'none';
+    showLanding();
   });
 })();
 
@@ -8839,6 +8934,14 @@ function renderProjectDetail() {
 (function() {
   const btn = document.getElementById('proj-detail-back-btn');
   if(btn) btn.addEventListener('click', () => {
+    if(_projDetailReturnTo === 'quote-detail' && _currentQuoteId) {
+      _projDetailReturnTo = null;
+      document.getElementById('project-detail-screen').style.display = 'none';
+      document.getElementById('quote-detail-screen').style.display = 'block';
+      renderQuoteDetail();
+      return;
+    }
+    _projDetailReturnTo = null;
     _currentProjectId = null;
     document.getElementById('project-detail-screen').style.display = 'none';
     document.getElementById('projects-screen').style.display = 'block';
@@ -9314,13 +9417,21 @@ function getDefaultSettings() {
     { id: 'tier2', label: 'Tier 2', min: 300,   max: 800,   rate: 0.90 },
     { id: 'tier3', label: 'Tier 3', min: 800,   max: 99999, rate: 1.00 },
   ];
-  const thicknessTiers = [];
-  const thickMods = [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63];
-  for(let i = 0; i < thickMods.length; i++) {
-    const min = i === 0 ? 0 : 1 + (i - 1) * 0.25;
-    const max = i === 0 ? 1 : 1 + i * 0.25;
-    thicknessTiers.push({ min, max, modifier: thickMods[i] / 100 });
-  }
+  const thicknessTiers = [
+    { min: 0, max: 0.99, modifier: 0 },
+    { min: 1, max: 1.24, modifier: 0.03 },
+    { min: 1.25, max: 1.49, modifier: 0.06 },
+    { min: 1.5, max: 1.74, modifier: 0.09 },
+    { min: 1.75, max: 1.99, modifier: 0.12 },
+    { min: 2, max: 2.24, modifier: 0.15 },
+    { min: 2.25, max: 2.49, modifier: 0.18 },
+    { min: 2.5, max: 2.74, modifier: 0.21 },
+    { min: 2.75, max: 2.99, modifier: 0.24 },
+    { min: 3, max: 3.24, modifier: 0.27 },
+    { min: 3.25, max: 3.49, modifier: 0.30 },
+    { min: 3.5, max: 3.74, modifier: 0.33 },
+    { min: 3.75, max: 3.99, modifier: 0.36 },
+  ];
   return {
     displayName: '',
     defaultTaxRate: 0,
@@ -9383,231 +9494,341 @@ function showSettings() {
   _hideAllScreens();
   document.getElementById('settings-screen').style.display = 'block';
   window.scrollTo({top:0, behavior:'smooth'});
-  _renderSettingsMenu();
+  _renderSettingsBody();
 }
 
-function _renderSettingsMenu() {
-  const items = [
-    { name: 'My Account', idx: 0 },
-    { name: 'Your Pricing Defaults', idx: 1 }
-  ];
-  let html = '';
-  items.forEach(item => {
-    html += '<button class="settings-menu-item" data-settings-idx="' + item.idx + '">' + item.name + '<span class="settings-menu-chevron">&rsaquo;</span></button>';
-  });
-  document.getElementById('settings-menu').innerHTML = html;
-  document.querySelectorAll('.settings-menu-item').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const idx = parseInt(this.getAttribute('data-settings-idx'));
-      _openSettingsSub(idx);
-    });
-  });
-}
-
-function _openSettingsSub(idx) {
-  _settingsCurrentSub = idx;
-  const titles = {
-    0: 'My Account', 1: 'Your Pricing Defaults',
-    10: 'Labour Rates', 11: 'Surface Area Tiers', 12: 'Thickness Tiers',
-    13: 'Glue Ups', 14: 'Grain & Pattern', 15: 'Feature Add-Ons',
-    16: 'Minimum Quote Threshold'
-  };
-  document.getElementById('settings-screen').style.display = 'none';
-  document.getElementById('settings-sub-screen').style.display = 'block';
-  document.getElementById('settings-sub-title').textContent = titles[idx] || 'Settings';
-  const backBtn = document.getElementById('settings-sub-back-btn');
-  if(idx >= 10 && idx <= 16) {
-    backBtn.innerHTML = '&#8592; Your Pricing Defaults';
-  } else {
-    backBtn.innerHTML = '&#8592; Settings';
-  }
-  window.scrollTo({top:0, behavior:'smooth'});
-  _renderSettingsSubBody(idx);
-}
-
-function _renderSettingsSubBody(idx) {
+function _renderSettingsBody() {
   const s = _getSettings();
   const ro = !_currentUser;
   const roAttr = ro ? ' disabled' : '';
   const roNote = document.getElementById('settings-ro-note');
-  if(roNote) roNote.style.display = (idx === 0 || idx === 1) ? 'none' : (ro ? 'block' : 'none');
+  if(roNote) roNote.style.display = ro ? 'block' : 'none';
+
   let html = '';
 
-  if(idx === 0) {
-    // My Account
-    if(!_currentUser) {
-      html += '<p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Sign in to manage your account.</p>';
-      html += '<button class="btn btn-primary" id="set-acct-signin">Sign In / Create Account</button>';
-    } else {
-      html += '<div class="settings-section">';
-      html += '<div class="settings-field"><label>Email</label><input type="text" value="' + (_currentUser.email || '').replace(/"/g,'&quot;') + '" disabled style="background:var(--bg2);color:var(--text2);" /></div>';
-      html += '<div class="settings-field"><label>Username</label><input type="text" id="set-username" value="" placeholder="e.g. wildboard" /></div>';
-      html += '<div class="settings-field"><label>Company Name</label><p style="font-size:11px;color:var(--text3);margin:0 0 4px;">Appears on all quotes and PDF exports.</p><input type="text" id="set-company-name" value="" placeholder="e.g. Wild Board Studio" /></div>';
-      html += '<p id="set-acct-sync" style="font-size:11px;color:var(--text3);margin-top:8px;"></p>';
-      html += '</div>';
-      html += '<div style="margin-top:20px;"><button class="btn" id="set-acct-signout">Sign Out</button></div>';
-      html += '<div style="margin-top:16px;"><button id="set-acct-delete" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button></div>';
-    }
-  } else if(idx === 1) {
-    // Your Pricing Defaults — sub-menu
-    html += '<button class="pricing-explainer-btn" id="pricing-explainer-open">How does tiered pricing work?</button>';
-    const pricingItems = [
-      { name: 'Labour Rates', idx: 10 },
-      { name: 'Surface Area Tiers', idx: 11 },
-      { name: 'Thickness Tiers', idx: 12 },
-      { name: 'Glue Ups', idx: 13 },
-      { name: 'Grain & Pattern', idx: 14 },
-      { name: 'Feature Add-Ons', idx: 15 },
-      { name: 'Minimum Quote Threshold', idx: 16 }
-    ];
-    pricingItems.forEach(item => {
-      html += '<button class="settings-menu-item" data-pricing-sub="' + item.idx + '">' + item.name + '<span class="settings-menu-chevron">&rsaquo;</span></button>';
-    });
-  } else if(idx === 10) {
-    // Labour Rates
+  // ── My Account section ──
+  html += '<button class="settings-collapse-hdr" data-section="account">My Account<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-collapse-body" data-section="account">';
+  if(!_currentUser) {
+    html += '<p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Sign in to manage your account.</p>';
+    html += '<button class="btn btn-primary" id="set-acct-signin">Sign In / Create Account</button>';
+  } else {
     html += '<div class="settings-section">';
-    html += '<div class="settings-field"><label>Your shop rate (billed to customer)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-    html += '<div class="settings-field"><label>Your internal cost. Enter 0 if owner-operated.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+    html += '<div class="settings-field"><label>Email</label><div style="display:flex;align-items:center;gap:8px;"><input type="text" value="' + (_currentUser.email || '').replace(/"/g,'&quot;') + '" disabled style="background:var(--bg2);color:var(--text2);flex:1;" /><button class="btn btn-sm" id="set-change-email-btn" style="white-space:nowrap;">Change Email</button></div></div>';
+    html += '<div class="settings-field"><label>Username</label><input type="text" id="set-username" value="" /></div>';
+    html += '<div class="settings-field"><label>Company Name</label><p style="font-size:11px;color:var(--text3);margin:0 0 4px;">Appears on all quotes and PDF exports.</p><input type="text" id="set-company-name" value="" /></div>';
+    html += '<p id="set-acct-sync" style="font-size:11px;color:var(--text3);margin-top:8px;"></p>';
     html += '</div>';
-  } else if(idx === 11) {
-    // Surface Area Tiers
-    html += '<div class="settings-hint-toggle" id="sa-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; Price is calculated by multiplying your product\'s surface area (length x width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.</span></span></div>';
-    html += '<table class="settings-tier-table"><thead><tr><th>Label</th><th>Min sq in</th><th>Max sq in</th><th>$/sq in</th><th>Example</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
-    const tiers = s.surfaceAreaTiers || [];
-    tiers.forEach((t, i) => {
-      const minVal = i === 0 ? 0 : tiers[i - 1].max;
-      const midpoint = (i === tiers.length - 1) ? (minVal + 100) : (minVal + t.max) / 2;
-      const example = (midpoint * t.rate).toFixed(2);
-      html += '<tr>';
-      html += '<td><input type="text" class="set-sa-label" data-idx="' + i + '" value="' + (t.label || '').replace(/"/g,'&quot;') + '" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /></td>';
-      html += '<td style="font-size:11px;color:var(--text2);">' + minVal + '</td>';
+    html += '<div style="margin-top:20px;"><button class="btn" id="set-acct-signout">Sign Out</button></div>';
+    html += '<div style="margin-top:16px;"><button id="set-acct-delete" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button></div>';
+  }
+  html += '</div>';
+
+  // ── Your Pricing Defaults section ──
+  html += '<button class="settings-collapse-hdr" data-section="pricing">Your Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-collapse-body" data-section="pricing">';
+
+  html += '<button class="pricing-explainer-btn" id="pricing-explainer-open" style="justify-content:center;">How does pricing work?</button>';
+
+  // ── Labor Rates sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="labor">Labor Rates<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="labor">';
+  html += '<div class="settings-section">';
+  html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '</div></div>';
+
+  // ── Surface Area Pricing Tiers sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="surface">Surface Area Pricing Tiers<button class="settings-info-btn" data-info="sa" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="surface">';
+  html += '<table class="settings-tier-table"><thead><tr><th>Label</th><th>Min</th><th>Max</th><th>$/sq in</th><th>Base Total</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
+  const tiers = s.surfaceAreaTiers || [];
+  tiers.forEach((t, i) => {
+    const minVal = i === 0 ? 0 : tiers[i - 1].max;
+    const isLast = i === tiers.length - 1;
+    const midpoint = isLast ? (minVal + 100) : (minVal + t.max) / 2;
+    const baseTotal = (midpoint * t.rate).toFixed(2);
+    html += '<tr>';
+    html += '<td><input type="text" class="set-sa-label" data-idx="' + i + '" value="' + (t.label || '').replace(/"/g,'&quot;') + '" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:center;"' + roAttr + ' /></td>';
+    html += '<td style="font-size:11px;color:var(--text2);text-align:right;">' + minVal + '</td>';
+    if(isLast) {
+      html += '<td style="font-size:11px;color:var(--text2);text-align:center;">&infin;</td>';
+    } else {
       html += '<td><input type="number" class="set-sa-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="1" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
-      html += '<td><input type="number" class="set-sa-rate" data-idx="' + i + '" value="' + t.rate + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
-      html += '<td style="font-size:11px;color:var(--text2);">$' + example + '</td>';
-      if(!ro) html += '<td>' + (tiers.length > 1 ? '<button class="del-btn set-sa-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table>';
-    if(!ro) html += '<button class="btn btn-sm" id="set-sa-add" style="margin-top:6px;">+ Add Tier</button>';
-  } else if(idx === 12) {
-    // Thickness Tiers
-    html += '<table class="settings-tier-table"><thead><tr><th>Thickness Range</th><th>Modifier (%)</th></tr></thead><tbody>';
-    (s.thicknessTiers || []).forEach((t, i) => {
-      const label = i === 0 ? '< 1&quot;' : t.min.toFixed(2) + '&quot; &ndash; ' + (t.max - 0.01).toFixed(2) + '&quot;';
-      html += '<tr><td style="font-size:11px;">' + label + '</td><td><input type="number" class="set-thick-mod" data-idx="' + i + '" value="' + Math.round(t.modifier * 100) + '" min="0" step="1"' + roAttr + ' /></td></tr>';
-    });
-    html += '</tbody></table>';
-  } else if(idx === 13) {
-    // Glue Ups
-    html += '<div class="settings-hint-toggle" id="glue-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; A glue-up joins multiple pieces of wood edge-to-edge to achieve the desired width. More glue-ups mean more labor and complexity.</span></span></div>';
-    for(let i = 0; i <= 5; i++) {
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
     }
-  } else if(idx === 14) {
-    // Grain & Pattern
-    html += '<div class="settings-section"><h3 style="margin-bottom:4px;">End Grain</h3>';
-    html += '<div class="settings-hint-toggle" id="eg-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.</span></span></div>';
-    html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
-    html += '<div class="settings-section"><h3 style="margin-bottom:4px;">Complex Pattern</h3>';
-    html += '<div class="settings-hint-toggle" id="cp-hint"><span class="hint-icon">ⓘ</span><span>Tap to learn more<span class="settings-hint-text"> &mdash; A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.</span></span></div>';
-    html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
-  } else if(idx === 15) {
-    // Feature Add-Ons
-    (s.featureAddOns || []).forEach((f, i) => {
-      html += '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><input type="text" class="set-feat-name" data-idx="' + i + '" value="' + (f.name || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /><div style="display:flex;align-items:center;gap:2px;"><span style="font-weight:600;font-size:12px;">$</span><input type="number" class="set-feat-price" data-idx="' + i + '" value="' + (f.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></div>';
-      if(!ro) html += '<button class="del-btn" data-del-feat="' + i + '" style="min-height:28px;font-size:14px;">&times;</button>';
-      html += '</div>';
-    });
-    if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
-  } else if(idx === 16) {
-    // Minimum Quote Threshold
-    html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
+    html += '<td><input type="number" class="set-sa-rate" data-idx="' + i + '" value="' + t.rate + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td style="font-size:11px;color:var(--text2);">$' + baseTotal + '</td>';
+    if(!ro) html += '<td>' + (tiers.length > 1 ? '<button class="del-btn set-sa-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  if(!ro) {
+    html += '<button class="btn btn-sm" id="set-sa-add" style="margin-top:6px;">+ Add Tier</button>';
   }
+  html += '</div>';
 
-  document.getElementById('settings-sub-body').innerHTML = html;
-  document.getElementById('settings-sub-save-btn').style.display = (idx === 0 || idx === 1) ? 'none' : '';
+  // ── Thickness Tiers sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="thickness"><span>Thickness Tiers</span><button class="settings-info-btn" data-info="thick" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="thickness">';
+  html += '<table class="settings-tier-table"><thead><tr><th>Min</th><th>Max</th><th>Modifier (%)</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
+  (s.thicknessTiers || []).forEach((t, i) => {
+    html += '<tr>';
+    html += '<td><input type="number" class="set-thick-min" data-idx="' + i + '" value="' + t.min + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-thick-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-thick-mod" data-idx="' + i + '" value="' + Math.round(t.modifier * 100) + '" min="0" step="1" style="width:60px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    if(!ro) html += '<td>' + ((s.thicknessTiers.length > 1) ? '<button class="del-btn set-thick-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  if(!ro) html += '<button class="btn btn-sm" id="set-thick-add" style="margin-top:6px;">+ Add Tier</button>';
+  html += '</div>';
 
-  // My Account event bindings
-  if(idx === 0) {
-    const signinBtn = document.getElementById('set-acct-signin');
-    if(signinBtn) signinBtn.addEventListener('click', () => openAuthModal());
-    const signoutBtn = document.getElementById('set-acct-signout');
-    if(signoutBtn) signoutBtn.addEventListener('click', async () => {
-      await _supabase.auth.signOut();
-      returnToGuestLanding();
+  // ── Glue Ups sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="glue">Glue Ups<button class="settings-info-btn" data-info="glue" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="glue">';
+  for(let i = 0; i <= 5; i++) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  }
+  html += '</div>';
+
+  // ── Grain & Pattern sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="grain">Grain &amp; Pattern<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="grain">';
+  html += '<div class="settings-section"><h3 style="margin-bottom:4px;">End Grain <button class="settings-info-btn" data-info="eg" type="button">i</button></h3>';
+  html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  html += '<div class="settings-section"><h3 style="margin-bottom:4px;">Complex Pattern <button class="settings-info-btn" data-info="cp" type="button">i</button></h3>';
+  html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  html += '</div>';
+
+  // ── Feature Add-Ons sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="features">Feature Add-Ons<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="features">';
+  (s.featureAddOns || []).forEach((f, i) => {
+    html += '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><input type="text" class="set-feat-name" data-idx="' + i + '" value="' + (f.name || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /><div style="display:flex;align-items:center;gap:2px;"><span style="font-weight:600;font-size:12px;">$</span><input type="number" class="set-feat-price" data-idx="' + i + '" value="' + (f.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></div>';
+    if(!ro) html += '<button class="del-btn" data-del-feat="' + i + '" style="min-height:28px;font-size:14px;">&times;</button>';
+    html += '</div>';
+  });
+  if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
+  html += '</div>';
+
+  // ── Minimum Quote Threshold sub-section ──
+  html += '<button class="settings-sub-collapse-hdr" data-sub="threshold">Minimum Quote Threshold<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<div class="settings-sub-collapse-body" data-sub="threshold">';
+  html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
+  html += '</div>';
+
+  html += '</div>'; // close pricing defaults body
+
+  document.getElementById('settings-body').innerHTML = html;
+
+  // ── Wire collapsible section headers ──
+  document.querySelectorAll('.settings-collapse-hdr').forEach(hdr => {
+    hdr.addEventListener('click', function(e) {
+      if(e.target.classList.contains('settings-info-btn')) return;
+      const sec = this.getAttribute('data-section');
+      const body = document.querySelector('.settings-collapse-body[data-section="' + sec + '"]');
+      const isExp = this.classList.toggle('expanded');
+      if(body) body.classList.toggle('expanded', isExp);
     });
-    const deleteBtn = document.getElementById('set-acct-delete');
-    if(deleteBtn) deleteBtn.addEventListener('click', () => {
-      const pwdEl = document.getElementById('delete-account-password');
-      if(pwdEl) pwdEl.value = '';
-      const errEl = document.getElementById('delete-account-error');
-      if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
-      const confirmBtn = document.getElementById('delete-account-confirm-btn');
-      if(confirmBtn){ confirmBtn.disabled = false; confirmBtn.textContent = 'Permanently Delete My Account'; }
-      document.getElementById('delete-account-modal').classList.add('open');
-      if(pwdEl) setTimeout(()=>pwdEl.focus(), 100);
+  });
+  document.querySelectorAll('.settings-sub-collapse-hdr').forEach(hdr => {
+    hdr.addEventListener('click', function(e) {
+      if(e.target.classList.contains('settings-info-btn')) return;
+      const sub = this.getAttribute('data-sub');
+      const body = document.querySelector('.settings-sub-collapse-body[data-sub="' + sub + '"]');
+      const isExp = this.classList.toggle('expanded');
+      if(body) body.classList.toggle('expanded', isExp);
     });
-    if(_currentUser) {
-      _loadAccountProfile();
+  });
+
+  // ── Wire info buttons ──
+  const infoTexts = {
+    sa: 'Price is calculated by multiplying your product\'s surface area (length × width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.',
+    thick: 'Thickness adds a percentage modifier on top of the surface area price. Thicker material costs more to source and work with.',
+    glue: 'A glue-up joins multiple pieces of wood edge-to-edge to achieve the desired width. More glue-ups mean more labor and complexity.',
+    eg: 'End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.',
+    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.'
+  };
+  document.querySelectorAll('.settings-info-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const key = this.getAttribute('data-info');
+      if(key && infoTexts[key]) {
+        _showInfoModal(infoTexts[key]);
+      }
+    });
+  });
+
+  // ── My Account event bindings ──
+  const signinBtn = document.getElementById('set-acct-signin');
+  if(signinBtn) signinBtn.addEventListener('click', () => openAuthModal());
+  const signoutBtn = document.getElementById('set-acct-signout');
+  if(signoutBtn) signoutBtn.addEventListener('click', async () => {
+    await _supabase.auth.signOut();
+    returnToGuestLanding();
+  });
+  const deleteBtn = document.getElementById('set-acct-delete');
+  if(deleteBtn) deleteBtn.addEventListener('click', () => {
+    const pwdEl = document.getElementById('delete-account-password');
+    if(pwdEl) pwdEl.value = '';
+    const errEl = document.getElementById('delete-account-error');
+    if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
+    const confirmBtn = document.getElementById('delete-account-confirm-btn');
+    if(confirmBtn){ confirmBtn.disabled = false; confirmBtn.textContent = 'Permanently Delete My Account'; }
+    document.getElementById('delete-account-modal').classList.add('open');
+    if(pwdEl) setTimeout(()=>pwdEl.focus(), 100);
+  });
+  if(_currentUser) _loadAccountProfile();
+
+  // ── Change Email button + modal ──
+  const changeEmailBtn = document.getElementById('set-change-email-btn');
+  if(changeEmailBtn) changeEmailBtn.addEventListener('click', () => {
+    const modal = document.getElementById('change-email-modal');
+    const inp = document.getElementById('change-email-input');
+    const msg = document.getElementById('change-email-msg');
+    if(inp) inp.value = '';
+    if(msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    modal.classList.add('open');
+    if(inp) setTimeout(() => inp.focus(), 100);
+  });
+  const changeEmailSend = document.getElementById('change-email-send-btn');
+  if(changeEmailSend) changeEmailSend.addEventListener('click', async () => {
+    const inp = document.getElementById('change-email-input');
+    const msg = document.getElementById('change-email-msg');
+    const newEmail = (inp ? inp.value : '').trim();
+    if(!newEmail || !newEmail.includes('@')) {
+      msg.textContent = 'Please enter a valid email address.';
+      msg.style.color = 'var(--red)';
+      msg.style.display = 'block';
+      return;
     }
-  }
+    try {
+      changeEmailSend.disabled = true;
+      changeEmailSend.textContent = 'Sending...';
+      const { error } = await _supabase.auth.updateUser({ email: newEmail });
+      if(error) throw error;
+      msg.textContent = 'A verification link has been sent to ' + newEmail + '. Click it to confirm the change.';
+      msg.style.color = 'var(--green)';
+      msg.style.display = 'block';
+    } catch(e) {
+      msg.textContent = e.message || 'Failed to send verification email.';
+      msg.style.color = 'var(--red)';
+      msg.style.display = 'block';
+    } finally {
+      changeEmailSend.disabled = false;
+      changeEmailSend.textContent = 'Send Verification';
+    }
+  });
+  const changeEmailCancel = document.getElementById('change-email-cancel-btn');
+  if(changeEmailCancel) changeEmailCancel.addEventListener('click', () => {
+    document.getElementById('change-email-modal').classList.remove('open');
+  });
+  const changeEmailModal = document.getElementById('change-email-modal');
+  if(changeEmailModal) changeEmailModal.addEventListener('click', (e) => {
+    if(e.target === changeEmailModal) changeEmailModal.classList.remove('open');
+  });
 
-  // Pricing Defaults sub-menu
-  if(idx === 1) {
-    document.querySelectorAll('[data-pricing-sub]').forEach(btn => {
-      btn.addEventListener('click', function() {
-        _openSettingsSub(parseInt(this.getAttribute('data-pricing-sub')));
-      });
-    });
-    const explainerBtn = document.getElementById('pricing-explainer-open');
-    if(explainerBtn) explainerBtn.addEventListener('click', () => {
-      document.getElementById('pricing-explainer-modal').classList.add('open');
-    });
-  }
-  if(idx === 11 && !ro) {
+  // ── Pricing Defaults bindings ──
+  const explainerBtn = document.getElementById('pricing-explainer-open');
+  if(explainerBtn) explainerBtn.addEventListener('click', () => {
+    document.getElementById('pricing-explainer-modal').classList.add('open');
+  });
+
+  // Surface Area tier add/delete
+  if(!ro) {
     document.querySelectorAll('.set-sa-del').forEach(btn => {
       btn.addEventListener('click', function() {
-        const i2 = parseInt(this.getAttribute('data-idx'));
+        _collectAllSettings();
         const s2 = _getSettings();
-        s2.surfaceAreaTiers.splice(i2, 1);
+        s2.surfaceAreaTiers.splice(parseInt(this.getAttribute('data-idx')), 1);
         s2.surfaceAreaTiers.forEach((t, j) => { t.min = j === 0 ? 0 : s2.surfaceAreaTiers[j - 1].max; });
-        _renderSettingsSubBody(11);
+        _renderSettingsBody();
+        _expandSection('pricing'); _expandSubSection('surface');
       });
     });
-    const addBtn = document.getElementById('set-sa-add');
-    if(addBtn) addBtn.addEventListener('click', () => {
+    const saAddBtn = document.getElementById('set-sa-add');
+    if(saAddBtn) saAddBtn.addEventListener('click', () => {
+      _collectAllSettings();
       const s2 = _getSettings();
       const last = s2.surfaceAreaTiers[s2.surfaceAreaTiers.length - 1];
       s2.surfaceAreaTiers.push({ id: 'tier' + (s2.surfaceAreaTiers.length + 1), label: 'Tier ' + (s2.surfaceAreaTiers.length + 1), min: last.max, max: last.max + 500, rate: 1.00 });
-      _renderSettingsSubBody(11);
+      _renderSettingsBody();
+      _expandSection('pricing'); _expandSubSection('surface');
     });
-  }
-  if(idx === 15 && !ro) {
-    document.querySelectorAll('[data-del-feat]').forEach(btn => {
+
+    // Thickness tier add/delete
+    document.querySelectorAll('.set-thick-del').forEach(btn => {
       btn.addEventListener('click', function() {
-        const i2 = parseInt(this.getAttribute('data-del-feat'));
+        _collectAllSettings();
         const s2 = _getSettings();
-        s2.featureAddOns.splice(i2, 1);
-        _renderSettingsSubBody(15);
+        s2.thicknessTiers.splice(parseInt(this.getAttribute('data-idx')), 1);
+        _renderSettingsBody();
+        _expandSection('pricing'); _expandSubSection('thickness');
       });
     });
-    const addBtn = document.getElementById('set-add-feat');
-    if(addBtn) addBtn.addEventListener('click', () => {
+    const thickAddBtn = document.getElementById('set-thick-add');
+    if(thickAddBtn) thickAddBtn.addEventListener('click', () => {
+      _collectAllSettings();
+      const s2 = _getSettings();
+      const last = s2.thicknessTiers[s2.thicknessTiers.length - 1];
+      s2.thicknessTiers.push({ min: last.max, max: last.max + 0.25, modifier: (last.modifier || 0) + 0.03 });
+      _renderSettingsBody();
+      _expandSection('pricing'); _expandSubSection('thickness');
+    });
+
+    // Feature add/delete
+    document.querySelectorAll('[data-del-feat]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        _collectAllSettings();
+        const s2 = _getSettings();
+        s2.featureAddOns.splice(parseInt(this.getAttribute('data-del-feat')), 1);
+        _renderSettingsBody();
+        _expandSection('pricing'); _expandSubSection('features');
+      });
+    });
+    const featAddBtn = document.getElementById('set-add-feat');
+    if(featAddBtn) featAddBtn.addEventListener('click', () => {
+      _collectAllSettings();
       const s2 = _getSettings();
       s2.featureAddOns.push({ name: '', price: 0 });
-      _renderSettingsSubBody(15);
+      _renderSettingsBody();
+      _expandSection('pricing'); _expandSubSection('features');
     });
   }
-  document.querySelectorAll('.settings-hint-toggle').forEach(el => {
-    el.addEventListener('click', () => el.classList.toggle('expanded'));
-  });
 
-  // Clear-on-focus / restore-on-blur for ALL settings inputs
   _attachClearOnFocus();
 }
 
+function _expandSection(sec) {
+  const hdr = document.querySelector('.settings-collapse-hdr[data-section="' + sec + '"]');
+  const body = document.querySelector('.settings-collapse-body[data-section="' + sec + '"]');
+  if(hdr) hdr.classList.add('expanded');
+  if(body) body.classList.add('expanded');
+}
+function _expandSubSection(sub) {
+  const hdr = document.querySelector('.settings-sub-collapse-hdr[data-sub="' + sub + '"]');
+  const body = document.querySelector('.settings-sub-collapse-body[data-sub="' + sub + '"]');
+  if(hdr) hdr.classList.add('expanded');
+  if(body) body.classList.add('expanded');
+}
+
+function _showInfoModal(text) {
+  let modal = document.getElementById('settings-info-modal');
+  if(!modal) {
+    modal = document.createElement('div');
+    modal.id = 'settings-info-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = '<div class="modal" style="max-width:340px;"><p id="settings-info-text" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;"></p><div style="text-align:center;"><button class="btn btn-sm" id="settings-info-close">Close</button></div></div>';
+    document.body.appendChild(modal);
+    modal.querySelector('#settings-info-close').addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
+  }
+  modal.querySelector('#settings-info-text').textContent = text;
+  modal.classList.add('open');
+}
+
 function _attachClearOnFocus() {
-  document.querySelectorAll('#settings-sub-body input:not([disabled])').forEach(inp => {
+  document.querySelectorAll('#settings-body input[type="number"]:not([disabled])').forEach(inp => {
     inp.addEventListener('focus', function() {
       this._prevValue = this.value;
       this.value = '';
@@ -9655,50 +9876,69 @@ async function _saveAccountProfile() {
   });
 }
 
-function _collectSettingsSub(idx) {
+function _collectAllSettings() {
   const s = _getSettings();
-  if(idx === 10) {
-    s.defaultShopRate = parseFloat(document.getElementById('set-shop-rate').value) || 0;
-    s.defaultEmployeeRate = parseFloat(document.getElementById('set-employee-rate').value) || 0;
-  } else if(idx === 11) {
-    const tiers = s.surfaceAreaTiers || [];
-    document.querySelectorAll('.set-sa-label').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      if(tiers[i2]) tiers[i2].label = inp.value.trim() || ('Tier ' + (i2 + 1));
-    });
-    document.querySelectorAll('.set-sa-max').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      if(tiers[i2]) tiers[i2].max = parseFloat(inp.value) || 0;
-    });
-    document.querySelectorAll('.set-sa-rate').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      if(tiers[i2]) tiers[i2].rate = parseFloat(inp.value) || 0;
-    });
-    tiers.forEach((t, i) => { t.min = i === 0 ? 0 : tiers[i - 1].max; });
-  } else if(idx === 12) {
-    document.querySelectorAll('.set-thick-mod').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      if(s.thicknessTiers[i2]) s.thicknessTiers[i2].modifier = (parseFloat(inp.value) || 0) / 100;
-    });
-  } else if(idx === 13) {
-    document.querySelectorAll('.set-glue-mod').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      s.multipliers.glueUps[i2] = (parseFloat(inp.value) || 0) / 100;
-    });
-  } else if(idx === 14) {
-    s.multipliers.endGrain = (parseFloat(document.getElementById('set-end-grain').value) || 0) / 100;
-    s.multipliers.complexPattern = (parseFloat(document.getElementById('set-complex').value) || 0) / 100;
-  } else if(idx === 15) {
-    const feats = [];
-    document.querySelectorAll('.set-feat-name').forEach(inp => {
-      const i2 = parseInt(inp.getAttribute('data-idx'));
-      const priceInp = document.querySelector('.set-feat-price[data-idx="' + i2 + '"]');
-      feats.push({ name: inp.value.trim(), price: parseFloat(priceInp?.value) || 0 });
-    });
-    s.featureAddOns = feats;
-  } else if(idx === 16) {
-    s.minThreshold = parseFloat(document.getElementById('set-min-threshold').value) || 0;
-  }
+  // Labor Rates
+  const shopRate = document.getElementById('set-shop-rate');
+  if(shopRate) s.defaultShopRate = parseFloat(shopRate.value) || 0;
+  const empRate = document.getElementById('set-employee-rate');
+  if(empRate) s.defaultEmployeeRate = parseFloat(empRate.value) || 0;
+
+  // Surface Area Tiers
+  const saTiers = s.surfaceAreaTiers || [];
+  document.querySelectorAll('.set-sa-label').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(saTiers[i2]) saTiers[i2].label = inp.value.trim() || ('Tier ' + (i2 + 1));
+  });
+  document.querySelectorAll('.set-sa-max').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(saTiers[i2]) saTiers[i2].max = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.set-sa-rate').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(saTiers[i2]) saTiers[i2].rate = parseFloat(inp.value) || 0;
+  });
+  saTiers.forEach((t, i) => { t.min = i === 0 ? 0 : saTiers[i - 1].max; });
+
+  // Thickness Tiers
+  document.querySelectorAll('.set-thick-min').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(s.thicknessTiers[i2]) s.thicknessTiers[i2].min = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.set-thick-max').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(s.thicknessTiers[i2]) s.thicknessTiers[i2].max = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.set-thick-mod').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    if(s.thicknessTiers[i2]) s.thicknessTiers[i2].modifier = (parseFloat(inp.value) || 0) / 100;
+  });
+
+  // Glue Ups
+  document.querySelectorAll('.set-glue-mod').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    s.multipliers.glueUps[i2] = (parseFloat(inp.value) || 0) / 100;
+  });
+
+  // Grain & Pattern
+  const eg = document.getElementById('set-end-grain');
+  if(eg) s.multipliers.endGrain = (parseFloat(eg.value) || 0) / 100;
+  const cp = document.getElementById('set-complex');
+  if(cp) s.multipliers.complexPattern = (parseFloat(cp.value) || 0) / 100;
+
+  // Feature Add-Ons
+  const feats = [];
+  document.querySelectorAll('.set-feat-name').forEach(inp => {
+    const i2 = parseInt(inp.getAttribute('data-idx'));
+    const priceInp = document.querySelector('.set-feat-price[data-idx="' + i2 + '"]');
+    feats.push({ name: inp.value.trim(), price: parseFloat(priceInp?.value) || 0 });
+  });
+  if(feats.length > 0) s.featureAddOns = feats;
+
+  // Minimum Quote Threshold
+  const mt = document.getElementById('set-min-threshold');
+  if(mt) s.minThreshold = parseFloat(mt.value) || 0;
+
   userSettings = s;
   return s;
 }
@@ -9713,40 +9953,23 @@ function _settingsGoBack() {
       document.getElementById('sticky-bar').style.display = '';
     }
   } else {
-    document.getElementById('landing-screen').style.display = '';
+    showLanding();
   }
 }
 
 (function() {
   document.getElementById('settings-back-btn').addEventListener('click', _settingsGoBack);
-  document.getElementById('settings-sub-back-btn').addEventListener('click', () => {
-    if(_settingsCurrentSub >= 10 && _settingsCurrentSub <= 16) {
-      _openSettingsSub(1);
-    } else {
-      document.getElementById('settings-sub-screen').style.display = 'none';
-      document.getElementById('settings-screen').style.display = 'block';
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
-  });
-  document.getElementById('settings-sub-save-btn').addEventListener('click', () => {
+  document.getElementById('settings-save-btn').addEventListener('click', () => {
     if(!_currentUser) {
       openAuthModal('Create a free account to save your settings.');
       return;
     }
-    if(_settingsCurrentSub === 0) {
-      _saveAccountProfile().catch(e => console.error('save profile error', e));
-    } else {
-      _collectSettingsSub(_settingsCurrentSub);
-      _saveSettingsLocal();
-      saveSettingsToSupabase().catch(e => console.error('save settings error', e));
-    }
-    if(_settingsCurrentSub >= 10 && _settingsCurrentSub <= 16) {
-      _openSettingsSub(1);
-    } else {
-      document.getElementById('settings-sub-screen').style.display = 'none';
-      document.getElementById('settings-screen').style.display = 'block';
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
+    _saveAccountProfile().catch(e => console.error('save profile error', e));
+    _collectAllSettings();
+    _saveSettingsLocal();
+    saveSettingsToSupabase().catch(e => console.error('save settings error', e));
+    const btn = document.getElementById('settings-save-btn');
+    if(btn) { btn.textContent = 'Saved!'; setTimeout(() => { btn.textContent = 'Save'; }, 1500); }
   });
 })();
 
@@ -9796,6 +10019,10 @@ function _settingsGoBack() {
 
   document.querySelectorAll('.gh-settings-btn').forEach(btn => {
     btn.addEventListener('click', showSettings);
+  });
+
+  document.querySelectorAll('.gh-home-btn').forEach(btn => {
+    btn.addEventListener('click', showLanding);
   });
 
   const projClearBtn = document.getElementById('proj-detail-clear-btn');
@@ -10070,8 +10297,18 @@ function renderQuoteDetail() {
   if(q.customer.phone) html += '<div style="font-size:12px;color:var(--text2);">' + q.customer.phone.replace(/</g,'&lt;') + '</div>';
   if(q.description) html += '<div style="font-size:12px;margin-top:6px;">' + q.description.replace(/</g,'&lt;') + '</div>';
   html += '<div style="font-size:11px;color:var(--text3);margin-top:6px;">Quote ' + (q.number || '') + ' · Created ' + (q.createdAt || '') + ' · Valid until ' + (q.validUntil || '') + '</div>';
-  if(q.linkedProjectName) html += '<div style="font-size:11px;color:var(--text2);margin-top:4px;">Linked project: ' + q.linkedProjectName.replace(/</g,'&lt;') + '</div>';
   html += '</div></div>';
+
+  // Linked Project card
+  const linkedProj = q.linkedProjectId ? (typeof projectsData !== 'undefined' ? projectsData : []).find(p => p.id === q.linkedProjectId) : null;
+  if(linkedProj) {
+    const projStatus = linkedProj.status === 'complete' ? 'Complete' : 'Active';
+    html += '<div class="quote-section"><div class="quote-section-hdr">Linked Project</div><div class="quote-section-body">';
+    html += '<div id="quote-linked-proj-row" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px;background:var(--bg2);border-radius:8px;">';
+    html += '<div style="font-size:13px;font-weight:600;">' + (linkedProj.name || '').replace(/</g,'&lt;') + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;color:var(--text2);">' + projStatus + '</span><span style="color:var(--text3);">→</span></div>';
+    html += '</div></div></div>';
+  }
 
   html += '<div class="quote-section"><div class="quote-section-hdr">Pricing</div><div class="quote-section-body">';
   html += '<div class="quote-breakdown">';
@@ -10111,6 +10348,17 @@ function renderQuoteDetail() {
   html += '</div>';
 
   document.getElementById('quote-detail-body').innerHTML = html;
+
+  // Wire linked project row
+  const linkedProjRow = document.getElementById('quote-linked-proj-row');
+  if(linkedProjRow) linkedProjRow.addEventListener('click', () => {
+    _projDetailReturnTo = 'quote-detail';
+    _currentProjectId = q.linkedProjectId;
+    _hideAllScreens();
+    document.getElementById('project-detail-screen').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+    renderProjectDetail();
+  });
 
   const sendBtn = document.getElementById('qd-send-btn');
   if(sendBtn) sendBtn.addEventListener('click', () => openQuoteSendModal(q));
@@ -10759,10 +11007,18 @@ function _updateAllocCutInfo() {
 (function() {
   document.getElementById('quotes-back-btn').addEventListener('click', () => {
     document.getElementById('quotes-screen').style.display = 'none';
-    document.getElementById('landing-screen').style.display = '';
+    showLanding();
   });
   document.getElementById('quotes-add-btn').addEventListener('click', () => openQuoteEdit(null));
   document.getElementById('quote-detail-back-btn').addEventListener('click', () => {
+    if(_quoteDetailReturnTo === 'project-detail' && _currentProjectId) {
+      _quoteDetailReturnTo = null;
+      document.getElementById('quote-detail-screen').style.display = 'none';
+      document.getElementById('project-detail-screen').style.display = 'block';
+      renderProjectDetail();
+      return;
+    }
+    _quoteDetailReturnTo = null;
     _currentQuoteId = null;
     document.getElementById('quote-detail-screen').style.display = 'none';
     document.getElementById('quotes-screen').style.display = 'block';
