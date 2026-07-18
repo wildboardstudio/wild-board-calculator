@@ -9856,6 +9856,10 @@ async function _loadAccountProfile() {
       if(usernameInput && row.username) usernameInput.value = row.username;
       const companyInput = document.getElementById('set-company-name');
       if(companyInput && row.company_name) companyInput.value = row.company_name;
+      const s = _getSettings();
+      if(row.company_name) s._companyName = row.company_name;
+      if(row.username) s._profileUsername = row.username;
+      localStorage.setItem('wbc_settings', JSON.stringify(s));
     }
     const syncEl = document.getElementById('set-acct-sync');
     if(syncEl) syncEl.textContent = 'Last synced: ' + new Date().toLocaleTimeString();
@@ -10039,7 +10043,7 @@ function _settingsGoBack() {
       const q = quotesData.find(x => x.id === _currentQuoteId);
       if(q) {
         q.products = [];
-        q.labour = { tasks: [], shopRate: q.labour?.shopRate || 0, employeeRate: q.labour?.employeeRate || 0 };
+        q.labor = { tasks: [], shopRate: q.labor?.shopRate || 0, employeeRate: q.labor?.employeeRate || 0 };
         q.expenses = [];
         renderQuoteDetail(q);
         saveQuoteToSupabase(q).catch(e => console.error('save error', e));
@@ -10079,15 +10083,25 @@ function quoteUid() {
   return 'quote_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 }
 
-function generateQuoteNumber(customerName, existingQuotes) {
-  const words = (customerName || '').trim().split(/\s+/).filter(Boolean);
-  const initials = words.map(w => w[0].toUpperCase()).join('');
-  const prefix = initials.length > 0 ? initials : 'WBS';
-  const existing = existingQuotes
+function generateQuoteNumber(existingQuotes) {
+  const s = _getSettings();
+  let prefix = 'WBS';
+  const companyName = s._companyName || s.displayName || '';
+  if(companyName.trim()) {
+    const words = companyName.trim().split(/\s+/).filter(Boolean);
+    if(words.length > 0) prefix = words.map(w => w[0].toUpperCase()).join('');
+  } else {
+    const username = s._profileUsername || '';
+    if(username.trim()) {
+      const words = username.trim().split(/\s+/).filter(Boolean);
+      if(words.length > 0) prefix = words.map(w => w[0].toUpperCase()).join('');
+    }
+  }
+  const existing = (existingQuotes || [])
     .filter(q => q.number && q.number.startsWith(prefix + '-'))
     .map(q => parseInt(q.number.split('-')[1]) || 0);
   const next = existing.length > 0 ? Math.max(...existing) + 1 : 1;
-  return prefix + '-' + String(next).padStart(3, '0');
+  return prefix + '-' + String(next).padStart(4, '0');
 }
 
 function calcSurfaceAreaPrice(quote, settings) {
@@ -10132,8 +10146,8 @@ function _quoteProductTotal(quote, settings) {
   return calcSurfaceAreaPrice(quote, settings);
 }
 
-function _quoteLabourTotal(quote) {
-  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.shopRate) || 0), 0);
+function _quoteLaborTotal(quote) {
+  return (quote.laborTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.shopRate) || 0), 0);
 }
 
 function _quoteCustomTotal(quote) {
@@ -10153,7 +10167,7 @@ function _quoteExpensesRaw(quote) {
 }
 
 function _quoteSubtotal(quote, settings) {
-  return _quoteProductTotal(quote, settings) + _quoteLabourTotal(quote) + _quoteExpensesTotal(quote);
+  return _quoteProductTotal(quote, settings) + _quoteLaborTotal(quote) + _quoteExpensesTotal(quote);
 }
 
 function _quoteDiscount(quote, settings) {
@@ -10175,18 +10189,18 @@ function _quoteMaterialCost(quote) {
   return (quote.lumberAllocations || []).reduce((sum, a) => sum + (parseFloat(a.bfAllocated) || 0) * (parseFloat(a.purchasePricePerBF) || 0), 0);
 }
 
-function _quoteLabourCostInternal(quote) {
-  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.employeeRate) || 0), 0);
+function _quoteLaborCostInternal(quote) {
+  return (quote.laborTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.employeeRate) || 0), 0);
 }
 
 function _quoteTotalHours(quote) {
-  return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0), 0);
+  return (quote.laborTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0), 0);
 }
 
 function _quoteProfitData(quote, settings) {
   const total = _quoteTotal(quote, settings);
   const matCost = _quoteMaterialCost(quote);
-  const labCost = _quoteLabourCostInternal(quote);
+  const labCost = _quoteLaborCostInternal(quote);
   const expCost = _quoteExpensesRaw(quote);
   const totalCost = matCost + labCost + expCost;
   const profit = total - totalCost;
@@ -10248,6 +10262,17 @@ function _getProductTemplate(productType, settings) {
   }
 }
 
+function _getDefaultLaborTasks(productType) {
+  if(productType === 'custom') return [];
+  return [
+    { id: 'task_1', description: 'Milling', hours: 0 },
+    { id: 'task_2', description: 'Glue-up', hours: 0 },
+    { id: 'task_3', description: 'Flattening', hours: 0 },
+    { id: 'task_4', description: 'Sanding', hours: 0 },
+    { id: 'task_5', description: 'Finishing', hours: 0 },
+  ];
+}
+
 function _newQuote() {
   const s = _getSettings();
   const today = new Date().toISOString().slice(0, 10);
@@ -10257,6 +10282,7 @@ function _newQuote() {
     number: '',
     status: 'draft',
     createdAt: today,
+    issueDate: '',
     validUntil: validDate,
     customer: { name: '', email: '', phone: '' },
     description: '',
@@ -10274,7 +10300,7 @@ function _newQuote() {
     lineItems: [{ id: 'li_' + Date.now(), description: '', quantity: 1, unitPrice: 0 }],
     shopRate: s.defaultShopRate || 0,
     employeeRate: s.defaultEmployeeRate || 0,
-    labourTasks: [],
+    laborTasks: _getDefaultLaborTasks('cutting_board'),
     expenses: { thirdParty: 0, addOns: 0, delivery: 0, other: 0, markup: 0 },
     discount: { type: 'percent', value: 0 },
     taxRate: s.defaultTaxRate || 0,
@@ -10359,7 +10385,7 @@ function renderQuoteDetail() {
 
   const total = _quoteTotal(q, s);
   const product = _quoteProductTotal(q, s);
-  const labour = _quoteLabourTotal(q);
+  const labor = _quoteLaborTotal(q);
   const expenses = _quoteExpensesTotal(q);
 
   let html = '';
@@ -10385,9 +10411,9 @@ function renderQuoteDetail() {
   html += '<div class="quote-section"><div class="quote-section-hdr">Pricing</div><div class="quote-section-body">';
   html += '<div class="quote-breakdown">';
   html += '<div class="quote-breakdown-row"><span>Product/Items:</span><span>$' + product.toFixed(2) + '</span></div>';
-  html += '<div class="quote-breakdown-row"><span>Labour:</span><span>$' + labour.toFixed(2) + '</span></div>';
+  html += '<div class="quote-breakdown-row"><span>Labor:</span><span>$' + labor.toFixed(2) + '</span></div>';
   html += '<div class="quote-breakdown-row"><span>Expenses:</span><span>$' + expenses.toFixed(2) + '</span></div>';
-  const sub = product + labour + expenses;
+  const sub = product + labor + expenses;
   html += '<div class="quote-breakdown-row total"><span>Subtotal:</span><span>$' + sub.toFixed(2) + '</span></div>';
   const disc = _quoteDiscount(q, s);
   if(disc > 0) html += '<div class="quote-breakdown-row"><span>Discount:</span><span>-$' + disc.toFixed(2) + '</span></div>';
@@ -10460,18 +10486,20 @@ function renderQuoteEditForm(q) {
   const s = _getSettings();
   let html = '';
 
-  // Card 1: Customer & Project Info
-  html += '<div class="quote-section"><div class="quote-section-hdr">Customer & Project Info</div><div class="quote-section-body">';
+  // Card 1A: Customer Info
+  html += '<div class="quote-section"><div class="quote-section-hdr">Customer Info</div><div class="quote-section-body">';
   html += '<div class="quote-field"><label>Customer Name *</label><input type="text" id="qe-cust-name" value="' + (q.customer.name || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div class="quote-field"><label>Phone</label><input type="tel" id="qe-phone" value="' + (q.customer.phone || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '<div class="quote-field"><label>Email *</label><input type="email" id="qe-email" value="' + (q.customer.email || '').replace(/"/g,'&quot;') + '" /></div>';
+  html += '</div></div>';
+
+  // Card 1B: Project Info
+  html += '<div class="quote-section"><div class="quote-section-hdr">Project Info</div><div class="quote-section-body">';
   html += '<div class="quote-field"><label>Quote Number</label><input type="text" id="qe-number" value="' + (q.number || '').replace(/"/g,'&quot;') + '" /></div>';
   html += '<div class="quote-field"><label>Project Description</label><input type="text" id="qe-desc" value="' + (q.description || '').replace(/"/g,'&quot;') + '" /></div>';
   html += '<div style="display:flex;gap:8px;">';
-  html += '<div class="quote-field" style="flex:1;"><label>Phone</label><input type="tel" id="qe-phone" value="' + (q.customer.phone || '').replace(/"/g,'&quot;') + '" /></div>';
-  html += '<div class="quote-field" style="flex:1;"><label>Email *</label><input type="email" id="qe-email" value="' + (q.customer.email || '').replace(/"/g,'&quot;') + '" /></div>';
-  html += '</div>';
-  html += '<div style="display:flex;gap:8px;">';
-  html += '<div class="quote-field" style="flex:1;"><label>Date</label><input type="date" id="qe-date" value="' + (q.createdAt || '') + '" /></div>';
-  html += '<div class="quote-field" style="flex:1;"><label>Valid Until</label><input type="date" id="qe-valid" value="' + (q.validUntil || '') + '" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Issue Date</label><input type="date" id="qe-issue-date" value="' + (q.issueDate || '') + '" /></div>';
+  html += '<div class="quote-field" style="flex:1;"><label>Estimated Completion Date</label><input type="date" id="qe-est-completion" value="' + (q._genProjectEnd || '') + '" /></div>';
   html += '</div>';
 
   html += '<div class="quote-field"><label>Link to Project</label><select id="qe-link-project"><option value="">None</option>';
@@ -10489,9 +10517,11 @@ function renderQuoteEditForm(q) {
   html += '</div>';
   html += '<div class="quote-field"><label>Hourly Rate</label><input type="number" id="qe-gen-proj-rate" value="' + (q._genProjectRate || 0) + '" min="0" step="0.01" /></div>';
   html += '</div>';
+  html += '</div></div>';
 
-  // Notes with inline Save/Edit behavior
+  // Card 1C: Notes
   const notesText = (q.notes || '').replace(/</g,'&lt;');
+  html += '<div class="quote-section"><div class="quote-section-hdr">Notes</div><div class="quote-section-body">';
   html += '<div class="quote-field"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><label style="margin:0;">Notes</label><button class="btn btn-sm" id="qe-notes-edit-btn" style="font-size:11px;padding:2px 8px;">Edit</button></div>';
   html += '<div id="qe-notes-display" style="font-size:13px;color:var(--text);white-space:pre-wrap;min-height:20px;">' + (notesText || '<span style="color:var(--text3);font-style:italic;">No notes yet</span>') + '</div>';
   html += '<div id="qe-notes-edit-wrap" style="display:none;"><textarea id="qe-notes" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + notesText + '</textarea>';
@@ -10589,19 +10619,21 @@ function renderQuoteEditForm(q) {
   if(coFeatures.length > 0) {
     html += '<div style="border-top:1px solid var(--border);margin:12px 0;"></div>';
     html += '<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">Optional Features</div>';
+    html += '<div style="display:flex;flex-direction:column;align-items:center;">';
+    html += '<div style="display:flex;flex-direction:column;align-items:flex-start;">';
     coFeatures.forEach((f, i) => {
       const fid = 'qe-co-feat-' + i;
       html += '<div class="quote-feature-row" data-feat-idx="' + i + '" style="display:flex;flex-direction:column;margin-bottom:4px;">';
       html += '<div style="display:flex;align-items:center;gap:6px;">';
-      html += '<input type="checkbox" class="qe-co-feat-check" data-idx="' + i + '" id="' + fid + '"' + (f.enabled ? ' checked' : '') + ' />';
+      html += '<input type="checkbox" class="qe-co-feat-check" data-idx="' + i + '" id="' + fid + '"' + (f.enabled ? ' checked' : '') + ' style="flex-shrink:0;" />';
       if(f.id === 'complex_pattern') {
-        html += '<label for="' + fid + '" style="flex:1;">' + f.name + ' <button class="settings-info-btn" id="qe-complex-info" type="button" style="width:18px;height:18px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:11px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;vertical-align:middle;padding:0;">i</button></label>';
+        html += '<label for="' + fid + '" style="white-space:nowrap;">' + f.name + ' <button class="settings-info-btn" id="qe-complex-info" type="button" style="width:18px;height:18px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:11px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;vertical-align:middle;padding:0;">i</button></label>';
       } else {
-        html += '<label for="' + fid + '" style="flex:1;">' + f.name + '</label>';
+        html += '<label for="' + fid + '" style="white-space:nowrap;">' + f.name + '</label>';
       }
       if(f.enabled && (f.hasDefault || f.modifierValue > 0)) {
         const modDisplay = f.modifierType === 'percent' ? '+' + f.modifierValue + '%' : '+$' + f.modifierValue;
-        html += '<span class="qe-co-feat-summary" data-idx="' + i + '" style="font-size:12px;color:var(--primary);cursor:pointer;white-space:nowrap;">' + modDisplay + '</span>';
+        html += '<span class="qe-co-feat-summary" data-idx="' + i + '" style="font-size:12px;color:var(--primary);cursor:pointer;white-space:nowrap;margin-left:8px;">' + modDisplay + '</span>';
       }
       html += '</div>';
       const showEditor = f.enabled && !f.hasDefault && f.modifierValue === 0;
@@ -10611,6 +10643,7 @@ function renderQuoteEditForm(q) {
       html += '</div>';
       html += '</div>';
     });
+    html += '</div></div>';
   }
 
   // Card 3 footer
@@ -10631,19 +10664,21 @@ function renderQuoteEditForm(q) {
   html += '<button class="btn btn-sm btn-primary" id="qe-add-alloc" style="margin-top:6px;">+ Allocate from Your Lumber</button>';
   html += '</div></div>';
 
-  // Card 4: Labour (no changes)
-  html += '<div class="quote-section"><div class="quote-section-hdr">Labour Estimation</div><div class="quote-section-body">';
+  // Card 4: Labor
+  html += '<div class="quote-section"><div class="quote-section-hdr">Labor</div><div class="quote-section-body">';
   html += '<div style="display:flex;gap:8px;margin-bottom:10px;">';
-  html += '<div class="quote-field" style="flex:1;"><label>Shop Rate ($/hr)</label><input type="number" id="qe-shop-rate" value="' + (q.shopRate || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
-  html += '<div class="quote-field" style="flex:1;"><label>Employee Rate ($/hr)</label><input type="number" id="qe-emp-rate" value="' + (q.employeeRate || 0) + '" min="0" step="0.01" class="qe-live" /><div style="font-size:9px;color:var(--text3);">Enter 0 if owner-operated</div></div>';
+  html += '<div class="quote-field" style="width:140px;flex:none;"><label>Shop Rate ($/hr)</label><input type="number" id="qe-shop-rate" value="' + (q.shopRate || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<div class="quote-field" style="width:140px;flex:none;"><label>Employee Rate ($/hr)</label><input type="number" id="qe-emp-rate" value="' + (q.employeeRate || 0) + '" min="0" step="0.01" class="qe-live" /><div style="font-size:9px;color:var(--text3);">Enter 0 if owner-operated</div></div>';
   html += '</div>';
+  const shopRateVal = parseFloat(q.shopRate) || 0;
   html += '<div id="qe-tasks">';
-  (q.labourTasks || []).forEach((t, i) => {
-    html += '<div class="quote-task-row" data-task-idx="' + i + '"><input type="text" placeholder="Task description" value="' + (t.description || '').replace(/"/g,'&quot;') + '" class="qe-task-desc" style="flex:3;" /><input type="number" placeholder="Hrs" value="' + (t.hours || 0) + '" min="0" step="0.25" class="qe-task-hrs qe-live" style="width:60px;" /><button class="del-btn qe-task-del" style="min-height:28px;">&times;</button></div>';
+  (q.laborTasks || []).forEach((t, i) => {
+    const taskBilled = ((parseFloat(t.hours) || 0) * shopRateVal).toFixed(2);
+    html += '<div class="quote-task-row" data-task-idx="' + i + '"><input type="text" placeholder="Task name" value="' + (t.description || '').replace(/"/g,'&quot;') + '" class="qe-task-desc" style="flex:3;" /><input type="number" placeholder="hrs" value="' + (t.hours || 0) + '" min="0" step="0.25" class="qe-task-hrs qe-live" style="width:60px;" /><span class="qe-task-billed" style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:60px;text-align:right;">$' + taskBilled + '</span><button class="del-btn qe-task-del" style="min-height:28px;">&times;</button></div>';
   });
   html += '</div>';
-  html += '<button class="btn btn-sm" id="qe-add-task" style="margin-top:6px;">+ Add Labour Task</button>';
-  html += '<div id="qe-labour-summary" style="text-align:right;font-size:12px;color:var(--text2);margin-top:8px;"></div>';
+  html += '<button class="btn btn-sm" id="qe-add-task" style="margin-top:6px;">+ Add Task</button>';
+  html += '<div id="qe-labor-summary" style="text-align:right;font-size:12px;color:var(--text2);margin-top:8px;"></div>';
   html += '</div></div>';
 
   // Card 5: Additional Expenses (addOns and Other removed)
@@ -10681,8 +10716,10 @@ function _collectQuoteFromForm(q) {
   q.description = (document.getElementById('qe-desc').value || '').trim();
   q.customer.phone = (document.getElementById('qe-phone').value || '').trim();
   q.customer.email = (document.getElementById('qe-email').value || '').trim();
-  q.createdAt = document.getElementById('qe-date').value || '';
-  q.validUntil = document.getElementById('qe-valid').value || '';
+  const issueDateEl = document.getElementById('qe-issue-date');
+  if(issueDateEl) q.issueDate = issueDateEl.value || '';
+  const estCompEl = document.getElementById('qe-est-completion');
+  if(estCompEl) q._genProjectEnd = estCompEl.value || '';
   const notesTextarea = document.getElementById('qe-notes');
   const notesDisplay = document.getElementById('qe-notes-display');
   if(notesTextarea && notesTextarea.offsetParent !== null) {
@@ -10757,7 +10794,7 @@ function _collectQuoteFromForm(q) {
       hours: parseFloat(row.querySelector('.qe-task-hrs').value) || 0
     });
   });
-  q.labourTasks = tasks;
+  q.laborTasks = tasks;
 
   const projSel = document.getElementById('qe-link-project');
   if(projSel.value === '__generate__') {
@@ -10828,11 +10865,17 @@ function _updateQuoteEditLive(q) {
     if(totalEl) totalEl.textContent = '$' + (qty * price).toFixed(2);
   });
 
-  // Labour summary
-  const ls = document.getElementById('qe-labour-summary');
+  // Labor per-task billed amounts and summary
+  const shopRate = parseFloat(q.shopRate) || 0;
+  document.querySelectorAll('#qe-tasks .quote-task-row').forEach(row => {
+    const hrs = parseFloat(row.querySelector('.qe-task-hrs').value) || 0;
+    const billedEl = row.querySelector('.qe-task-billed');
+    if(billedEl) billedEl.textContent = '$' + (hrs * shopRate).toFixed(2);
+  });
+  const ls = document.getElementById('qe-labor-summary');
   if(ls) {
     const hrs = _quoteTotalHours(q);
-    const billed = _quoteLabourTotal(q);
+    const billed = _quoteLaborTotal(q);
     ls.textContent = 'Total: ' + hrs.toFixed(1) + ' hrs · $' + billed.toFixed(2) + ' billed';
   }
 
@@ -10848,16 +10891,16 @@ function _updateQuoteEditLive(q) {
   const sm = document.getElementById('qe-summary');
   if(sm) {
     const product = _quoteProductTotal(q, s);
-    const labour = _quoteLabourTotal(q);
+    const labor = _quoteLaborTotal(q);
     const expenses = _quoteExpensesTotal(q);
-    const sub = product + labour + expenses;
+    const sub = product + labor + expenses;
     const disc = _quoteDiscount(q, s);
     const afterDisc = sub - disc;
     const tax = afterDisc * ((parseFloat(q.taxRate) || 0) / 100);
     const total = afterDisc + tax;
     let shtml = '';
     shtml += '<div class="quote-breakdown-row"><span>Product/Items:</span><span>$' + product.toFixed(2) + '</span></div>';
-    shtml += '<div class="quote-breakdown-row"><span>Labour:</span><span>$' + labour.toFixed(2) + '</span></div>';
+    shtml += '<div class="quote-breakdown-row"><span>Labor:</span><span>$' + labor.toFixed(2) + '</span></div>';
     shtml += '<div class="quote-breakdown-row"><span>Expenses:</span><span>$' + expenses.toFixed(2) + '</span></div>';
     shtml += '<div class="quote-breakdown-row total"><span>Subtotal:</span><span>$' + sub.toFixed(2) + '</span></div>';
     if(disc > 0) shtml += '<div class="quote-breakdown-row"><span>Discount:</span><span>-$' + disc.toFixed(2) + '</span></div>';
@@ -10882,7 +10925,7 @@ function _updateQuoteEditLive(q) {
     const pd = _quoteProfitData(q, s);
     let phtml = '';
     phtml += '<div class="quote-breakdown-row"><span>Your material cost:</span><span>$' + pd.matCost.toFixed(2) + '</span></div>';
-    phtml += '<div class="quote-breakdown-row"><span>Your labour cost:</span><span>$' + pd.labCost.toFixed(2) + '</span></div>';
+    phtml += '<div class="quote-breakdown-row"><span>Your labor cost:</span><span>$' + pd.labCost.toFixed(2) + '</span></div>';
     phtml += '<div class="quote-breakdown-row"><span>Your expenses:</span><span>$' + pd.expCost.toFixed(2) + '</span></div>';
     phtml += '<div class="quote-breakdown-row total"><span>Your total cost:</span><span>$' + pd.totalCost.toFixed(2) + '</span></div>';
     phtml += '<div class="quote-breakdown-row"><span>Profit:</span><span>$' + pd.profit.toFixed(2) + '</span></div>';
@@ -10959,8 +11002,10 @@ function _wireQuoteEditEvents(q) {
         if(co.thickness && co.thickness.value) { newCo.thickness.value = co.thickness.value; newCo.thickness.modifierValue = co.thickness.modifierValue; }
       }
       q.constructionOptions = newCo;
+      q.laborTasks = _getDefaultLaborTasks(newType);
     } else {
       q.constructionOptions = null;
+      q.laborTasks = [];
     }
     body.querySelectorAll('[data-ptype]').forEach(b => b.classList.toggle('active', b.getAttribute('data-ptype') === newType));
     renderQuoteEditForm(q);
@@ -11056,7 +11101,7 @@ function _wireQuoteEditEvents(q) {
   document.getElementById('qe-cust-name').addEventListener('blur', function() {
     const numField = document.getElementById('qe-number');
     if(!numField.value.trim()) {
-      numField.value = generateQuoteNumber(this.value, quotesData);
+      numField.value = generateQuoteNumber(quotesData);
     }
   });
 
@@ -11086,7 +11131,7 @@ function _wireQuoteEditEvents(q) {
   body.querySelectorAll('.qe-task-desc').forEach(inp => inp.addEventListener('input', liveUpdate));
   document.getElementById('qe-add-task').addEventListener('click', function() {
     _collectQuoteFromForm(q);
-    q.labourTasks.push({ id: 'task_' + Date.now(), description: '', hours: 0 });
+    q.laborTasks.push({ id: 'task_' + Date.now(), description: '', hours: 0 });
     renderQuoteEditForm(q);
   });
 
@@ -11105,7 +11150,7 @@ function _wireQuoteEditEvents(q) {
   document.getElementById('qe-save-btn').addEventListener('click', () => {
     _collectQuoteFromForm(q);
     if(!q.customer.name) { alert('Customer name is required.'); return; }
-    if(!q.number) q.number = generateQuoteNumber(q.customer.name, quotesData);
+    if(!q.number) q.number = generateQuoteNumber(quotesData);
 
     // Generate project if requested
     if(q._generateProject && q._genProjectName) {
@@ -11335,7 +11380,7 @@ function _updateAllocCutInfo() {
     const dup = JSON.parse(JSON.stringify(orig));
     dup.id = quoteUid();
     dup.status = 'draft';
-    dup.number = generateQuoteNumber(dup.customer.name, quotesData);
+    dup.number = generateQuoteNumber(quotesData);
     dup.createdAt = new Date().toISOString().slice(0, 10);
     quotesData.push(dup);
     saveQuoteToSupabase(dup).catch(e => console.error('save quote error', e));
@@ -11487,6 +11532,7 @@ function openQuoteSendModal(q) {
     const mailTo = 'mailto:' + encodeURIComponent(q.customer.email) + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
     window.open(mailTo, '_blank');
     q.status = 'pending_customer';
+    if(!q.issueDate) q.issueDate = new Date().toISOString().slice(0, 10);
     saveQuoteToSupabase(q).catch(e => console.error('save quote error', e));
     document.getElementById('quote-send-modal').classList.remove('open');
     renderQuoteDetail();
@@ -11535,13 +11581,13 @@ function exportQuotePDF(q) {
   doc.text('Product / Items', margin, y);
   doc.text('$' + product.toFixed(2), colRight, y, {align:'right'}); y += 6;
 
-  // Labour tasks
-  const labourTotal = _quoteLabourTotal(q);
-  if(q.labourTasks && q.labourTasks.length > 0) {
+  // Labor tasks
+  const laborTotal = _quoteLaborTotal(q);
+  if(q.laborTasks && q.laborTasks.length > 0) {
     checkPage(12);
     doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...dark);
-    doc.text('Labour', margin, y); y += 5;
-    q.labourTasks.forEach(t => {
+    doc.text('Labor', margin, y); y += 5;
+    q.laborTasks.forEach(t => {
       checkPage(6);
       doc.setFont('helvetica','normal'); doc.setFontSize(9);
       doc.text((t.description || 'Task') + ' — ' + (t.hours || 0) + ' hrs', margin + 4, y);
@@ -11549,7 +11595,7 @@ function exportQuotePDF(q) {
       doc.text('$' + amt.toFixed(2), colRight, y, {align:'right'}); y += 4;
     });
     doc.setFont('helvetica','bold');
-    doc.text('$' + labourTotal.toFixed(2), colRight, y, {align:'right'}); y += 6;
+    doc.text('$' + laborTotal.toFixed(2), colRight, y, {align:'right'}); y += 6;
   }
 
   // Expenses
@@ -11562,7 +11608,7 @@ function exportQuotePDF(q) {
   }
 
   // Subtotal, discount, tax, total
-  const sub = product + labourTotal + expTotal;
+  const sub = product + laborTotal + expTotal;
   const disc = _quoteDiscount(q, s);
   const afterDisc = sub - disc;
   const tax = afterDisc * ((parseFloat(q.taxRate) || 0) / 100);
