@@ -9418,18 +9418,18 @@ function getDefaultSettings() {
     { id: 'tier3', label: 'Tier 3', min: 800,   max: 99999, rate: 1.00 },
   ];
   const thicknessTiers = [
-    { min: 0, max: 0.99, modifier: 0 },
-    { min: 1, max: 1.24, modifier: 0.03 },
+    { min: 0.00, max: 0.99, modifier: 0 },
+    { min: 1.00, max: 1.24, modifier: 0.03 },
     { min: 1.25, max: 1.49, modifier: 0.06 },
-    { min: 1.5, max: 1.74, modifier: 0.09 },
+    { min: 1.50, max: 1.74, modifier: 0.09 },
     { min: 1.75, max: 1.99, modifier: 0.12 },
-    { min: 2, max: 2.24, modifier: 0.15 },
+    { min: 2.00, max: 2.24, modifier: 0.15 },
     { min: 2.25, max: 2.49, modifier: 0.18 },
-    { min: 2.5, max: 2.74, modifier: 0.21 },
+    { min: 2.50, max: 2.74, modifier: 0.21 },
     { min: 2.75, max: 2.99, modifier: 0.24 },
-    { min: 3, max: 3.24, modifier: 0.27 },
+    { min: 3.00, max: 3.24, modifier: 0.27 },
     { min: 3.25, max: 3.49, modifier: 0.30 },
-    { min: 3.5, max: 3.74, modifier: 0.33 },
+    { min: 3.50, max: 3.74, modifier: 0.33 },
     { min: 3.75, max: 3.99, modifier: 0.36 },
   ];
   return {
@@ -9771,7 +9771,7 @@ function _renderSettingsBody() {
       _collectAllSettings();
       const s2 = _getSettings();
       const last = s2.thicknessTiers[s2.thicknessTiers.length - 1];
-      s2.thicknessTiers.push({ min: last.max, max: last.max + 0.25, modifier: (last.modifier || 0) + 0.03 });
+      s2.thicknessTiers.push({ min: +(last.max + 0.01).toFixed(2), max: +(last.max + 0.25).toFixed(2), modifier: (last.modifier || 0) + 0.03 });
       _renderSettingsBody();
       _expandSection('pricing'); _expandSubSection('thickness');
     });
@@ -10112,7 +10112,7 @@ function calcSurfaceAreaPrice(quote, settings) {
     });
   } else {
     const thick = parseFloat(quote.dimensions.thickness) || 0;
-    const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
+    const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick <= t.max);
     pctMod += thickTier ? thickTier.modifier : 0;
     pctMod += quote.grainDirection === 'end' ? (settings.multipliers.endGrain || 0) : 0;
     pctMod += (settings.multipliers.glueUps || [])[quote.glueUps || 0] || 0;
