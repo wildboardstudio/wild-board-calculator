@@ -10093,26 +10093,40 @@ function generateQuoteNumber(customerName, existingQuotes) {
 function calcSurfaceAreaPrice(quote, settings) {
   const l = parseFloat(quote.dimensions.length) || 0;
   const w = parseFloat(quote.dimensions.width) || 0;
-  const thick = parseFloat(quote.dimensions.thickness) || 0;
   if(l === 0 || w === 0) return 0;
   const surfaceArea = l * w;
   const tier = (settings.surfaceAreaTiers || []).find(t => surfaceArea >= t.min && surfaceArea < t.max);
   const basePrice = tier ? (surfaceArea * tier.rate) : 0;
-  const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
-  const thickMod = thickTier ? thickTier.modifier : 0;
-  const grainMod = quote.grainDirection === 'end' ? (settings.multipliers.endGrain || 0) : 0;
-  const glueUpMod = (settings.multipliers.glueUps || [])[quote.glueUps || 0] || 0;
-  const complexMod = quote.complexPattern ? (settings.multipliers.complexPattern || 0) : 0;
-  const totalMod = thickMod + grainMod + glueUpMod + complexMod;
-  const modifiedPrice = basePrice * (1 + totalMod);
-  let featureTotal = 0;
-  (quote.features || []).filter(f => f.enabled).forEach(f => { featureTotal += (parseFloat(f.price) || 0); });
-  if(quote.additionalFeature && quote.additionalFeature.enabled) featureTotal += (parseFloat(quote.additionalFeature.price) || 0);
-  return modifiedPrice + featureTotal;
+
+  let pctMod = 0;
+  let flatMod = 0;
+
+  if(quote.constructionOptions) {
+    const co = quote.constructionOptions;
+    if(co.grainDirection === 'end') pctMod += (settings.multipliers.endGrain || 0);
+    if(co.thickness) pctMod += (co.thickness.modifierValue || 0) / 100;
+    if(co.glueUps) pctMod += (co.glueUps.modifierValue || 0) / 100;
+    (co.features || []).filter(f => f.enabled).forEach(f => {
+      if(f.modifierType === 'percent') pctMod += (f.modifierValue || 0) / 100;
+      else flatMod += (f.modifierValue || 0);
+    });
+  } else {
+    const thick = parseFloat(quote.dimensions.thickness) || 0;
+    const thickTier = (settings.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
+    pctMod += thickTier ? thickTier.modifier : 0;
+    pctMod += quote.grainDirection === 'end' ? (settings.multipliers.endGrain || 0) : 0;
+    pctMod += (settings.multipliers.glueUps || [])[quote.glueUps || 0] || 0;
+    pctMod += quote.complexPattern ? (settings.multipliers.complexPattern || 0) : 0;
+    (quote.features || []).filter(f => f.enabled).forEach(f => { flatMod += (parseFloat(f.price) || 0); });
+    if(quote.additionalFeature && quote.additionalFeature.enabled) flatMod += (parseFloat(quote.additionalFeature.price) || 0);
+  }
+
+  return (basePrice * (1 + pctMod)) + flatMod;
 }
 
 function _quoteProductTotal(quote, settings) {
-  if(quote.pricingMode === 'custom') {
+  const pt = quote.productType || (quote.pricingMode === 'custom' ? 'custom' : 'cutting_board');
+  if(pt === 'custom') {
     return (quote.lineItems || []).reduce((sum, li) => sum + (parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0), 0);
   }
   return calcSurfaceAreaPrice(quote, settings);
@@ -10182,6 +10196,58 @@ function _quoteProfitData(quote, settings) {
   return { total, matCost, labCost, expCost, totalCost, profit, perHour, margin };
 }
 
+function _getProductTemplate(productType, settings) {
+  const s = settings;
+  switch(productType) {
+    case 'cutting_board':
+      return {
+        grainDirection: 'edge',
+        thickness: { value: '', modifierType: 'percent', source: 'settings', modifierValue: 0 },
+        glueUps: { count: 0, modifierType: 'percent', source: 'settings', modifierValue: 0 },
+        features: [
+          { id: 'complex_pattern', name: 'Complex Pattern', enabled: false, modifierType: 'percent', source: 'default', modifierValue: 25, hasDefault: true, isSpecialCase: false },
+          { id: 'juice_groove', name: 'Juice Groove', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 50, hasDefault: true, isSpecialCase: false },
+          { id: 'finger_grips', name: 'Finger Grips', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 25, hasDefault: true, isSpecialCase: false },
+          { id: 'feet', name: 'Feet', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 15, hasDefault: true, isSpecialCase: false },
+          { id: 'custom_engraving', name: 'Custom Engraving', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 50, hasDefault: true, isSpecialCase: false }
+        ]
+      };
+    case 'table_top':
+      return {
+        grainDirection: 'edge',
+        thickness: { value: '', modifierType: 'percent', source: 'settings', modifierValue: 0 },
+        glueUps: null,
+        features: [
+          { id: 'live_edge', name: 'Live Edge', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'breadboard_ends', name: 'Breadboard Ends', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'edge_profile', name: 'Edge Profile', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'rounded_corners', name: 'Rounded Corners', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'base_or_legs', name: 'Base or Legs', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'finish', name: 'Finish', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'epoxy_fill', name: 'Epoxy Fill', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false }
+        ]
+      };
+    case 'sign':
+      return {
+        grainDirection: null,
+        thickness: { value: '', modifierType: 'percent', source: 'settings', modifierValue: 0 },
+        glueUps: null,
+        features: [
+          { id: 'cnc_carving', name: 'CNC Carving', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'laser_engraving', name: 'Laser Engraving', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'paint_fill', name: 'Paint Fill', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'raised_lettering', name: 'Raised Lettering', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'edge_profile', name: 'Edge Profile', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'hanging_hardware', name: 'Hanging Hardware', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'finish', name: 'Finish', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false },
+          { id: 'double_sided', name: 'Double-Sided', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 0, hasDefault: false, isSpecialCase: false }
+        ]
+      };
+    default:
+      return null;
+  }
+}
+
 function _newQuote() {
   const s = _getSettings();
   const today = new Date().toISOString().slice(0, 10);
@@ -10194,6 +10260,7 @@ function _newQuote() {
     validUntil: validDate,
     customer: { name: '', email: '', phone: '' },
     description: '',
+    productType: 'cutting_board',
     pricingMode: 'surface-area',
     linkedProjectId: null,
     linkedProjectName: null,
@@ -10203,6 +10270,7 @@ function _newQuote() {
     complexPattern: false,
     features: (s.featureAddOns || []).map(f => ({ name: f.name, price: f.price, enabled: false })),
     additionalFeature: { enabled: false, description: '', price: 0 },
+    constructionOptions: _getProductTemplate('cutting_board', s),
     lineItems: [{ id: 'li_' + Date.now(), description: '', quantity: 1, unitPrice: 0 }],
     shopRate: s.defaultShopRate || 0,
     employeeRate: s.defaultEmployeeRate || 0,
@@ -10432,14 +10500,23 @@ function renderQuoteEditForm(q) {
   html += '</div></div>';
 
   // Card 2: Base Pricing
+  const pt = q.productType || 'cutting_board';
+  const isCustom = pt === 'custom';
+  const isPanelBased = !isCustom;
+  if(!q.constructionOptions && isPanelBased) q.constructionOptions = _getProductTemplate(pt, s);
+  const co = q.constructionOptions;
+
   html += '<div class="quote-section"><div class="quote-section-hdr">Base Pricing</div><div class="quote-section-body">';
-  html += '<div class="quote-field"><div class="quote-pill-group" style="justify-content:center;width:100%;">';
-  html += '<button class="quote-pill' + (q.pricingMode === 'surface-area' ? ' active' : '') + '" data-mode="surface-area">Surface Area</button>';
-  html += '<button class="quote-pill' + (q.pricingMode === 'custom' ? ' active' : '') + '" data-mode="custom">Custom</button>';
+  html += '<div class="quote-field"><label>Product Type</label><div class="quote-pill-group" style="justify-content:center;width:100%;flex-wrap:wrap;">';
+  html += '<button class="quote-pill' + (pt === 'cutting_board' ? ' active' : '') + '" data-ptype="cutting_board">Cutting Board</button>';
+  html += '<button class="quote-pill' + (pt === 'table_top' ? ' active' : '') + '" data-ptype="table_top">Table Top</button>';
+  html += '<button class="quote-pill' + (pt === 'sign' ? ' active' : '') + '" data-ptype="sign">Sign</button>';
+  html += '<button class="quote-pill' + (pt === 'custom' ? ' active' : '') + '" data-ptype="custom">Custom</button>';
   html += '</div></div>';
 
-  // Surface Area mode content
-  html += '<div id="qe-sa-section" style="display:' + (q.pricingMode === 'surface-area' ? 'block' : 'none') + ';">';
+  // Panel-based pricing (Cutting Board / Table Top / Sign)
+  html += '<div id="qe-sa-section" style="display:' + (isPanelBased ? 'block' : 'none') + ';">';
+  html += '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Calculated from length &times; width using your surface-area pricing tiers.</div>';
   html += '<div style="display:flex;gap:8px;align-items:center;">';
   html += '<div class="quote-field" style="flex:1;"><label>Length (in)</label><input type="number" id="qe-dim-l" value="' + (q.dimensions.length || '') + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '<span style="font-size:16px;color:var(--text2);margin-top:18px;">&times;</span>';
@@ -10453,7 +10530,8 @@ function renderQuoteEditForm(q) {
   html += '</div>';
 
   // Custom mode content
-  html += '<div id="qe-custom-section" style="display:' + (q.pricingMode === 'custom' ? 'block' : 'none') + ';">';
+  html += '<div id="qe-custom-section" style="display:' + (isCustom ? 'block' : 'none') + ';">';
+  html += '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Enter the product or service price manually using line items.</div>';
   html += '<div id="qe-line-items">';
   (q.lineItems || []).forEach((li, i) => {
     const liTotal = ((parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0)).toFixed(2);
@@ -10464,45 +10542,83 @@ function renderQuoteEditForm(q) {
   html += '</div>';
 
   // Card 2 footer: Base Price
-  html += '<div id="qe-base-price-footer" style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">Base Price: $' + (q.pricingMode === 'custom' ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2)) + '</div>';
+  html += '<div id="qe-base-price-footer" style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">Base Price: $' + (isCustom ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2)) + '</div>';
   html += '</div></div>';
 
-  // Card 3: Construction Details (only in surface area mode)
-  html += '<div id="qe-construction-section" style="display:' + (q.pricingMode === 'surface-area' ? 'block' : 'none') + ';">';
-  html += '<div class="quote-section"><div class="quote-section-hdr">Construction Details</div><div class="quote-section-body">';
+  // Card 3: Construction Options (hidden for custom)
+  html += '<div id="qe-construction-section" style="display:' + (isPanelBased ? 'block' : 'none') + ';">';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Construction Options</div><div class="quote-section-body">';
+  html += '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Select the features that apply to this project.</div>';
 
-  html += '<div class="quote-field"><label>Grain Direction</label><div class="quote-pill-group">';
-  html += '<button class="quote-pill' + (q.grainDirection === 'edge' ? ' active' : '') + '" data-grain="edge">Edge Grain</button>';
-  html += '<button class="quote-pill' + (q.grainDirection === 'end' ? ' active' : '') + '" data-grain="end">End Grain</button>';
-  html += '</div></div>';
+  // Required section
+  const showGrain = pt === 'cutting_board' || pt === 'table_top';
+  const showGlueUps = pt === 'cutting_board';
+  const grainDir = co ? co.grainDirection : (q.grainDirection || 'edge');
 
-  html += '<div class="quote-field"><label>Thickness (in)</label><input type="number" id="qe-dim-t" value="' + (q.dimensions.thickness || '') + '" min="0" step="0.01" class="qe-live" />';
-  const thick = parseFloat(q.dimensions.thickness) || 0;
-  const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
-  const thickModPct = thickTier ? Math.round(thickTier.modifier * 100) : 0;
+  if(showGrain) {
+    html += '<div class="quote-field"><label>Grain Direction</label><div class="quote-pill-group">';
+    html += '<button class="quote-pill' + (grainDir === 'edge' ? ' active' : '') + '" data-grain="edge">Edge Grain</button>';
+    html += '<button class="quote-pill' + (grainDir === 'end' ? ' active' : '') + '" data-grain="end">End Grain</button>';
+    html += '</div></div>';
+  }
+
+  // Thickness dropdown from settings tiers
+  const thickTiers = s.thicknessTiers || [];
+  const selThickVal = co ? (co.thickness.value || '') : (q.dimensions.thickness || '');
+  html += '<div class="quote-field"><label>Thickness</label><select id="qe-thick-select" class="qe-live">';
+  html += '<option value="">Select thickness...</option>';
+  thickTiers.forEach((t, i) => {
+    const label = t.min.toFixed(2) + '" – ' + (t.max).toFixed(2) + '"';
+    const sel = (parseFloat(selThickVal) === t.min) ? ' selected' : '';
+    html += '<option value="' + t.min + '"' + sel + '>' + label + (t.modifier > 0 ? ' (+' + Math.round(t.modifier * 100) + '%)' : '') + '</option>';
+  });
+  html += '</select>';
+  const selThickTier = thickTiers.find(t => parseFloat(selThickVal) === t.min);
+  const thickModPct = selThickTier ? Math.round(selThickTier.modifier * 100) : 0;
   html += '<div id="qe-thick-mod" style="font-size:11px;color:var(--text2);margin-top:2px;">' + (thickModPct > 0 ? '+' + thickModPct + '% thickness modifier' : '') + '</div></div>';
 
-  html += '<div class="quote-field"><label>Number of Glue Ups</label><div class="quote-pill-group">';
-  for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (q.glueUps === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
-  html += '</div></div>';
+  if(showGlueUps) {
+    const glueCount = co ? (co.glueUps ? co.glueUps.count : 0) : (q.glueUps || 0);
+    html += '<div class="quote-field"><label>Glue Ups</label><div class="quote-pill-group">';
+    for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (glueCount === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
+    html += '</div></div>';
+  }
 
-  html += '<div class="quote-field"><label>Complex Pattern <button class="settings-info-btn" id="qe-complex-info" type="button" style="width:18px;height:18px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:11px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;vertical-align:middle;padding:0;">i</button></label><div class="quote-pill-group">';
-  html += '<button class="quote-pill' + (!q.complexPattern ? ' active' : '') + '" data-complex="no">No</button>';
-  html += '<button class="quote-pill' + (q.complexPattern ? ' active' : '') + '" data-complex="yes">Yes</button>';
-  html += '</div></div>';
+  // Divider between required and optional
+  const coFeatures = co ? co.features : [];
+  if(coFeatures.length > 0) {
+    html += '<div style="border-top:1px solid var(--border);margin:12px 0;"></div>';
+    html += '<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">Optional Features</div>';
+    coFeatures.forEach((f, i) => {
+      const fid = 'qe-co-feat-' + i;
+      html += '<div class="quote-feature-row" data-feat-idx="' + i + '" style="display:flex;flex-direction:column;margin-bottom:4px;">';
+      html += '<div style="display:flex;align-items:center;gap:6px;">';
+      html += '<input type="checkbox" class="qe-co-feat-check" data-idx="' + i + '" id="' + fid + '"' + (f.enabled ? ' checked' : '') + ' />';
+      if(f.id === 'complex_pattern') {
+        html += '<label for="' + fid + '" style="flex:1;">' + f.name + ' <button class="settings-info-btn" id="qe-complex-info" type="button" style="width:18px;height:18px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:11px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;vertical-align:middle;padding:0;">i</button></label>';
+      } else {
+        html += '<label for="' + fid + '" style="flex:1;">' + f.name + '</label>';
+      }
+      if(f.enabled && (f.hasDefault || f.modifierValue > 0)) {
+        const modDisplay = f.modifierType === 'percent' ? '+' + f.modifierValue + '%' : '+$' + f.modifierValue;
+        html += '<span class="qe-co-feat-summary" data-idx="' + i + '" style="font-size:12px;color:var(--primary);cursor:pointer;white-space:nowrap;">' + modDisplay + '</span>';
+      }
+      html += '</div>';
+      const showEditor = f.enabled && !f.hasDefault && f.modifierValue === 0;
+      html += '<div class="qe-co-feat-editor" data-idx="' + i + '" style="display:' + (showEditor ? 'flex' : 'none') + ';gap:6px;margin-left:24px;margin-top:4px;align-items:center;">';
+      html += '<div class="quote-pill-group" style="flex-shrink:0;"><button class="quote-pill qe-co-mod-type' + (f.modifierType === 'flat' ? ' active' : '') + '" data-idx="' + i + '" data-mtype="flat">$</button><button class="quote-pill qe-co-mod-type' + (f.modifierType === 'percent' ? ' active' : '') + '" data-idx="' + i + '" data-mtype="percent">%</button></div>';
+      html += '<input type="number" class="qe-co-mod-val" data-idx="' + i + '" value="' + (f.modifierValue || '') + '" min="0" step="1" placeholder="Value" style="width:80px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" />';
+      html += '</div>';
+      html += '</div>';
+    });
+  }
 
-  html += '<div style="margin-top:10px;"><div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">Additional Features</div>';
-  (q.features || []).forEach((f, i) => {
-    html += '<div class="quote-feature-row"><input type="checkbox" class="qe-feat-check" data-idx="' + i + '"' + (f.enabled ? ' checked' : '') + ' /><label>' + (f.name || '').replace(/</g,'&lt;') + ' (+$' + (f.price || 0) + ')</label></div>';
-  });
-  html += '<div class="quote-feature-row"><input type="checkbox" id="qe-add-feat-check"' + (q.additionalFeature.enabled ? ' checked' : '') + ' /><label>Additional feature</label></div>';
-  html += '<div id="qe-add-feat-fields" style="display:' + (q.additionalFeature.enabled ? 'flex' : 'none') + ';gap:8px;margin-left:24px;margin-bottom:8px;">';
-  html += '<input type="text" id="qe-add-feat-desc" placeholder="Description" value="' + (q.additionalFeature.description || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" />';
-  html += '<input type="number" id="qe-add-feat-price" placeholder="$0" value="' + (q.additionalFeature.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;" />';
-  html += '</div></div>';
-
-  // Card 3 footer: Price (base + all modifiers + features)
-  html += '<div id="qe-construction-price" style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">Price: $' + calcSurfaceAreaPrice(q, s).toFixed(2) + '</div>';
+  // Card 3 footer
+  html += '<div id="qe-construction-footer" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:13px;">';
+  html += '<div style="display:flex;justify-content:space-between;"><span>Base Price:</span><span id="qe-co-base-val">$' + saBase.toFixed(2) + '</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;"><span>Construction Options:</span><span id="qe-co-options-val">+$0.00</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-weight:700;"><span>Price:</span><span id="qe-construction-price">$' + calcSurfaceAreaPrice(q, s).toFixed(2) + '</span></div>';
+  html += '</div>';
   html += '</div></div></div>';
 
   // Lumber Allocations
@@ -10575,9 +10691,45 @@ function _collectQuoteFromForm(q) {
     const placeholder = notesDisplay.querySelector('span[style*="font-style:italic"]');
     q.notes = placeholder ? '' : (notesDisplay.textContent || '').trim();
   }
-  q.dimensions.length = document.getElementById('qe-dim-l').value || '';
-  q.dimensions.width = document.getElementById('qe-dim-w').value || '';
-  q.dimensions.thickness = document.getElementById('qe-dim-t').value || '';
+
+  const pt = q.productType || 'cutting_board';
+  const isCustom = pt === 'custom';
+  q.pricingMode = isCustom ? 'custom' : 'surface-area';
+
+  const dimL = document.getElementById('qe-dim-l');
+  const dimW = document.getElementById('qe-dim-w');
+  if(dimL) q.dimensions.length = dimL.value || '';
+  if(dimW) q.dimensions.width = dimW.value || '';
+
+  // Thickness from dropdown
+  const thickSel = document.getElementById('qe-thick-select');
+  if(thickSel && q.constructionOptions) {
+    const s = _getSettings();
+    const selVal = thickSel.value;
+    q.dimensions.thickness = selVal || '';
+    const tier = (s.thicknessTiers || []).find(t => parseFloat(selVal) === t.min);
+    q.constructionOptions.thickness.value = selVal;
+    q.constructionOptions.thickness.modifierValue = tier ? Math.round(tier.modifier * 100) : 0;
+  }
+
+  // Collect constructionOptions features from checkboxes
+  if(q.constructionOptions) {
+    const co = q.constructionOptions;
+    (co.features || []).forEach((f, i) => {
+      const cb = document.querySelector('.qe-co-feat-check[data-idx="' + i + '"]');
+      if(cb) f.enabled = cb.checked;
+      const valInput = document.querySelector('.qe-co-mod-val[data-idx="' + i + '"]');
+      if(valInput && valInput.value !== '') {
+        f.modifierValue = parseFloat(valInput.value) || 0;
+        if(f.source === 'default' && f.modifierValue !== 0) f.source = 'user';
+      }
+    });
+    // Sync legacy fields for backward compat
+    q.grainDirection = co.grainDirection || 'edge';
+    q.glueUps = co.glueUps ? co.glueUps.count : 0;
+    q.complexPattern = (co.features || []).some(f => f.id === 'complex_pattern' && f.enabled);
+  }
+
   q.shopRate = parseFloat(document.getElementById('qe-shop-rate').value) || 0;
   q.employeeRate = parseFloat(document.getElementById('qe-emp-rate').value) || 0;
   q.expenses.thirdParty = parseFloat(document.getElementById('qe-exp-third').value) || 0;
@@ -10585,17 +10737,6 @@ function _collectQuoteFromForm(q) {
   q.expenses.markup = parseFloat(document.getElementById('qe-exp-markup').value) || 0;
   q.discount.value = parseFloat(document.getElementById('qe-disc-val').value) || 0;
   q.taxRate = parseFloat(document.getElementById('qe-tax').value) || 0;
-
-  q.features.forEach((f, i) => {
-    const cb = document.querySelector('.qe-feat-check[data-idx="' + i + '"]');
-    if(cb) f.enabled = cb.checked;
-  });
-  const addFeatCb = document.getElementById('qe-add-feat-check');
-  if(addFeatCb) {
-    q.additionalFeature.enabled = addFeatCb.checked;
-    q.additionalFeature.description = (document.getElementById('qe-add-feat-desc').value || '').trim();
-    q.additionalFeature.price = parseFloat(document.getElementById('qe-add-feat-price').value) || 0;
-  }
 
   const lineItems = [];
   document.querySelectorAll('#qe-line-items .quote-line-item').forEach(row => {
@@ -10643,33 +10784,41 @@ function _collectQuoteFromForm(q) {
 function _updateQuoteEditLive(q) {
   _collectQuoteFromForm(q);
   const s = _getSettings();
+  const pt = q.productType || 'cutting_board';
+  const isCustom = pt === 'custom';
 
   const l = parseFloat(q.dimensions.length) || 0;
   const w = parseFloat(q.dimensions.width) || 0;
-  const thick = parseFloat(q.dimensions.thickness) || 0;
   const saArea = l * w;
   const saTier = (s.surfaceAreaTiers || []).find(t => saArea >= t.min && saArea < t.max);
   const saBase = saTier ? (saArea * saTier.rate) : 0;
 
-  // SA info line (no base price shown here)
+  // SA info line
   const saInfo = document.getElementById('qe-sa-info');
   if(saInfo) saInfo.textContent = 'Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '');
 
   // Base Price footer (Card 2)
   const bpf = document.getElementById('qe-base-price-footer');
-  if(bpf) bpf.textContent = 'Base Price: $' + (q.pricingMode === 'custom' ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2));
+  if(bpf) bpf.textContent = 'Base Price: $' + (isCustom ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2));
 
-  // Thickness modifier display (Card 3)
+  // Thickness modifier display
   const thickMod = document.getElementById('qe-thick-mod');
-  if(thickMod) {
-    const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
-    const thickPct = thickTier ? Math.round(thickTier.modifier * 100) : 0;
-    thickMod.textContent = thickPct > 0 ? '+' + thickPct + '% thickness modifier' : '';
+  if(thickMod && q.constructionOptions) {
+    const pct = q.constructionOptions.thickness.modifierValue || 0;
+    thickMod.textContent = pct > 0 ? '+' + pct + '% thickness modifier' : '';
   }
 
-  // Construction Price footer (Card 3)
+  // Construction Options footer (Card 3)
+  const coBaseEl = document.getElementById('qe-co-base-val');
+  const coOptionsEl = document.getElementById('qe-co-options-val');
   const cpf = document.getElementById('qe-construction-price');
-  if(cpf) cpf.textContent = 'Price: $' + calcSurfaceAreaPrice(q, s).toFixed(2);
+  if(coBaseEl) coBaseEl.textContent = '$' + saBase.toFixed(2);
+  if(cpf || coOptionsEl) {
+    const totalPrice = calcSurfaceAreaPrice(q, s);
+    const optionsCost = totalPrice - saBase;
+    if(coOptionsEl) coOptionsEl.textContent = '+$' + optionsCost.toFixed(2);
+    if(cpf) cpf.textContent = '$' + totalPrice.toFixed(2);
+  }
 
   // Line item totals
   document.querySelectorAll('#qe-line-items .quote-line-item').forEach(row => {
@@ -10748,14 +10897,6 @@ function _wireQuoteEditEvents(q) {
   const liveUpdate = () => _updateQuoteEditLive(q);
 
   body.querySelectorAll('.qe-live').forEach(inp => inp.addEventListener('input', liveUpdate));
-  body.querySelectorAll('.qe-feat-check').forEach(cb => cb.addEventListener('change', liveUpdate));
-  const addFeatCb = document.getElementById('qe-add-feat-check');
-  if(addFeatCb) addFeatCb.addEventListener('change', function() {
-    document.getElementById('qe-add-feat-fields').style.display = this.checked ? 'flex' : 'none';
-    liveUpdate();
-  });
-  document.getElementById('qe-add-feat-desc')?.addEventListener('input', liveUpdate);
-  document.getElementById('qe-add-feat-price')?.addEventListener('input', liveUpdate);
 
   // Notes edit/save/cancel
   const notesEditBtn = document.getElementById('qe-notes-edit-btn');
@@ -10793,36 +10934,115 @@ function _wireQuoteEditEvents(q) {
     alert('A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material.');
   });
 
-  // Pricing mode toggle
-  body.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', function() {
-    q.pricingMode = this.getAttribute('data-mode');
-    body.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === q.pricingMode));
-    document.getElementById('qe-sa-section').style.display = q.pricingMode === 'surface-area' ? 'block' : 'none';
-    document.getElementById('qe-custom-section').style.display = q.pricingMode === 'custom' ? 'block' : 'none';
-    const cs = document.getElementById('qe-construction-section');
-    if(cs) cs.style.display = q.pricingMode === 'surface-area' ? 'block' : 'none';
-    liveUpdate();
+  // Product type selector
+  body.querySelectorAll('[data-ptype]').forEach(btn => btn.addEventListener('click', function() {
+    const newType = this.getAttribute('data-ptype');
+    const oldType = q.productType || 'cutting_board';
+    if(newType === oldType) return;
+    const co = q.constructionOptions;
+    const hasFeatureValues = co && (co.features || []).some(f => f.enabled || (f.modifierValue > 0 && !f.hasDefault));
+    if(hasFeatureValues) {
+      let msg = 'Changing the product type will replace the current construction features. Continue?';
+      if(newType === 'custom') msg += '\n\nDimension-based pricing and construction modifiers will no longer apply.';
+      if(!confirm(msg)) return;
+    }
+    _collectQuoteFromForm(q);
+    const oldPanelBased = oldType !== 'custom';
+    const newPanelBased = newType !== 'custom';
+    q.productType = newType;
+    q.pricingMode = newType === 'custom' ? 'custom' : 'surface-area';
+    if(newPanelBased) {
+      const s = _getSettings();
+      const newCo = _getProductTemplate(newType, s);
+      if(oldPanelBased && co) {
+        if(newCo.grainDirection !== null && co.grainDirection) newCo.grainDirection = co.grainDirection;
+        if(co.thickness && co.thickness.value) { newCo.thickness.value = co.thickness.value; newCo.thickness.modifierValue = co.thickness.modifierValue; }
+      }
+      q.constructionOptions = newCo;
+    } else {
+      q.constructionOptions = null;
+    }
+    body.querySelectorAll('[data-ptype]').forEach(b => b.classList.toggle('active', b.getAttribute('data-ptype') === newType));
+    renderQuoteEditForm(q);
   }));
 
   // Grain toggle
   body.querySelectorAll('[data-grain]').forEach(btn => btn.addEventListener('click', function() {
-    q.grainDirection = this.getAttribute('data-grain');
-    body.querySelectorAll('[data-grain]').forEach(b => b.classList.toggle('active', b.getAttribute('data-grain') === q.grainDirection));
+    const dir = this.getAttribute('data-grain');
+    if(q.constructionOptions) q.constructionOptions.grainDirection = dir;
+    q.grainDirection = dir;
+    body.querySelectorAll('[data-grain]').forEach(b => b.classList.toggle('active', b.getAttribute('data-grain') === dir));
     liveUpdate();
   }));
 
   // Glue-ups toggle
   body.querySelectorAll('[data-glue]').forEach(btn => btn.addEventListener('click', function() {
-    q.glueUps = parseInt(this.getAttribute('data-glue'));
-    body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === q.glueUps));
+    const count = parseInt(this.getAttribute('data-glue'));
+    if(q.constructionOptions && q.constructionOptions.glueUps) {
+      q.constructionOptions.glueUps.count = count;
+      const s = _getSettings();
+      q.constructionOptions.glueUps.modifierValue = Math.round(((s.multipliers.glueUps || [])[count] || 0) * 100);
+    }
+    q.glueUps = count;
+    body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === count));
     liveUpdate();
   }));
 
-  // Complex toggle
-  body.querySelectorAll('[data-complex]').forEach(btn => btn.addEventListener('click', function() {
-    q.complexPattern = this.getAttribute('data-complex') === 'yes';
-    body.querySelectorAll('[data-complex]').forEach(b => b.classList.toggle('active', (b.getAttribute('data-complex') === 'yes') === q.complexPattern));
+  // Construction Options feature checkboxes
+  body.querySelectorAll('.qe-co-feat-check').forEach(cb => cb.addEventListener('change', function() {
+    const idx = parseInt(this.getAttribute('data-idx'));
+    const co = q.constructionOptions;
+    if(!co) return;
+    const f = co.features[idx];
+    f.enabled = this.checked;
+    if(this.checked && f.hasDefault && f.modifierValue > 0) {
+      const summary = this.closest('.quote-feature-row').querySelector('.qe-co-feat-summary');
+      if(!summary) {
+        _collectQuoteFromForm(q);
+        renderQuoteEditForm(q);
+        return;
+      }
+    }
+    if(this.checked && !f.hasDefault && f.modifierValue === 0) {
+      const editor = body.querySelector('.qe-co-feat-editor[data-idx="' + idx + '"]');
+      if(editor) editor.style.display = 'flex';
+    }
+    if(!this.checked) {
+      const editor = body.querySelector('.qe-co-feat-editor[data-idx="' + idx + '"]');
+      if(editor) editor.style.display = 'none';
+      const summary = this.closest('.quote-feature-row').querySelector('.qe-co-feat-summary');
+      if(summary) summary.remove();
+    }
     liveUpdate();
+  }));
+
+  // Feature modifier type toggle ($ / %)
+  body.querySelectorAll('.qe-co-mod-type').forEach(btn => btn.addEventListener('click', function() {
+    const idx = this.getAttribute('data-idx');
+    const mtype = this.getAttribute('data-mtype');
+    if(q.constructionOptions) {
+      q.constructionOptions.features[parseInt(idx)].modifierType = mtype;
+    }
+    body.querySelectorAll('.qe-co-mod-type[data-idx="' + idx + '"]').forEach(b => b.classList.toggle('active', b.getAttribute('data-mtype') === mtype));
+    liveUpdate();
+  }));
+
+  // Feature modifier value input
+  body.querySelectorAll('.qe-co-mod-val').forEach(inp => inp.addEventListener('input', function() {
+    const idx = parseInt(this.getAttribute('data-idx'));
+    if(q.constructionOptions) {
+      const f = q.constructionOptions.features[idx];
+      f.modifierValue = parseFloat(this.value) || 0;
+      if(f.modifierValue > 0) f.source = 'user';
+    }
+    liveUpdate();
+  }));
+
+  // Feature summary click to reopen editor
+  body.querySelectorAll('.qe-co-feat-summary').forEach(span => span.addEventListener('click', function() {
+    const idx = this.getAttribute('data-idx');
+    const editor = body.querySelector('.qe-co-feat-editor[data-idx="' + idx + '"]');
+    if(editor) editor.style.display = editor.style.display === 'none' ? 'flex' : 'none';
   }));
 
   // Discount type toggle
