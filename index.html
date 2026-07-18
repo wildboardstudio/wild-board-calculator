@@ -10122,16 +10122,20 @@ function _quoteLabourTotal(quote) {
   return (quote.labourTasks || []).reduce((sum, t) => sum + (parseFloat(t.hours) || 0) * (parseFloat(quote.shopRate) || 0), 0);
 }
 
+function _quoteCustomTotal(quote) {
+  return (quote.lineItems || []).reduce((sum, li) => sum + (parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0), 0);
+}
+
 function _quoteExpensesTotal(quote) {
   const e = quote.expenses || {};
-  const raw = (parseFloat(e.thirdParty) || 0) + (parseFloat(e.addOns) || 0) + (parseFloat(e.delivery) || 0) + (parseFloat(e.other) || 0);
+  const raw = (parseFloat(e.thirdParty) || 0) + (parseFloat(e.delivery) || 0);
   const markup = (parseFloat(e.markup) || 0) / 100;
   return raw * (1 + markup);
 }
 
 function _quoteExpensesRaw(quote) {
   const e = quote.expenses || {};
-  return (parseFloat(e.thirdParty) || 0) + (parseFloat(e.addOns) || 0) + (parseFloat(e.delivery) || 0) + (parseFloat(e.other) || 0);
+  return (parseFloat(e.thirdParty) || 0) + (parseFloat(e.delivery) || 0);
 }
 
 function _quoteSubtotal(quote, settings) {
@@ -10388,7 +10392,7 @@ function renderQuoteEditForm(q) {
   const s = _getSettings();
   let html = '';
 
-  // Section 1: Customer & Project Info
+  // Card 1: Customer & Project Info
   html += '<div class="quote-section"><div class="quote-section-hdr">Customer & Project Info</div><div class="quote-section-body">';
   html += '<div class="quote-field"><label>Customer Name *</label><input type="text" id="qe-cust-name" value="' + (q.customer.name || '').replace(/"/g,'&quot;') + '" /></div>';
   html += '<div class="quote-field"><label>Quote Number</label><input type="text" id="qe-number" value="' + (q.number || '').replace(/"/g,'&quot;') + '" /></div>';
@@ -10402,13 +10406,8 @@ function renderQuoteEditForm(q) {
   html += '<div class="quote-field" style="flex:1;"><label>Valid Until</label><input type="date" id="qe-valid" value="' + (q.validUntil || '') + '" /></div>';
   html += '</div>';
 
-  html += '<div class="quote-field"><label>Pricing Mode</label><div class="quote-pill-group">';
-  html += '<button class="quote-pill' + (q.pricingMode === 'surface-area' ? ' active' : '') + '" data-mode="surface-area">Surface Area Pricing</button>';
-  html += '<button class="quote-pill' + (q.pricingMode === 'custom' ? ' active' : '') + '" data-mode="custom">Custom Pricing</button>';
-  html += '</div></div>';
-
   html += '<div class="quote-field"><label>Link to Project</label><select id="qe-link-project"><option value="">None</option>';
-  html += '<option value="__generate__"' + (q._generateProject ? ' selected' : '') + '>Generate New Project</option>';
+  html += '<option value="__generate__"' + (q._generateProject ? ' selected' : '') + ' style="font-weight:bold;">Generate New Project</option>';
   (projectsData || []).forEach(p => {
     html += '<option value="' + p.id + '"' + (q.linkedProjectId === p.id ? ' selected' : '') + '>' + (p.name || p.id).replace(/</g,'&lt;') + '</option>';
   });
@@ -10423,38 +10422,76 @@ function renderQuoteEditForm(q) {
   html += '<div class="quote-field"><label>Hourly Rate</label><input type="number" id="qe-gen-proj-rate" value="' + (q._genProjectRate || 0) + '" min="0" step="0.01" /></div>';
   html += '</div>';
 
-  html += '<div class="quote-field"><label>Notes / Terms</label><textarea id="qe-notes">' + (q.notes || '').replace(/</g,'&lt;') + '</textarea></div>';
+  // Notes with inline Save/Edit behavior
+  const notesText = (q.notes || '').replace(/</g,'&lt;');
+  html += '<div class="quote-field"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><label style="margin:0;">Notes</label><button class="btn btn-sm" id="qe-notes-edit-btn" style="font-size:11px;padding:2px 8px;">Edit</button></div>';
+  html += '<div id="qe-notes-display" style="font-size:13px;color:var(--text);white-space:pre-wrap;min-height:20px;">' + (notesText || '<span style="color:var(--text3);font-style:italic;">No notes yet</span>') + '</div>';
+  html += '<div id="qe-notes-edit-wrap" style="display:none;"><textarea id="qe-notes" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + notesText + '</textarea>';
+  html += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary" id="qe-notes-save-btn">Save</button><button class="btn btn-sm" id="qe-notes-cancel-btn">Cancel</button></div></div>';
+  html += '</div>';
   html += '</div></div>';
 
-  // Section 2A: Surface Area Pricing
+  // Card 2: Base Pricing
+  html += '<div class="quote-section"><div class="quote-section-hdr">Base Pricing</div><div class="quote-section-body">';
+  html += '<div class="quote-field"><div class="quote-pill-group" style="justify-content:center;width:100%;">';
+  html += '<button class="quote-pill' + (q.pricingMode === 'surface-area' ? ' active' : '') + '" data-mode="surface-area">Surface Area</button>';
+  html += '<button class="quote-pill' + (q.pricingMode === 'custom' ? ' active' : '') + '" data-mode="custom">Custom</button>';
+  html += '</div></div>';
+
+  // Surface Area mode content
   html += '<div id="qe-sa-section" style="display:' + (q.pricingMode === 'surface-area' ? 'block' : 'none') + ';">';
-  html += '<div class="quote-section"><div class="quote-section-hdr">Surface Area Pricing</div><div class="quote-section-body">';
-  html += '<div style="display:flex;gap:8px;">';
+  html += '<div style="display:flex;gap:8px;align-items:center;">';
   html += '<div class="quote-field" style="flex:1;"><label>Length (in)</label><input type="number" id="qe-dim-l" value="' + (q.dimensions.length || '') + '" min="0" step="0.01" class="qe-live" /></div>';
+  html += '<span style="font-size:16px;color:var(--text2);margin-top:18px;">&times;</span>';
   html += '<div class="quote-field" style="flex:1;"><label>Width (in)</label><input type="number" id="qe-dim-w" value="' + (q.dimensions.width || '') + '" min="0" step="0.01" class="qe-live" /></div>';
-  html += '<div class="quote-field" style="flex:1;"><label>Thickness (in)</label><input type="number" id="qe-dim-t" value="' + (q.dimensions.thickness || '') + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '</div>';
   const saL = parseFloat(q.dimensions.length) || 0, saW = parseFloat(q.dimensions.width) || 0;
   const saArea = saL * saW;
   const saTier = (s.surfaceAreaTiers || []).find(t => saArea >= t.min && saArea < t.max);
   const saBase = saTier ? (saArea * saTier.rate) : 0;
-  html += '<div id="qe-sa-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '') + ' · Base price: $' + saBase.toFixed(2) + '</div>';
+  html += '<div id="qe-sa-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' &middot; Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '') + '</div>';
+  html += '</div>';
+
+  // Custom mode content
+  html += '<div id="qe-custom-section" style="display:' + (q.pricingMode === 'custom' ? 'block' : 'none') + ';">';
+  html += '<div id="qe-line-items">';
+  (q.lineItems || []).forEach((li, i) => {
+    const liTotal = ((parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0)).toFixed(2);
+    html += '<div class="quote-line-item" data-li-idx="' + i + '"><input type="text" placeholder="Description" value="' + (li.description || '').replace(/"/g,'&quot;') + '" class="qe-li-desc" style="flex:3;" /><input type="number" placeholder="Qty" value="' + (li.quantity || 1) + '" min="1" class="qe-li-qty" style="width:50px;" /><input type="number" placeholder="$" value="' + (li.unitPrice || 0) + '" min="0" step="0.01" class="qe-li-price" style="width:70px;text-align:right;" /><span class="qe-li-total" style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:60px;text-align:right;">$' + liTotal + '</span><button class="del-btn qe-li-del" style="min-height:28px;">&times;</button></div>';
+  });
+  html += '</div>';
+  html += '<button class="btn btn-sm" id="qe-add-line-item" style="margin-top:6px;">+ Add Item</button>';
+  html += '</div>';
+
+  // Card 2 footer: Base Price
+  html += '<div id="qe-base-price-footer" style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">Base Price: $' + (q.pricingMode === 'custom' ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2)) + '</div>';
+  html += '</div></div>';
+
+  // Card 3: Construction Details (only in surface area mode)
+  html += '<div id="qe-construction-section" style="display:' + (q.pricingMode === 'surface-area' ? 'block' : 'none') + ';">';
+  html += '<div class="quote-section"><div class="quote-section-hdr">Construction Details</div><div class="quote-section-body">';
 
   html += '<div class="quote-field"><label>Grain Direction</label><div class="quote-pill-group">';
   html += '<button class="quote-pill' + (q.grainDirection === 'edge' ? ' active' : '') + '" data-grain="edge">Edge Grain</button>';
   html += '<button class="quote-pill' + (q.grainDirection === 'end' ? ' active' : '') + '" data-grain="end">End Grain</button>';
   html += '</div></div>';
 
-  html += '<div class="quote-field"><label>Glue-ups</label><div class="quote-pill-group">';
+  html += '<div class="quote-field"><label>Thickness (in)</label><input type="number" id="qe-dim-t" value="' + (q.dimensions.thickness || '') + '" min="0" step="0.01" class="qe-live" />';
+  const thick = parseFloat(q.dimensions.thickness) || 0;
+  const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
+  const thickModPct = thickTier ? Math.round(thickTier.modifier * 100) : 0;
+  html += '<div id="qe-thick-mod" style="font-size:11px;color:var(--text2);margin-top:2px;">' + (thickModPct > 0 ? '+' + thickModPct + '% thickness modifier' : '') + '</div></div>';
+
+  html += '<div class="quote-field"><label>Number of Glue Ups</label><div class="quote-pill-group">';
   for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (q.glueUps === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
   html += '</div></div>';
 
-  html += '<div class="quote-field"><label>Complex Pattern</label><div class="quote-pill-group">';
+  html += '<div class="quote-field"><label>Complex Pattern <button class="settings-info-btn" id="qe-complex-info" type="button" style="width:18px;height:18px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:11px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;vertical-align:middle;padding:0;">i</button></label><div class="quote-pill-group">';
   html += '<button class="quote-pill' + (!q.complexPattern ? ' active' : '') + '" data-complex="no">No</button>';
   html += '<button class="quote-pill' + (q.complexPattern ? ' active' : '') + '" data-complex="yes">Yes</button>';
   html += '</div></div>';
 
-  html += '<div style="margin-top:10px;"><div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">Features</div>';
+  html += '<div style="margin-top:10px;"><div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">Additional Features</div>';
   (q.features || []).forEach((f, i) => {
     html += '<div class="quote-feature-row"><input type="checkbox" class="qe-feat-check" data-idx="' + i + '"' + (f.enabled ? ' checked' : '') + ' /><label>' + (f.name || '').replace(/</g,'&lt;') + ' (+$' + (f.price || 0) + ')</label></div>';
   });
@@ -10464,22 +10501,11 @@ function renderQuoteEditForm(q) {
   html += '<input type="number" id="qe-add-feat-price" placeholder="$0" value="' + (q.additionalFeature.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;" />';
   html += '</div></div>';
 
-  html += '<div id="qe-sa-breakdown" class="quote-breakdown"></div>';
+  // Card 3 footer: Price (base + all modifiers + features)
+  html += '<div id="qe-construction-price" style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">Price: $' + calcSurfaceAreaPrice(q, s).toFixed(2) + '</div>';
   html += '</div></div></div>';
 
-  // Section 2B: Custom Pricing
-  html += '<div id="qe-custom-section" style="display:' + (q.pricingMode === 'custom' ? 'block' : 'none') + ';">';
-  html += '<div class="quote-section"><div class="quote-section-hdr">Custom Pricing</div><div class="quote-section-body">';
-  html += '<div id="qe-line-items">';
-  (q.lineItems || []).forEach((li, i) => {
-    html += '<div class="quote-line-item" data-li-idx="' + i + '"><input type="text" placeholder="Description" value="' + (li.description || '').replace(/"/g,'&quot;') + '" class="qe-li-desc" style="flex:3;" /><input type="number" placeholder="Qty" value="' + (li.quantity || 1) + '" min="1" class="qe-li-qty" style="width:50px;" /><input type="number" placeholder="$0" value="' + (li.unitPrice || 0) + '" min="0" step="0.01" class="qe-li-price" style="width:70px;text-align:right;" /><button class="del-btn qe-li-del" style="min-height:28px;">&times;</button></div>';
-  });
-  html += '</div>';
-  html += '<button class="btn btn-sm" id="qe-add-line-item" style="margin-top:6px;">+ Add Item</button>';
-  html += '<div id="qe-custom-total" style="text-align:right;font-size:13px;font-weight:700;margin-top:8px;"></div>';
-  html += '</div></div></div>';
-
-  // Section 3: Lumber Allocations
+  // Lumber Allocations
   html += '<div class="quote-section"><div class="quote-section-hdr">Your Lumber Allocations</div><div class="quote-section-body">';
   html += '<div id="qe-allocs">';
   (q.lumberAllocations || []).forEach((a, i) => {
@@ -10489,7 +10515,7 @@ function renderQuoteEditForm(q) {
   html += '<button class="btn btn-sm btn-primary" id="qe-add-alloc" style="margin-top:6px;">+ Allocate from Your Lumber</button>';
   html += '</div></div>';
 
-  // Section 4: Labour
+  // Card 4: Labour (no changes)
   html += '<div class="quote-section"><div class="quote-section-hdr">Labour Estimation</div><div class="quote-section-body">';
   html += '<div style="display:flex;gap:8px;margin-bottom:10px;">';
   html += '<div class="quote-field" style="flex:1;"><label>Shop Rate ($/hr)</label><input type="number" id="qe-shop-rate" value="' + (q.shopRate || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
@@ -10504,12 +10530,10 @@ function renderQuoteEditForm(q) {
   html += '<div id="qe-labour-summary" style="text-align:right;font-size:12px;color:var(--text2);margin-top:8px;"></div>';
   html += '</div></div>';
 
-  // Section 5: Expenses
+  // Card 5: Additional Expenses (addOns and Other removed)
   html += '<div class="quote-section"><div class="quote-section-hdr">Additional Expenses</div><div class="quote-section-body">';
   html += '<div class="quote-field"><label>Third-Party Costs ($)</label><input type="number" id="qe-exp-third" value="' + (q.expenses.thirdParty || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
-  html += '<div class="quote-field"><label>Add-Ons ($)</label><input type="number" id="qe-exp-addons" value="' + (q.expenses.addOns || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '<div class="quote-field"><label>Delivery / Shipping ($)</label><input type="number" id="qe-exp-delivery" value="' + (q.expenses.delivery || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
-  html += '<div class="quote-field"><label>Other ($)</label><input type="number" id="qe-exp-other" value="' + (q.expenses.other || 0) + '" min="0" step="0.01" class="qe-live" /></div>';
   html += '<div class="quote-field"><label>Markup on Expenses (%)</label><input type="number" id="qe-exp-markup" value="' + (q.expenses.markup || 0) + '" min="0" step="1" class="qe-live" /></div>';
   html += '<div id="qe-exp-summary" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>';
   html += '</div></div>';
@@ -10543,16 +10567,21 @@ function _collectQuoteFromForm(q) {
   q.customer.email = (document.getElementById('qe-email').value || '').trim();
   q.createdAt = document.getElementById('qe-date').value || '';
   q.validUntil = document.getElementById('qe-valid').value || '';
-  q.notes = (document.getElementById('qe-notes').value || '').trim();
+  const notesTextarea = document.getElementById('qe-notes');
+  const notesDisplay = document.getElementById('qe-notes-display');
+  if(notesTextarea && notesTextarea.offsetParent !== null) {
+    q.notes = (notesTextarea.value || '').trim();
+  } else if(notesDisplay) {
+    const placeholder = notesDisplay.querySelector('span[style*="font-style:italic"]');
+    q.notes = placeholder ? '' : (notesDisplay.textContent || '').trim();
+  }
   q.dimensions.length = document.getElementById('qe-dim-l').value || '';
   q.dimensions.width = document.getElementById('qe-dim-w').value || '';
   q.dimensions.thickness = document.getElementById('qe-dim-t').value || '';
   q.shopRate = parseFloat(document.getElementById('qe-shop-rate').value) || 0;
   q.employeeRate = parseFloat(document.getElementById('qe-emp-rate').value) || 0;
   q.expenses.thirdParty = parseFloat(document.getElementById('qe-exp-third').value) || 0;
-  q.expenses.addOns = parseFloat(document.getElementById('qe-exp-addons').value) || 0;
   q.expenses.delivery = parseFloat(document.getElementById('qe-exp-delivery').value) || 0;
-  q.expenses.other = parseFloat(document.getElementById('qe-exp-other').value) || 0;
   q.expenses.markup = parseFloat(document.getElementById('qe-exp-markup').value) || 0;
   q.discount.value = parseFloat(document.getElementById('qe-disc-val').value) || 0;
   q.taxRate = parseFloat(document.getElementById('qe-tax').value) || 0;
@@ -10615,42 +10644,40 @@ function _updateQuoteEditLive(q) {
   _collectQuoteFromForm(q);
   const s = _getSettings();
 
-  // Surface Area info
   const l = parseFloat(q.dimensions.length) || 0;
   const w = parseFloat(q.dimensions.width) || 0;
   const thick = parseFloat(q.dimensions.thickness) || 0;
   const saArea = l * w;
   const saTier = (s.surfaceAreaTiers || []).find(t => saArea >= t.min && saArea < t.max);
-  const basePrice = saTier ? (saArea * saTier.rate) : 0;
-  const saInfo = document.getElementById('qe-sa-info');
-  if(saInfo) saInfo.textContent = 'Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '') + ' · Base price: $' + basePrice.toFixed(2);
+  const saBase = saTier ? (saArea * saTier.rate) : 0;
 
-  // Surface Area breakdown
-  const bd = document.getElementById('qe-sa-breakdown');
-  if(bd) {
+  // SA info line (no base price shown here)
+  const saInfo = document.getElementById('qe-sa-info');
+  if(saInfo) saInfo.textContent = 'Surface area: ' + Math.round(saArea) + ' sq in' + (saTier ? (' · Tier: ' + saTier.label + ' ($' + saTier.rate.toFixed(2) + '/sq in)') : '');
+
+  // Base Price footer (Card 2)
+  const bpf = document.getElementById('qe-base-price-footer');
+  if(bpf) bpf.textContent = 'Base Price: $' + (q.pricingMode === 'custom' ? _quoteCustomTotal(q).toFixed(2) : saBase.toFixed(2));
+
+  // Thickness modifier display (Card 3)
+  const thickMod = document.getElementById('qe-thick-mod');
+  if(thickMod) {
     const thickTier = (s.thicknessTiers || []).find(t => thick >= t.min && thick < t.max);
-    const thickMod = thickTier ? Math.round(thickTier.modifier * 100) : 0;
-    const grainMod = q.grainDirection === 'end' ? Math.round((s.multipliers.endGrain || 0) * 100) : 0;
-    const glueUpMod = Math.round(((s.multipliers.glueUps || [])[q.glueUps || 0] || 0) * 100);
-    const complexMod = q.complexPattern ? Math.round((s.multipliers.complexPattern || 0) * 100) : 0;
-    let featureTotal = 0;
-    (q.features || []).filter(f => f.enabled).forEach(f => { featureTotal += (f.price || 0); });
-    if(q.additionalFeature && q.additionalFeature.enabled) featureTotal += (q.additionalFeature.price || 0);
-    const productTotal = calcSurfaceAreaPrice(q, s);
-    let bhtml = '';
-    bhtml += '<div class="quote-breakdown-row"><span>Base price:</span><span>$' + basePrice.toFixed(2) + '</span></div>';
-    if(thickMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Thickness (+' + thickMod + '%):</span><span>+$' + (basePrice * thickMod/100).toFixed(2) + '</span></div>';
-    if(grainMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Grain (+' + grainMod + '%):</span><span>+$' + (basePrice * grainMod/100).toFixed(2) + '</span></div>';
-    if(glueUpMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Glue-up (+' + glueUpMod + '%):</span><span>+$' + (basePrice * glueUpMod/100).toFixed(2) + '</span></div>';
-    if(complexMod > 0) bhtml += '<div class="quote-breakdown-row"><span>Complex (+' + complexMod + '%):</span><span>+$' + (basePrice * complexMod/100).toFixed(2) + '</span></div>';
-    if(featureTotal > 0) bhtml += '<div class="quote-breakdown-row"><span>Features:</span><span>+$' + featureTotal.toFixed(2) + '</span></div>';
-    bhtml += '<div class="quote-breakdown-row total"><span>Product Subtotal:</span><span>$' + productTotal.toFixed(2) + '</span></div>';
-    bd.innerHTML = bhtml;
+    const thickPct = thickTier ? Math.round(thickTier.modifier * 100) : 0;
+    thickMod.textContent = thickPct > 0 ? '+' + thickPct + '% thickness modifier' : '';
   }
 
-  // Custom total
-  const ct = document.getElementById('qe-custom-total');
-  if(ct) ct.textContent = 'Subtotal: $' + _quoteProductTotal(q, s).toFixed(2);
+  // Construction Price footer (Card 3)
+  const cpf = document.getElementById('qe-construction-price');
+  if(cpf) cpf.textContent = 'Price: $' + calcSurfaceAreaPrice(q, s).toFixed(2);
+
+  // Line item totals
+  document.querySelectorAll('#qe-line-items .quote-line-item').forEach(row => {
+    const qty = parseFloat(row.querySelector('.qe-li-qty').value) || 1;
+    const price = parseFloat(row.querySelector('.qe-li-price').value) || 0;
+    const totalEl = row.querySelector('.qe-li-total');
+    if(totalEl) totalEl.textContent = '$' + (qty * price).toFixed(2);
+  });
 
   // Labour summary
   const ls = document.getElementById('qe-labour-summary');
@@ -10730,12 +10757,50 @@ function _wireQuoteEditEvents(q) {
   document.getElementById('qe-add-feat-desc')?.addEventListener('input', liveUpdate);
   document.getElementById('qe-add-feat-price')?.addEventListener('input', liveUpdate);
 
+  // Notes edit/save/cancel
+  const notesEditBtn = document.getElementById('qe-notes-edit-btn');
+  const notesDisplay = document.getElementById('qe-notes-display');
+  const notesEditWrap = document.getElementById('qe-notes-edit-wrap');
+  const notesTextarea = document.getElementById('qe-notes');
+  const notesSaveBtn = document.getElementById('qe-notes-save-btn');
+  const notesCancelBtn = document.getElementById('qe-notes-cancel-btn');
+  if(notesEditBtn) notesEditBtn.addEventListener('click', function() {
+    notesDisplay.style.display = 'none';
+    notesEditWrap.style.display = 'block';
+    this.style.display = 'none';
+    notesTextarea.focus();
+  });
+  if(notesSaveBtn) notesSaveBtn.addEventListener('click', function() {
+    const val = notesTextarea.value.trim();
+    q.notes = val;
+    notesDisplay.textContent = val || '';
+    if(!val) notesDisplay.innerHTML = '<span style="color:var(--text3);font-style:italic;">No notes yet</span>';
+    notesDisplay.style.display = 'block';
+    notesEditWrap.style.display = 'none';
+    notesEditBtn.style.display = '';
+  });
+  if(notesCancelBtn) notesCancelBtn.addEventListener('click', function() {
+    notesTextarea.value = q.notes || '';
+    notesDisplay.style.display = 'block';
+    notesEditWrap.style.display = 'none';
+    notesEditBtn.style.display = '';
+  });
+
+  // Complex pattern info button
+  const complexInfoBtn = document.getElementById('qe-complex-info');
+  if(complexInfoBtn) complexInfoBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material.');
+  });
+
   // Pricing mode toggle
   body.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', function() {
     q.pricingMode = this.getAttribute('data-mode');
     body.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === q.pricingMode));
     document.getElementById('qe-sa-section').style.display = q.pricingMode === 'surface-area' ? 'block' : 'none';
     document.getElementById('qe-custom-section').style.display = q.pricingMode === 'custom' ? 'block' : 'none';
+    const cs = document.getElementById('qe-construction-section');
+    if(cs) cs.style.display = q.pricingMode === 'surface-area' ? 'block' : 'none';
     liveUpdate();
   }));
 
