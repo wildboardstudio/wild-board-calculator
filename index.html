@@ -586,17 +586,21 @@
     .pricing-modal-body ol { padding-left: 20px; margin: 0 0 14px; }
     .pricing-modal-body li { font-size: 13px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
     .pricing-modal-body li strong { color: var(--text); }
+    .settings-card {
+      border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 8px; background: var(--bg);
+    }
     .settings-collapse-hdr {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 16px; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-size: 15px;
+      padding: 14px 16px; background: none; border: none;
+      border-radius: 10px; margin-bottom: 0; cursor: pointer; font-size: 15px;
       font-weight: 500; color: var(--text); font-family: inherit; width: 100%;
       text-align: left; -webkit-appearance: none;
     }
     .settings-collapse-hdr:active { opacity: 0.7; }
     .settings-collapse-chevron { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
     .settings-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
-    .settings-collapse-body { display: none; padding: 0 4px 16px; }
+    .settings-collapse-body { display: none; padding: 0 16px 16px; }
     .settings-collapse-body.expanded { display: block; }
     .settings-sub-collapse-hdr {
       display: flex; justify-content: space-between; align-items: center;
@@ -608,6 +612,10 @@
     .settings-sub-collapse-hdr:active { opacity: 0.7; }
     .settings-sub-collapse-body { display: none; padding: 8px 4px 12px; }
     .settings-sub-collapse-body.expanded { display: block; }
+    .settings-sub-label { flex: 1; display: flex; align-items: center; }
+    .settings-info-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
     .settings-info-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--text3);
@@ -9535,6 +9543,7 @@ function _renderSettingsBody() {
   let html = '';
 
   // ── My Account section ──
+  html += '<div class="settings-card">';
   html += '<button class="settings-collapse-hdr" data-section="account">My Account<span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="account">';
   if(!_currentUser) {
@@ -9542,18 +9551,24 @@ function _renderSettingsBody() {
     html += '<button class="btn btn-primary" id="set-acct-signin">Sign In / Create Account</button>';
   } else {
     html += '<div class="settings-section">';
+    html += '<div class="settings-field"><label>First Name</label><input type="text" id="set-first-name" value="" /></div>';
+    html += '<div class="settings-field"><label>Last Name</label><input type="text" id="set-last-name" value="" /></div>';
     html += '<div class="settings-field"><label>Email</label><div style="display:flex;align-items:center;gap:8px;"><input type="text" value="' + (_currentUser.email || '').replace(/"/g,'&quot;') + '" disabled style="background:var(--bg2);color:var(--text2);flex:1;" /><button class="btn btn-sm" id="set-change-email-btn" style="white-space:nowrap;">Change Email</button></div></div>';
+    html += '<div class="settings-field"><label>Password</label><button class="btn btn-sm" id="set-change-password-btn" style="align-self:flex-start;">Change Password</button><p id="set-password-msg" style="font-size:11px;color:var(--text3);margin-top:4px;display:none;"></p></div>';
     html += '<div class="settings-field"><label>Username</label><input type="text" id="set-username" value="" /></div>';
     html += '<div class="settings-field"><label>Company Name</label><p style="font-size:11px;color:var(--text3);margin:0 0 4px;">Appears on all quotes and PDF exports.</p><input type="text" id="set-company-name" value="" /></div>';
     html += '<p id="set-acct-sync" style="font-size:11px;color:var(--text3);margin-top:8px;"></p>';
     html += '</div>';
-    html += '<div style="margin-top:20px;"><button class="btn" id="set-acct-signout">Sign Out</button></div>';
+    html += '<div style="margin-top:16px;"><button class="btn btn-primary" id="set-acct-save">Save</button></div>';
+    html += '<div style="margin-top:16px;"><button class="btn" id="set-acct-signout">Sign Out</button></div>';
     html += '<div style="margin-top:16px;"><button id="set-acct-delete" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button></div>';
   }
   html += '</div>';
+  html += '</div>';
 
-  // ── Your Pricing Defaults section ──
-  html += '<button class="settings-collapse-hdr" data-section="pricing">Your Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
+  // ── Pricing Defaults section ──
+  html += '<div class="settings-card">';
+  html += '<button class="settings-collapse-hdr" data-section="pricing">Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
 
   html += '<button class="pricing-explainer-btn" id="pricing-explainer-open" style="justify-content:center;">How does pricing work?</button>';
@@ -9567,7 +9582,7 @@ function _renderSettingsBody() {
   html += '</div></div>';
 
   // ── Surface Area Pricing Tiers sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="surface">Surface Area Pricing Tiers<button class="settings-info-btn" data-info="sa" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-sub-collapse-hdr" data-sub="surface"><span class="settings-sub-label">Surface Area Pricing Tiers</span><span class="settings-info-btn" data-info="sa" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="surface">';
   html += '<table class="settings-tier-table"><thead><tr><th>Label</th><th>Min</th><th>Max</th><th>$/sq in</th><th>Base Total</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
   const tiers = s.surfaceAreaTiers || [];
@@ -9596,7 +9611,7 @@ function _renderSettingsBody() {
   html += '</div>';
 
   // ── Thickness Tiers sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="thickness"><span>Thickness Tiers</span><button class="settings-info-btn" data-info="thick" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-sub-collapse-hdr" data-sub="thickness"><span class="settings-sub-label">Thickness Tiers</span><span class="settings-info-btn" data-info="thick" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="thickness">';
   html += '<table class="settings-tier-table"><thead><tr><th>Min</th><th>Max</th><th>Modifier (%)</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
   (s.thicknessTiers || []).forEach((t, i) => {
@@ -9612,7 +9627,7 @@ function _renderSettingsBody() {
   html += '</div>';
 
   // ── Glue Ups sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="glue">Glue Ups<button class="settings-info-btn" data-info="glue" type="button">i</button><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-sub-collapse-hdr" data-sub="glue"><span class="settings-sub-label">Glue Ups</span><span class="settings-info-btn" data-info="glue" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="glue">';
   for(let i = 0; i <= 5; i++) {
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
@@ -9622,9 +9637,9 @@ function _renderSettingsBody() {
   // ── Grain & Pattern sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="grain">Grain &amp; Pattern<span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="grain">';
-  html += '<div class="settings-section"><h3 style="margin-bottom:4px;">End Grain <button class="settings-info-btn" data-info="eg" type="button">i</button></h3>';
+  html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>End Grain</span><span class="settings-info-btn" data-info="eg" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
-  html += '<div class="settings-section"><h3 style="margin-bottom:4px;">Complex Pattern <button class="settings-info-btn" data-info="cp" type="button">i</button></h3>';
+  html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>Complex Pattern</span><span class="settings-info-btn" data-info="cp" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += '</div>';
 
@@ -9646,6 +9661,7 @@ function _renderSettingsBody() {
   html += '</div>';
 
   html += '</div>'; // close pricing defaults body
+  html += '</div>'; // close pricing defaults card
 
   document.getElementById('settings-body').innerHTML = html;
 
@@ -9705,6 +9721,48 @@ function _renderSettingsBody() {
     if(confirmBtn){ confirmBtn.disabled = false; confirmBtn.textContent = 'Permanently Delete My Account'; }
     document.getElementById('delete-account-modal').classList.add('open');
     if(pwdEl) setTimeout(()=>pwdEl.focus(), 100);
+  });
+  const acctSaveBtn = document.getElementById('set-acct-save');
+  if(acctSaveBtn) acctSaveBtn.addEventListener('click', async () => {
+    acctSaveBtn.disabled = true;
+    const origText = acctSaveBtn.textContent;
+    acctSaveBtn.textContent = 'Saving...';
+    try {
+      await _saveAccountProfile();
+      acctSaveBtn.textContent = 'Saved';
+      const syncEl = document.getElementById('set-acct-sync');
+      if(syncEl) syncEl.textContent = 'Last saved: ' + new Date().toLocaleTimeString();
+      setTimeout(() => { acctSaveBtn.textContent = origText; acctSaveBtn.disabled = false; }, 1500);
+    } catch(e) {
+      console.error('Save account error:', e);
+      acctSaveBtn.textContent = 'Error';
+      setTimeout(() => { acctSaveBtn.textContent = origText; acctSaveBtn.disabled = false; }, 1500);
+    }
+  });
+  const changePwdBtn = document.getElementById('set-change-password-btn');
+  if(changePwdBtn) changePwdBtn.addEventListener('click', async () => {
+    const msg = document.getElementById('set-password-msg');
+    changePwdBtn.disabled = true;
+    const origText = changePwdBtn.textContent;
+    changePwdBtn.textContent = 'Sending...';
+    try {
+      const { error } = await _supabase.auth.resetPasswordForEmail(_currentUser.email);
+      if(error) throw error;
+      if(msg) {
+        msg.textContent = 'A password reset link has been sent to your email.';
+        msg.style.color = 'var(--green)';
+        msg.style.display = 'block';
+      }
+    } catch(e) {
+      if(msg) {
+        msg.textContent = e.message || 'Failed to send password reset email.';
+        msg.style.color = 'var(--red)';
+        msg.style.display = 'block';
+      }
+    } finally {
+      changePwdBtn.textContent = origText;
+      changePwdBtn.disabled = false;
+    }
   });
   if(_currentUser) _loadAccountProfile();
 
@@ -9874,12 +9932,16 @@ async function _loadAccountProfile() {
   try {
     const headers = await _requireAuthHeaders();
     const resp = await _fetchWithTimeout(
-      SUPABASE_URL + '/rest/v1/profiles?select=username,company_name,settings&id=eq.' + _currentUser.id,
+      SUPABASE_URL + '/rest/v1/profiles?select=first_name,last_name,username,company_name,settings&id=eq.' + _currentUser.id,
       { headers }
     );
     const rows = await resp.json();
     if(Array.isArray(rows) && rows.length > 0) {
       const row = rows[0];
+      const firstInput = document.getElementById('set-first-name');
+      if(firstInput && row.first_name) firstInput.value = row.first_name;
+      const lastInput = document.getElementById('set-last-name');
+      if(lastInput && row.last_name) lastInput.value = row.last_name;
       const usernameInput = document.getElementById('set-username');
       if(usernameInput && row.username) usernameInput.value = row.username;
       const companyInput = document.getElementById('set-company-name');
@@ -9898,14 +9960,20 @@ async function _loadAccountProfile() {
 
 async function _saveAccountProfile() {
   if(!_currentUser) return;
+  const firstName = (document.getElementById('set-first-name')||{}).value || '';
+  const lastName = (document.getElementById('set-last-name')||{}).value || '';
   const username = (document.getElementById('set-username')||{}).value || '';
   const companyName = (document.getElementById('set-company-name')||{}).value || '';
   const headers = await _requireAuthHeaders();
   await _fetchWithTimeout(SUPABASE_URL + '/rest/v1/profiles?id=eq.' + _currentUser.id, {
     method: 'PATCH',
     headers: { ...headers, 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ username: username.trim(), company_name: companyName.trim() })
+    body: JSON.stringify({ first_name: firstName.trim(), last_name: lastName.trim(), username: username.trim(), company_name: companyName.trim() })
   });
+  const s = _getSettings();
+  s._companyName = companyName.trim();
+  s._profileUsername = username.trim();
+  localStorage.setItem('wbc_settings', JSON.stringify(s));
 }
 
 function _collectAllSettings() {
