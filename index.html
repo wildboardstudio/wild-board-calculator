@@ -512,10 +512,10 @@
     .settings-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
     .settings-field label { font-size: 12px; font-weight: 600; color: var(--text2); }
     .settings-field input { font-size: 14px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); }
-    .settings-tier-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .settings-tier-table th { text-align: left; padding: 4px 6px; font-weight: 600; color: var(--text2); border-bottom: 1px solid var(--border); }
-    .settings-tier-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); }
-    .settings-tier-table td input { width: 70px; font-size: 12px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); text-align: right; }
+    .settings-tier-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+    .settings-tier-table th { text-align: left; padding: 4px 3px; font-weight: 600; color: var(--text2); border-bottom: 1px solid var(--border); overflow: hidden; }
+    .settings-tier-table td { padding: 4px 3px; border-bottom: 1px solid var(--border); overflow: hidden; }
+    .settings-tier-table td input { width: 100%; box-sizing: border-box; font-size: 12px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); text-align: right; }
     .settings-gear-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--text2); padding: 6px; z-index: 10; -webkit-appearance: none; }
     .settings-gear-btn:active { opacity: 0.6; }
     .settings-ro-note { font-size: 11px; color: var(--text3); font-style: italic; margin-bottom: 12px; }
@@ -1611,6 +1611,21 @@
   </div>
 </div>
 
+<!-- Change password confirmation modal -->
+<div class="modal-overlay" id="change-password-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;">Change Password</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center;">A password reset link will be sent to:</p>
+    <p id="change-password-email" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;text-align:center;word-break:break-all;"></p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;text-align:center;">Once you click the link in that email, you will be signed out of all devices and prompted to set a new password.</p>
+    <p id="change-password-msg" style="font-size:12px;margin:4px 0 0;display:none;"></p>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-primary" id="change-password-send-btn">Send Reset Link</button>
+      <button class="btn" id="change-password-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Settings screen (single page, collapsible sections) -->
 <div class="settings-screen" id="settings-screen">
   <div class="wrap" style="padding:64px 14px 14px;">
@@ -1622,10 +1637,12 @@
       <button class="gh-icon-btn gh-quickcalc-btn" aria-label="Quick Calc"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="5" width="10" height="3" rx="1" fill="currentColor"/><rect x="5" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="10" width="2" height="2" rx=".5" fill="currentColor"/><rect x="5" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="9" y="14" width="2" height="2" rx=".5" fill="currentColor"/><rect x="13" y="14" width="2" height="2" rx=".5" fill="currentColor"/></svg></button>
       <button class="gh-icon-btn gh-settings-btn" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
-    <h1 style="font-size:18px;font-weight:700;margin-bottom:12px;">Settings</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h1 style="font-size:18px;font-weight:700;margin:0;">Settings</h1>
+      <button class="btn btn-sm" id="settings-signout-btn" style="display:none;">Sign Out</button>
+    </div>
     <div id="settings-ro-note" class="settings-ro-note" style="display:none;">Sign in to save your pricing settings.</div>
     <div id="settings-body"></div>
-    <button class="btn btn-primary" id="settings-save-btn" style="width:100%;margin-top:20px;margin-bottom:20px;">Save</button>
   </div>
 </div>
 
@@ -9551,6 +9568,7 @@ function _renderSettingsBody() {
   if(roNote) roNote.style.display = ro ? 'block' : 'none';
 
   let html = '';
+  const subSaveBtn = (sub) => ro ? '' : '<div style="margin-top:10px;"><button class="btn btn-sm btn-primary set-sub-save" data-sub="' + sub + '">Save</button></div>';
 
   // ── My Account section ──
   html += '<div class="settings-card">';
@@ -9571,7 +9589,6 @@ function _renderSettingsBody() {
     html += '</div>';
     html += '</div>';
     html += '<div style="margin-top:16px;text-align:center;"><button class="btn btn-primary" id="set-acct-save">Save</button></div>';
-    html += '<div style="margin-top:16px;text-align:center;"><button class="btn" id="set-acct-signout">Sign Out</button></div>';
     html += '<div style="margin-top:16px;text-align:center;"><button id="set-acct-delete" style="background:none;border:none;padding:4px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Account</button></div>';
   }
   html += '</div>';
@@ -9590,12 +9607,12 @@ function _renderSettingsBody() {
   html += '<div class="settings-section">';
   html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
   html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-  html += '</div></div>';
+  html += '</div>' + subSaveBtn('labor') + '</div>';
 
   // ── Surface Area Pricing Tiers sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="surface"><span class="settings-sub-label">Surface Area Pricing Tiers</span><span class="settings-info-btn" data-info="sa" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="surface">';
-  html += '<table class="settings-tier-table"><thead><tr><th>Label</th><th>Min</th><th>Max</th><th>$/sq in</th><th>Base Total</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
+  html += '<table class="settings-tier-table"><thead><tr><th style="width:21%;">Label</th><th style="width:11%;">Min</th><th style="width:18%;">Max</th><th style="width:18%;">$/sq in</th><th style="width:22%;">Base Total</th>' + (ro ? '' : '<th style="width:10%;"></th>') + '</tr></thead><tbody>';
   const tiers = s.surfaceAreaTiers || [];
   tiers.forEach((t, i) => {
     const minVal = i === 0 ? 0 : tiers[i - 1].max;
@@ -9603,14 +9620,14 @@ function _renderSettingsBody() {
     const midpoint = isLast ? (minVal + 100) : (minVal + t.max) / 2;
     const baseTotal = (midpoint * t.rate).toFixed(2);
     html += '<tr>';
-    html += '<td><input type="text" class="set-sa-label" data-idx="' + i + '" value="' + (t.label || '').replace(/"/g,'&quot;') + '" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:center;"' + roAttr + ' /></td>';
+    html += '<td><input type="text" class="set-sa-label" data-idx="' + i + '" value="' + (t.label || '').replace(/"/g,'&quot;') + '" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:center;"' + roAttr + ' /></td>';
     html += '<td style="font-size:11px;color:var(--text2);text-align:right;">' + minVal + '</td>';
     if(isLast) {
       html += '<td style="font-size:11px;color:var(--text2);text-align:center;">&infin;</td>';
     } else {
-      html += '<td><input type="number" class="set-sa-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="1" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+      html += '<td><input type="number" class="set-sa-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="1" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
     }
-    html += '<td><input type="number" class="set-sa-rate" data-idx="' + i + '" value="' + t.rate + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-sa-rate" data-idx="' + i + '" value="' + t.rate + '" min="0" step="0.01" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
     html += '<td style="font-size:11px;color:var(--text2);">$' + baseTotal + '</td>';
     if(!ro) html += '<td>' + (tiers.length > 1 ? '<button class="del-btn set-sa-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
     html += '</tr>';
@@ -9619,23 +9636,23 @@ function _renderSettingsBody() {
   if(!ro) {
     html += '<button class="btn btn-sm" id="set-sa-add" style="margin-top:6px;">+ Add Tier</button>';
   }
-  html += '</div>';
+  html += subSaveBtn('surface') + '</div>';
 
   // ── Thickness Tiers sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="thickness"><span class="settings-sub-label">Thickness Tiers</span><span class="settings-info-btn" data-info="thick" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="thickness">';
-  html += '<table class="settings-tier-table"><thead><tr><th>Min</th><th>Max</th><th>Modifier (%)</th>' + (ro ? '' : '<th></th>') + '</tr></thead><tbody>';
+  html += '<table class="settings-tier-table"><thead><tr><th style="width:28%;">Min</th><th style="width:28%;">Max</th><th style="width:30%;">Modifier (%)</th>' + (ro ? '' : '<th style="width:14%;"></th>') + '</tr></thead><tbody>';
   (s.thicknessTiers || []).forEach((t, i) => {
     html += '<tr>';
-    html += '<td><input type="number" class="set-thick-min" data-idx="' + i + '" value="' + t.min + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
-    html += '<td><input type="number" class="set-thick-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="0.01" style="width:70px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
-    html += '<td><input type="number" class="set-thick-mod" data-idx="' + i + '" value="' + Math.round(t.modifier * 100) + '" min="0" step="1" style="width:60px;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-thick-min" data-idx="' + i + '" value="' + t.min + '" min="0" step="0.01" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-thick-max" data-idx="' + i + '" value="' + t.max + '" min="0" step="0.01" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
+    html += '<td><input type="number" class="set-thick-mod" data-idx="' + i + '" value="' + Math.round(t.modifier * 100) + '" min="0" step="1" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></td>';
     if(!ro) html += '<td>' + ((s.thicknessTiers.length > 1) ? '<button class="del-btn set-thick-del" data-idx="' + i + '" style="min-height:24px;font-size:14px;">&times;</button>' : '') + '</td>';
     html += '</tr>';
   });
   html += '</tbody></table>';
   if(!ro) html += '<button class="btn btn-sm" id="set-thick-add" style="margin-top:6px;">+ Add Tier</button>';
-  html += '</div>';
+  html += subSaveBtn('thickness') + '</div>';
 
   // ── Glue Ups sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="glue"><span class="settings-sub-label">Glue Ups</span><span class="settings-info-btn" data-info="glue" role="button">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
@@ -9643,7 +9660,7 @@ function _renderSettingsBody() {
   for(let i = 0; i <= 5; i++) {
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   }
-  html += '</div>';
+  html += subSaveBtn('glue') + '</div>';
 
   // ── Grain & Pattern sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="grain">Grain &amp; Pattern<span class="settings-collapse-chevron">&#9654;</span></button>';
@@ -9652,7 +9669,7 @@ function _renderSettingsBody() {
   html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>Complex Pattern</span><span class="settings-info-btn" data-info="cp" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
-  html += '</div>';
+  html += subSaveBtn('grain') + '</div>';
 
   // ── Feature Add-Ons sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="features">Feature Add-Ons<span class="settings-collapse-chevron">&#9654;</span></button>';
@@ -9663,13 +9680,13 @@ function _renderSettingsBody() {
     html += '</div>';
   });
   if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
-  html += '</div>';
+  html += subSaveBtn('features') + '</div>';
 
   // ── Minimum Quote Threshold sub-section ──
   html += '<button class="settings-sub-collapse-hdr" data-sub="threshold">Minimum Quote Threshold<span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-sub-collapse-body" data-sub="threshold">';
   html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
-  html += '</div>';
+  html += subSaveBtn('threshold') + '</div>';
 
   html += '</div>'; // close pricing defaults body
   html += '</div>'; // close pricing defaults card
@@ -9714,14 +9731,13 @@ function _renderSettingsBody() {
     });
   });
 
+  // ── Header Sign Out visibility ──
+  const hdrSignoutBtn = document.getElementById('settings-signout-btn');
+  if(hdrSignoutBtn) hdrSignoutBtn.style.display = _currentUser ? '' : 'none';
+
   // ── My Account event bindings ──
   const signinBtn = document.getElementById('set-acct-signin');
   if(signinBtn) signinBtn.addEventListener('click', () => openAuthModal());
-  const signoutBtn = document.getElementById('set-acct-signout');
-  if(signoutBtn) signoutBtn.addEventListener('click', async () => {
-    await _supabase.auth.signOut();
-    returnToGuestLanding();
-  });
   const deleteBtn = document.getElementById('set-acct-delete');
   if(deleteBtn) deleteBtn.addEventListener('click', () => {
     const pwdEl = document.getElementById('delete-account-password');
@@ -9740,8 +9756,12 @@ function _renderSettingsBody() {
     acctSaveBtn.textContent = 'Saving...';
     try {
       await _saveAccountProfile();
-      acctSaveBtn.textContent = 'Saved';
-      setTimeout(() => { acctSaveBtn.textContent = origText; acctSaveBtn.disabled = false; }, 1500);
+      acctSaveBtn.textContent = 'Saved ✓';
+      setTimeout(() => {
+        acctSaveBtn.textContent = origText;
+        acctSaveBtn.disabled = false;
+        _collapseSection('account');
+      }, 1500);
     } catch(e) {
       console.error('Save account error:', e);
       acctSaveBtn.textContent = 'Error';
@@ -9749,29 +9769,30 @@ function _renderSettingsBody() {
     }
   });
   const changePwdBtn = document.getElementById('set-change-password-btn');
-  if(changePwdBtn) changePwdBtn.addEventListener('click', async () => {
-    const msg = document.getElementById('set-password-msg');
-    changePwdBtn.disabled = true;
-    const origText = changePwdBtn.textContent;
-    changePwdBtn.textContent = 'Sending...';
-    try {
-      const { error } = await _supabase.auth.resetPasswordForEmail(_currentUser.email);
-      if(error) throw error;
-      if(msg) {
-        msg.textContent = 'A password reset link has been sent to your email.';
-        msg.style.color = 'var(--green)';
-        msg.style.display = 'block';
-      }
-    } catch(e) {
-      if(msg) {
-        msg.textContent = e.message || 'Failed to send password reset email.';
-        msg.style.color = 'var(--red)';
-        msg.style.display = 'block';
-      }
-    } finally {
-      changePwdBtn.textContent = origText;
-      changePwdBtn.disabled = false;
-    }
+  if(changePwdBtn) changePwdBtn.addEventListener('click', () => {
+    const emailEl = document.getElementById('change-password-email');
+    if(emailEl) emailEl.textContent = _currentUser ? _currentUser.email : '';
+    const msg = document.getElementById('change-password-msg');
+    if(msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    document.getElementById('change-password-modal').classList.add('open');
+  });
+
+  // ── Per-sub-section Save buttons ──
+  document.querySelectorAll('.set-sub-save').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if(!_currentUser) { openAuthModal('Create a free account to save your settings.'); return; }
+      const sub = this.getAttribute('data-sub');
+      _collectAllSettings();
+      _saveSettingsLocal();
+      saveSettingsToSupabase().catch(e => console.error('save settings error', e));
+      this.disabled = true;
+      this.textContent = 'Saved ✓';
+      setTimeout(() => {
+        this.textContent = 'Save';
+        this.disabled = false;
+        _collapseSubSection(sub);
+      }, 1500);
+    });
   });
   if(_currentUser) _loadAccountProfile();
 
@@ -9942,6 +9963,18 @@ function _expandSubSection(sub) {
   if(hdr) hdr.classList.add('expanded');
   if(body) body.classList.add('expanded');
 }
+function _collapseSection(sec) {
+  const hdr = document.querySelector('.settings-collapse-hdr[data-section="' + sec + '"]');
+  const body = document.querySelector('.settings-collapse-body[data-section="' + sec + '"]');
+  if(hdr) hdr.classList.remove('expanded');
+  if(body) body.classList.remove('expanded');
+}
+function _collapseSubSection(sub) {
+  const hdr = document.querySelector('.settings-sub-collapse-hdr[data-sub="' + sub + '"]');
+  const body = document.querySelector('.settings-sub-collapse-body[data-sub="' + sub + '"]');
+  if(hdr) hdr.classList.remove('expanded');
+  if(body) body.classList.remove('expanded');
+}
 
 function _showInfoModal(text) {
   let modal = document.getElementById('settings-info-modal');
@@ -10103,18 +10136,48 @@ function _settingsGoBack() {
 
 (function() {
   document.getElementById('settings-back-btn').addEventListener('click', _settingsGoBack);
-  document.getElementById('settings-save-btn').addEventListener('click', () => {
-    if(!_currentUser) {
-      openAuthModal('Create a free account to save your settings.');
-      return;
-    }
-    _saveAccountProfile().catch(e => console.error('save profile error', e));
-    _collectAllSettings();
-    _saveSettingsLocal();
-    saveSettingsToSupabase().catch(e => console.error('save settings error', e));
-    const btn = document.getElementById('settings-save-btn');
-    if(btn) { btn.textContent = 'Saved!'; setTimeout(() => { btn.textContent = 'Save'; }, 1500); }
+
+  // Header Sign Out
+  const hdrSignout = document.getElementById('settings-signout-btn');
+  if(hdrSignout) hdrSignout.addEventListener('click', async () => {
+    await _supabase.auth.signOut();
+    returnToGuestLanding();
   });
+
+  // Change password confirmation modal
+  const cpModal = document.getElementById('change-password-modal');
+  const cpSend = document.getElementById('change-password-send-btn');
+  if(cpSend) cpSend.addEventListener('click', async () => {
+    const msg = document.getElementById('change-password-msg');
+    cpSend.disabled = true;
+    cpSend.textContent = 'Sending...';
+    try {
+      const email = _currentUser ? _currentUser.email : '';
+      const { error } = await _supabase.auth.resetPasswordForEmail(email);
+      if(error) throw error;
+      await _supabase.auth.signOut();
+      cpModal.classList.remove('open');
+      returnToGuestLanding();
+      const banner = document.createElement('div');
+      banner.id = 'password-reset-banner';
+      banner.textContent = 'Check your email to complete the password reset.';
+      banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,0.2);max-width:90%;text-align:center;';
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 6000);
+    } catch(e) {
+      if(msg) {
+        msg.textContent = e.message || 'Failed to send password reset email.';
+        msg.style.color = 'var(--red)';
+        msg.style.display = 'block';
+      }
+    } finally {
+      cpSend.disabled = false;
+      cpSend.textContent = 'Send Reset Link';
+    }
+  });
+  const cpCancel = document.getElementById('change-password-cancel-btn');
+  if(cpCancel) cpCancel.addEventListener('click', () => cpModal.classList.remove('open'));
+  if(cpModal) cpModal.addEventListener('click', (e) => { if(e.target === cpModal) cpModal.classList.remove('open'); });
 })();
 
 // ============ GLOBAL HEADER ============
