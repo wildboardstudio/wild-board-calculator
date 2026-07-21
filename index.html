@@ -1658,15 +1658,11 @@
 <!-- Pricing explainer modal -->
 <div class="modal-overlay" id="pricing-explainer-modal">
   <div class="pricing-modal-body" style="background:var(--bg);border-radius:14px;padding:24px 20px;max-height:80vh;overflow-y:auto;">
-    <h3>How does tiered pricing work?</h3>
-    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Your quote price is built in layers based on the dimensions of your product:</p>
-    <ol>
-      <li><strong>Surface Area</strong> &mdash; We calculate the surface area of your product (length x width = square inches). The surface area determines which pricing tier your product falls into, and each tier has its own $/sq in rate.</li>
-      <li><strong>Thickness</strong> &mdash; A percentage is added based on how thick the material is.</li>
-      <li><strong>Construction</strong> &mdash; Glue-ups, grain direction, and complex patterns each add a percentage on top.</li>
-      <li><strong>Features</strong> &mdash; Flat dollar amounts are added last for things like juice grooves, feet, or custom engraving.</li>
-    </ol>
-    <p style="font-size:13px;color:var(--text2);line-height:1.5;">All of these defaults are yours to edit below.</p>
+    <h3>How does pricing work?</h3>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Your quote price is built in layers, starting with a base price calculated from your product's surface area.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">From there, percentage increases are applied for things like thickness, grain direction, glue-ups, and complex patterns. Each percentage increase is calculated from the base price only, not from the running total. They are all added together and applied to the base price once.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Feature add-ons like juice grooves, finger holds, or custom engraving are fixed dollar amounts added after all percentage increases have been applied.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;">Labor and additional expenses are calculated separately and added to arrive at your final quote total.</p>
     <div style="text-align:center;margin-top:16px;">
       <button class="btn btn-sm" id="pricing-explainer-close">Close</button>
     </div>
@@ -9605,15 +9601,7 @@ function _renderSettingsBody() {
   html += '<button class="settings-collapse-hdr" data-section="pricing">Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
 
-  html += '<button class="pricing-explainer-btn" id="pricing-explainer-open" style="justify-content:center;">How does pricing work?</button>';
-
-  // ── Labor Rates sub-section ──
-  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="labor"><span class="settings-sub-label">Labor Rates</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="labor" role="button">i</span></div>';
-  html += '<div class="settings-sub-collapse-body has-info" data-sub="labor">';
-  html += '<div class="settings-section">';
-  html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-  html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-  html += '</div>' + subSaveBtn('labor') + '</div>';
+  html += '<div style="text-align:center;margin-bottom:10px;"><button id="pricing-explainer-open" style="background:none;border:none;padding:2px 4px;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">How does pricing work?</button></div>';
 
   // ── Surface Area Pricing Tiers sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="surface"><span class="settings-sub-label">Surface Area Pricing Tiers</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="sa" role="button">i</span></div>';
@@ -9691,6 +9679,14 @@ function _renderSettingsBody() {
   if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
   html += subSaveBtn('features') + '</div>';
 
+  // ── Labor Rates sub-section ──
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="labor"><span class="settings-sub-label">Labor Rates</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="labor" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="labor">';
+  html += '<div class="settings-section">';
+  html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '</div>' + subSaveBtn('labor') + '</div>';
+
   // ── Minimum Quote Threshold sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="threshold"><span class="settings-sub-label">Minimum Quote Threshold</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="minq" role="button">i</span></div>';
   html += '<div class="settings-sub-collapse-body has-info" data-sub="threshold">';
@@ -9724,15 +9720,15 @@ function _renderSettingsBody() {
 
   // ── Wire info buttons ──
   const infoTexts = {
-    labor: 'Your shop rate is what you bill the customer per hour. Your employee rate is your internal cost per hour. Enter 0 for employee rate if you are owner-operated.',
-    sa: 'Price is calculated by multiplying your product\'s surface area (length × width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.',
-    thick: 'Thickness adds a percentage modifier on top of the surface area price. Thicker material costs more to source and work with.',
-    glue: 'Each glue-up adds a percentage to the base price. A basic end grain board typically requires a minimum of two, one for the initial long grain panel, and one for the end grain orientation after crosscutting. More complex builds with borders or decorative patterns can require several more.',
-    grain: 'Grain direction and pattern complexity affect the labor and skill required to build a product. These modifiers are added as a percentage on top of the base price. End grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time and precision, a distinction that justifies the price difference.',
+    labor: 'Your shop rate is what you charge the customer per hour and appears on the quote. Your employee rate is your internal labor cost and is never shared with the customer. It is used to calculate your profit margin in the quote summary.\n\nEnter 0 if you are owner-operated.',
+    sa: 'Your base price is calculated by multiplying your product\'s length by its width to get the total surface area in square inches. That area determines which pricing tier your product falls into, and each tier has its own price per square inch. A larger product lands in a higher tier and costs more per square inch.\n\nEach tier includes its lower limit and excludes its upper limit, so a product at exactly 300 sq in is priced in Tier 2, not Tier 1.',
+    thick: 'Thickness adds a percentage increase on top of your surface area base price. Thicker material requires more raw lumber to mill down to final dimensions and adds weight and structural complexity to the build. The thicker the project, the higher the percentage increase applied to your base price.\n\nAdjust your default thickness percentage increases in the Thickness Tiers settings.',
+    glue: 'Each glue-up adds a percentage increase to the base price. A basic edge grain board will typically require just one glue-up. End grain boards require a minimum of two, one for the initial long grain panel, and another for the end grain orientation after crosscutting.\n\nBoards with borders or complex patterns can require several more.',
+    grain: 'Grain direction and pattern complexity each add a percentage increase to your base price. If only one applies, that increase is applied on its own. If both apply, the percentage increases are added together and applied once. Adjust your default percentage increases for each in the Grain & Pattern settings.\n\nEnd grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time to produce than a standard edge grain board.\n\nA complex pattern involves angled cuts or three or more thicknesses in the project material. This adds significant labor and skill to the build.',
     eg: 'End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.',
     cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.',
-    feat: 'Feature add-ons are flat dollar amounts added to the quote price for specific upgrades like juice grooves, finger holds, or custom engraving.',
-    minq: 'Set a minimum quote amount. You\'ll be warned if a quote total falls below this number before sending it to a customer.'
+    feat: 'Feature add-ons are fixed dollar amounts added to your price after all percentage increases have been applied. This means feature costs stay consistent regardless of grain direction or pattern complexity.\n\nCommon examples include juice grooves, finger holds, feet, or custom engraving.',
+    minq: 'Set a minimum quote amount. You will be warned if a quote total falls below this number before sending it to a customer.'
   };
   document.querySelectorAll('.settings-info-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -10006,7 +10002,7 @@ function _showInfoModal(text) {
     modal = document.createElement('div');
     modal.id = 'settings-info-modal';
     modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal" style="max-width:340px;"><p id="settings-info-text" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;"></p><div style="text-align:center;"><button class="btn btn-sm" id="settings-info-close">Close</button></div></div>';
+    modal.innerHTML = '<div class="modal" style="max-width:340px;"><p id="settings-info-text" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;white-space:pre-line;"></p><div style="text-align:center;"><button class="btn btn-sm" id="settings-info-close">Close</button></div></div>';
     document.body.appendChild(modal);
     modal.querySelector('#settings-info-close').addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
