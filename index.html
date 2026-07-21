@@ -23,7 +23,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #faf7f2; --bg2: #e0d8cc; --bg3: #c8bfb0;
+      --bg: #faf7f2; --bg1-5: #f1ece3; --bg2: #e0d8cc; --bg3: #c8bfb0;
       --text: #2c2418; --text2: #6b5e4e; --text3: #a09080;
       --border: #c4bbad; --border2: #b0a696;
       --red: #8b2500; --blue: #5c4a32; --green: #3a5c2e;
@@ -31,7 +31,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #2e2418; --bg2: #1a1208; --bg3: #3d3020;
+        --bg: #2e2418; --bg1-5: #271e12; --bg2: #1a1208; --bg3: #3d3020;
         --text: #ede5d8; --text2: #b8a898; --text3: #7a6a5a;
         --border: #3d3025; --border2: #52422f;
         --red: #cc4400; --green: #5a8a40;
@@ -611,7 +611,7 @@
     }
     .settings-sub-collapse-hdr:active { opacity: 0.7; }
     .settings-sub-collapse-hdr.expanded { border-radius: 8px 8px 0 0; margin-bottom: 0; border-bottom: none; }
-    .settings-sub-collapse-body { display: none; padding: 10px 12px 12px; background: var(--bg); border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; margin-bottom: 6px; box-sizing: border-box; }
+    .settings-sub-collapse-body { display: none; padding: 10px 12px 12px; background: var(--bg1-5); border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; margin-bottom: 6px; box-sizing: border-box; }
     .settings-sub-collapse-body.expanded { display: block; }
     .settings-sub-label { flex: 1; display: flex; align-items: center; }
     .settings-info-row {
