@@ -9608,8 +9608,8 @@ function _renderSettingsBody() {
   html += '<button class="pricing-explainer-btn" id="pricing-explainer-open" style="justify-content:center;">How does pricing work?</button>';
 
   // ── Labor Rates sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="labor">Labor Rates<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="labor">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="labor"><span class="settings-sub-label">Labor Rates</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="labor" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="labor">';
   html += '<div class="settings-section">';
   html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
   html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
@@ -9663,14 +9663,17 @@ function _renderSettingsBody() {
   // ── Glue Ups sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="glue"><span class="settings-sub-label">Glue Ups</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="glue" role="button">i</span></div>';
   html += '<div class="settings-sub-collapse-body has-info" data-sub="glue">';
-  for(let i = 0; i <= 5; i++) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  const glueArr = (s.multipliers && s.multipliers.glueUps) || [];
+  const glueRows = Math.max(glueArr.length, 6);
+  for(let i = 0; i < glueRows; i++) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((glueArr[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   }
+  if(!ro) html += '<button class="btn btn-sm" id="set-glue-add" style="margin-top:6px;">+ Add Glue Up</button>';
   html += subSaveBtn('glue') + '</div>';
 
   // ── Grain & Pattern sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="grain">Grain &amp; Pattern<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="grain">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="grain"><span class="settings-sub-label">Grain &amp; Pattern</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="grain" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="grain">';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>End Grain</span><span class="settings-info-btn" data-info="eg" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>Complex Pattern</span><span class="settings-info-btn" data-info="cp" role="button">i</span></h3>';
@@ -9678,8 +9681,8 @@ function _renderSettingsBody() {
   html += subSaveBtn('grain') + '</div>';
 
   // ── Feature Add-Ons sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="features">Feature Add-Ons<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="features">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="features"><span class="settings-sub-label">Feature Add-Ons</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="feat" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="features">';
   (s.featureAddOns || []).forEach((f, i) => {
     html += '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><input type="text" class="set-feat-name" data-idx="' + i + '" value="' + (f.name || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /><div style="display:flex;align-items:center;gap:2px;"><span style="font-weight:600;font-size:12px;">$</span><input type="number" class="set-feat-price" data-idx="' + i + '" value="' + (f.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></div>';
     if(!ro) html += '<button class="del-btn" data-del-feat="' + i + '" style="min-height:28px;font-size:14px;">&times;</button>';
@@ -9689,8 +9692,8 @@ function _renderSettingsBody() {
   html += subSaveBtn('features') + '</div>';
 
   // ── Minimum Quote Threshold sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="threshold">Minimum Quote Threshold<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="threshold">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="threshold"><span class="settings-sub-label">Minimum Quote Threshold</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="minq" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="threshold">';
   html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
   html += subSaveBtn('threshold') + '</div>';
 
@@ -9721,11 +9724,15 @@ function _renderSettingsBody() {
 
   // ── Wire info buttons ──
   const infoTexts = {
+    labor: 'Your shop rate is what you bill the customer per hour. Your employee rate is your internal cost per hour. Enter 0 for employee rate if you are owner-operated.',
     sa: 'Price is calculated by multiplying your product\'s surface area (length × width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.',
     thick: 'Thickness adds a percentage modifier on top of the surface area price. Thicker material costs more to source and work with.',
-    glue: 'A glue-up joins multiple pieces of wood edge-to-edge to achieve the desired width. More glue-ups mean more labor and complexity.',
+    glue: 'Each glue-up adds a percentage to the base price. A basic end grain board typically requires a minimum of two, one for the initial long grain panel, and one for the end grain orientation after crosscutting. More complex builds with borders or decorative patterns can require several more.',
+    grain: 'Grain direction and pattern complexity affect the labor and skill required to build a product. These modifiers are added as a percentage on top of the base price. End grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time and precision, a distinction that justifies the price difference.',
     eg: 'End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.',
-    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.'
+    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.',
+    feat: 'Feature add-ons are flat dollar amounts added to the quote price for specific upgrades like juice grooves, finger holds, or custom engraving.',
+    minq: 'Set a minimum quote amount. You\'ll be warned if a quote total falls below this number before sending it to a customer.'
   };
   document.querySelectorAll('.settings-info-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -9932,6 +9939,17 @@ function _renderSettingsBody() {
       s2.thicknessTiers.push({ min: +(last.max + 0.01).toFixed(2), max: +(last.max + 0.25).toFixed(2), modifier: (last.modifier || 0) + 0.03 });
       _renderSettingsBody();
       _expandSection('pricing'); _expandSubSection('thickness');
+    });
+
+    const glueAddBtn = document.getElementById('set-glue-add');
+    if(glueAddBtn) glueAddBtn.addEventListener('click', () => {
+      _collectAllSettings();
+      const s2 = _getSettings();
+      const arr = s2.multipliers.glueUps || (s2.multipliers.glueUps = []);
+      const last = arr.length > 0 ? (arr[arr.length - 1] || 0) : 0;
+      arr.push(+(last + 0.05).toFixed(2));
+      _renderSettingsBody();
+      _expandSection('pricing'); _expandSubSection('glue');
     });
 
     // Feature add/delete
