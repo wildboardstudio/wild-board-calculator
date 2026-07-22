@@ -9507,8 +9507,7 @@ function getDefaultSettings() {
     multipliers: {
       glueUps: [0, 0.05, 0.10, 0.15, 0.20, 0.25],
       endGrain: 0.25,
-      complexPattern: 0.25,
-      complexPatternThreshold: 3
+      complexPattern: 0.25
     },
     featureAddOns: [
       { name: 'Juice Groove', price: 50 },
@@ -9664,10 +9663,7 @@ function _renderSettingsBody() {
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>End Grain</span><span class="settings-info-btn" data-info="eg" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>Complex Pattern</span><span class="settings-info-btn" data-info="cp" role="button">i</span></h3>';
-  html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">';
-  html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div>';
-  html += '<div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:11px;font-weight:600;color:var(--text2);">Complex Pattern Threshold</label><input type="number" id="set-complex-threshold" value="' + (s.multipliers.complexPatternThreshold || 3) + '" min="1" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:10px;color:var(--text3);">Number of different thicknesses that counts as a complex pattern.</span></div>';
-  html += '</div></div>';
+  html += '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-complex" value="' + Math.round(s.multipliers.complexPattern * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += subSaveBtn('grain') + '</div>';
 
   // ── Feature Add-Ons sub-section ──
@@ -9722,15 +9718,14 @@ function _renderSettingsBody() {
   });
 
   // ── Wire info buttons ──
-  const cpThreshold = (s.multipliers && s.multipliers.complexPatternThreshold) || 3;
   const infoTexts = {
     labor: 'Your shop rate is what you charge the customer per hour and appears on the quote. Your employee rate is your internal labor cost and is never shared with the customer. It is used to calculate your profit margin in the quote summary.\n\nEnter 0 if you are owner-operated.',
     sa: 'Your base price is calculated by multiplying your product\'s length by its width to get the total surface area in square inches. That area determines which pricing tier your product falls into, and each tier has its own price per square inch. A larger product lands in a higher tier and costs more per square inch.\n\nEach tier includes its lower limit and excludes its upper limit, so a product at exactly 300 sq in is priced in Tier 2, not Tier 1.',
     thick: 'Thickness adds a percentage increase on top of your surface area base price. Thicker material requires more raw lumber to mill down to final dimensions and adds weight and structural complexity to the build. The thicker the project, the higher the percentage increase applied to your base price.\n\nAdjust your default thickness percentage increases in the Thickness Tiers settings.',
     glue: 'Each glue-up adds a percentage increase to the base price. A basic edge grain board will typically require just one glue-up. End grain boards require a minimum of two, one for the initial long grain panel, and another for the end grain orientation after crosscutting.\n\nBoards with borders or complex patterns can require several more.',
-    grain: 'Grain direction and pattern complexity each add a percentage increase to your base price. If only one applies, that increase is applied on its own. If both apply, the percentage increases are added together and applied once. Adjust your default percentage increases for each in the Grain & Pattern settings.\n\nEnd grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time to produce than a standard edge grain board.\n\nA complex pattern involves angled cuts or ' + cpThreshold + ' or more thicknesses in the project material. This adds significant labor and skill to the build.',
+    grain: 'Grain direction and pattern complexity each add a percentage increase to your base price. If only one applies, that increase is applied on its own. If both apply, the percentage increases are added together and applied once. Adjust your default percentage increases for each in the Grain & Pattern settings.\n\nEnd grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time to produce than a standard edge grain board.\n\nA complex pattern involves angled cuts or three or more thicknesses in the project material. This adds significant labor and skill to the build.',
     eg: 'End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.',
-    cp: 'A complex pattern involves angled cuts or the use of ' + cpThreshold + ' or more different thicknesses in the working material. This adds significant time and precision to the build.',
+    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.',
     feat: 'Feature add-ons are fixed dollar amounts added to your price after all percentage increases have been applied. This means feature costs stay consistent regardless of grain direction or pattern complexity.\n\nCommon examples include juice grooves, finger holds, feet, or custom engraving.',
     minq: 'Set a minimum quote amount. You will be warned if a quote total falls below this number before sending it to a customer.'
   };
@@ -10126,8 +10121,6 @@ function _collectAllSettings() {
   if(eg) s.multipliers.endGrain = (parseFloat(eg.value) || 0) / 100;
   const cp = document.getElementById('set-complex');
   if(cp) s.multipliers.complexPattern = (parseFloat(cp.value) || 0) / 100;
-  const cpt = document.getElementById('set-complex-threshold');
-  if(cpt) s.multipliers.complexPatternThreshold = Math.max(1, parseInt(cpt.value) || 3);
 
   // Feature Add-Ons
   const feats = [];
@@ -10439,18 +10432,6 @@ function _quoteProfitData(quote, settings) {
   return { total, matCost, labCost, expCost, totalCost, profit, perHour, margin };
 }
 
-function _recomputeComplexPattern(q) {
-  const co = q.constructionOptions;
-  if(!co) return;
-  const cpFeat = (co.features || []).find(f => f.id === 'complex_pattern');
-  if(!cpFeat) return;
-  const s = _getSettings();
-  const threshold = (s.multipliers && s.multipliers.complexPatternThreshold) || 3;
-  const shouldEnable = (co.thicknessCount || 0) >= threshold || !!co.angledCuts;
-  cpFeat.enabled = shouldEnable;
-  q.complexPattern = shouldEnable;
-}
-
 function _getProductTemplate(productType, settings) {
   const s = settings;
   switch(productType) {
@@ -10459,8 +10440,6 @@ function _getProductTemplate(productType, settings) {
         grainDirection: 'edge',
         thickness: { value: '', modifierType: 'percent', source: 'settings', modifierValue: 0 },
         glueUps: { count: 0, modifierType: 'percent', source: 'settings', modifierValue: 0 },
-        thicknessCount: 0,
-        angledCuts: false,
         features: [
           { id: 'complex_pattern', name: 'Complex Pattern', enabled: false, modifierType: 'percent', source: 'default', modifierValue: 25, hasDefault: true, isSpecialCase: false },
           { id: 'juice_groove', name: 'Juice Groove', enabled: false, modifierType: 'flat', source: 'default', modifierValue: 50, hasDefault: true, isSpecialCase: false },
@@ -10855,14 +10834,6 @@ function renderQuoteEditForm(q) {
     html += '<div class="quote-field"><label>Glue Ups</label><div class="quote-pill-group">';
     for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (glueCount === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
     html += '</div></div>';
-
-    const thickCount = co ? (co.thicknessCount || 0) : 0;
-    html += '<div class="quote-field"><label>Thickness Count</label><div class="quote-pill-group">';
-    for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (thickCount === i ? ' active' : '') + '" data-thickcount="' + i + '">' + i + '</button>';
-    html += '</div></div>';
-
-    const angled = co ? !!co.angledCuts : false;
-    html += '<div class="quote-field"><div style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="qe-angled-cuts"' + (angled ? ' checked' : '') + ' style="flex-shrink:0;" /><label for="qe-angled-cuts" style="margin:0;">Angled Cuts</label></div></div>';
   }
 
   // Divider between required and optional
@@ -11012,11 +10983,6 @@ function _collectQuoteFromForm(q) {
         if(f.source === 'default' && f.modifierValue !== 0) f.source = 'user';
       }
     });
-    // Thickness Count + Angled Cuts (cutting board complex-pattern triggers)
-    const activeThickCount = document.querySelector('[data-thickcount].active');
-    if(activeThickCount) co.thicknessCount = parseInt(activeThickCount.getAttribute('data-thickcount')) || 0;
-    const angledCb = document.getElementById('qe-angled-cuts');
-    if(angledCb) co.angledCuts = angledCb.checked;
     // Sync legacy fields for backward compat
     q.grainDirection = co.grainDirection || 'edge';
     q.glueUps = co.glueUps ? co.glueUps.count : 0;
@@ -11230,8 +11196,7 @@ function _wireQuoteEditEvents(q) {
   const complexInfoBtn = document.getElementById('qe-complex-info');
   if(complexInfoBtn) complexInfoBtn.addEventListener('click', function(e) {
     e.preventDefault();
-    const cpt = (_getSettings().multipliers || {}).complexPatternThreshold || 3;
-    alert('A complex pattern involves angled cuts or the use of ' + cpt + ' or more different thicknesses in the working material.');
+    alert('A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material.');
   });
 
   // Product type selector
@@ -11289,24 +11254,6 @@ function _wireQuoteEditEvents(q) {
     body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === count));
     liveUpdate();
   }));
-
-  // Thickness Count toggle → auto-trigger complex pattern
-  body.querySelectorAll('[data-thickcount]').forEach(btn => btn.addEventListener('click', function() {
-    const count = parseInt(this.getAttribute('data-thickcount'));
-    _collectQuoteFromForm(q);
-    if(q.constructionOptions) q.constructionOptions.thicknessCount = count;
-    _recomputeComplexPattern(q);
-    renderQuoteEditForm(q);
-  }));
-
-  // Angled Cuts checkbox → auto-trigger complex pattern
-  const angledCb = document.getElementById('qe-angled-cuts');
-  if(angledCb) angledCb.addEventListener('change', function() {
-    _collectQuoteFromForm(q);
-    if(q.constructionOptions) q.constructionOptions.angledCuts = this.checked;
-    _recomputeComplexPattern(q);
-    renderQuoteEditForm(q);
-  });
 
   // Construction Options feature checkboxes
   body.querySelectorAll('.qe-co-feat-check').forEach(cb => cb.addEventListener('change', function() {
