@@ -600,6 +600,7 @@
     .settings-collapse-hdr:active { opacity: 0.7; }
     .settings-collapse-chevron { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
     .settings-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
+    .settings-sub-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
     .settings-collapse-body { display: none; padding: 0 16px 16px; }
     .settings-collapse-body.expanded { display: block; }
     .settings-sub-collapse-hdr {
@@ -9598,7 +9599,7 @@ function _renderSettingsBody() {
 
   // ── Pricing Defaults section ──
   html += '<div class="settings-card">';
-  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Pricing Defaults</span><span id="pricing-explainer-open" role="button" style="font-size:12px;font-weight:400;color:var(--text3);text-decoration:underline;cursor:pointer;margin-right:8px;white-space:nowrap;">How does pricing work?</span><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Pricing Defaults</span><span class="settings-info-btn" id="pricing-explainer-open" role="button" style="margin-right:8px;">i</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
 
   // ── Surface Area Pricing Tiers sub-section ──
