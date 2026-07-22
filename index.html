@@ -9597,9 +9597,9 @@ function _renderSettingsBody() {
   html += '</div>';
   html += '</div>';
 
-  // ── Pricing Defaults section ──
+  // ── Quote Defaults section ──
   html += '<div class="settings-card">';
-  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Pricing Defaults<span class="settings-info-btn" id="pricing-explainer-open" role="button" style="margin-left:8px;">i</span></span><span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Quote Defaults<span class="settings-info-btn" id="pricing-explainer-open" role="button" style="margin-left:8px;">i</span></span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
 
   // ── Surface Area Pricing Tiers sub-section ──
@@ -9692,8 +9692,8 @@ function _renderSettingsBody() {
   html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
   html += subSaveBtn('threshold') + '</div>';
 
-  html += '</div>'; // close pricing defaults body
-  html += '</div>'; // close pricing defaults card
+  html += '</div>'; // close quote defaults body
+  html += '</div>'; // close quote defaults card
 
   document.getElementById('settings-body').innerHTML = html;
 
@@ -9889,7 +9889,7 @@ function _renderSettingsBody() {
     if(e.target === changeEmailModal) changeEmailModal.classList.remove('open');
   });
 
-  // ── Pricing Defaults bindings ──
+  // ── Quote Defaults bindings ──
   const explainerBtn = document.getElementById('pricing-explainer-open');
   if(explainerBtn) explainerBtn.addEventListener('click', () => {
     document.getElementById('pricing-explainer-modal').classList.add('open');
@@ -10832,9 +10832,13 @@ function renderQuoteEditForm(q) {
 
   if(showGlueUps) {
     const glueCount = co ? (co.glueUps ? co.glueUps.count : 0) : (q.glueUps || 0);
-    html += '<div class="quote-field"><label>Glue Ups</label><div class="quote-pill-group">';
-    for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (glueCount === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
-    html += '</div></div>';
+    const glueLevels = (s.multipliers && s.multipliers.glueUps) || [];
+    html += '<div class="quote-field"><label>Glue Ups</label><select id="qe-glue-select" class="qe-live">';
+    glueLevels.forEach((mod, i) => {
+      const sel = (glueCount === i) ? ' selected' : '';
+      html += '<option value="' + i + '"' + sel + '>' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</option>';
+    });
+    html += '</select></div>';
   }
 
   // Divider between required and optional
@@ -11243,18 +11247,18 @@ function _wireQuoteEditEvents(q) {
     liveUpdate();
   }));
 
-  // Glue-ups toggle
-  body.querySelectorAll('[data-glue]').forEach(btn => btn.addEventListener('click', function() {
-    const count = parseInt(this.getAttribute('data-glue'));
+  // Glue-ups dropdown
+  const glueSelect = document.getElementById('qe-glue-select');
+  if(glueSelect) glueSelect.addEventListener('change', function() {
+    const count = parseInt(this.value) || 0;
     if(q.constructionOptions && q.constructionOptions.glueUps) {
       q.constructionOptions.glueUps.count = count;
       const s = _getSettings();
       q.constructionOptions.glueUps.modifierValue = Math.round(((s.multipliers.glueUps || [])[count] || 0) * 100);
     }
     q.glueUps = count;
-    body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === count));
     liveUpdate();
-  }));
+  });
 
   // Construction Options feature checkboxes
   body.querySelectorAll('.qe-co-feat-check').forEach(cb => cb.addEventListener('change', function() {
