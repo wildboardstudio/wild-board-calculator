@@ -9598,10 +9598,8 @@ function _renderSettingsBody() {
 
   // ── Pricing Defaults section ──
   html += '<div class="settings-card">';
-  html += '<button class="settings-collapse-hdr" data-section="pricing">Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Pricing Defaults</span><span id="pricing-explainer-open" role="button" style="font-size:12px;font-weight:400;color:var(--text3);text-decoration:underline;cursor:pointer;margin-right:8px;white-space:nowrap;">How does pricing work?</span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
-
-  html += '<div style="text-align:center;margin-bottom:10px;"><button id="pricing-explainer-open" style="background:none;border:none;padding:2px 4px;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">How does pricing work?</button></div>';
 
   // ── Surface Area Pricing Tiers sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="surface"><span class="settings-sub-label">Surface Area Pricing Tiers</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="sa" role="button">i</span></div>';
@@ -9702,6 +9700,7 @@ function _renderSettingsBody() {
   document.querySelectorAll('.settings-collapse-hdr').forEach(hdr => {
     hdr.addEventListener('click', function(e) {
       if(e.target.classList.contains('settings-info-btn')) return;
+      if(e.target.id === 'pricing-explainer-open') return;
       const sec = this.getAttribute('data-section');
       const body = document.querySelector('.settings-collapse-body[data-section="' + sec + '"]');
       const isExp = this.classList.toggle('expanded');
