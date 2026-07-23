@@ -886,6 +886,11 @@
         <span class="fc-name">Your Projects</span>
         <span class="fc-desc">Track time &amp; project costs</span>
       </button>
+      <button class="feature-card" onclick="showHoursTool()" aria-label="Hours">
+        <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></div>
+        <span class="fc-name">Hours</span>
+        <span class="fc-desc">Track labor time by log</span>
+      </button>
       <button class="feature-card" onclick="showShop()" aria-label="Your Lumber">
         <div class="fc-icon"><svg width="28" height="28" viewBox="0 0 256 256" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M214.1,101.3V55.2h-72.8L52.1,90.6v35l-47,22.7v55.6h182.5l63.4-53.2v-49.2H214.1z M133.1,99.3v39h-8.4c0-1.1-0.1-2.3-0.2-3.4c-1-13.5-6.3-25.5-15-35.6H133.1z M60.3,99.3h37.9c10.8,9.4,16.9,21.9,18,36.3c0.1,0.9,0.1,1.8,0.1,2.7H99.3c0-0.5,0-0.9,0-1.4c-0.8-9.9-5.3-19-12.9-25.4c-7.4-6.3-16.4-9.5-25.9-9v-3.1H60.3z M60.3,110.5c7.7-0.5,14.8,2.1,20.6,7.1c5.9,5,9.5,12.1,10,19.9c0,0.2,0,0.5,0,0.7h-9.3c-0.4-5.2-3-9.9-6.9-13.3c-4-3.4-9-5-14.2-4.6c-0.2,0-0.1,0-0.2,0L60.3,110.5L60.3,110.5z M60.3,128.5c0.4-0.1,0.5-0.1,0.8-0.1c3.1-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.5,4.3,3.9,7.2h-13V128.5z M13.2,195.6v-9.3c0.6-0.1,1.2-0.3,1.8-0.3c3-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.6,4.1,3.9,7H13.2z M35.7,195.6c-0.4-5.2-3.1-9.7-7.1-13.1s-9-5-14.2-4.6c-0.4,0-0.8,0.1-1.2,0.2v-9.5c0.1,0,0.3-0.1,0.5-0.1c16-1.2,30,10.8,31.3,26.8c0,0.2,0,0.3,0,0.5C45,195.6,35.7,195.6,35.7,195.6z M53.2,195.6c0-0.5,0-0.7-0.1-1.1c-1.6-20.4-19.5-35.9-39.9-34.4v-3.4h38.5c10.8,9.4,17.3,22.1,18.5,36.5c0.1,0.9,0.1,1.6,0.1,2.5H53.2z M78.4,192.4c-1-13.5-6.3-25.8-15-35.8H86v39h-7.4C78.5,194.5,78.5,193.6,78.4,192.4z M106.5,195.6v-9.4c0.5-0.1,0.7-0.2,1.3-0.2c3-0.2,5.9,0.7,8.3,2.7c2.2,1.8,3.4,4.1,3.8,7L106.5,195.6L106.5,195.6z M128,195.6c-0.4-5.2-2.7-9.7-6.7-13.1s-9-5-14.2-4.6c-0.3,0-0.3,0-0.7,0v-9.9c16-1.2,29.9,11.2,31.2,27.2c0,0.2,0,0.3,0,0.5C137.7,195.6,128,195.6,128,195.6z M145.9,195.6c0-0.5,0-0.7-0.1-1.1c-1.5-20.4-19.1-36.1-39.4-34.7v-3.1h37.9c10.8,9.4,17.4,22.1,18.6,36.5c0.1,0.9-0.1,1.6-0.1,2.5H145.9z M179.2,195.6H171c0-1.1,0.1-2.1,0-3.2c-1-13.5-6.7-25.8-15.4-35.8h23.6V195.6z"/></svg></div>
         <span class="fc-name">Your Lumber</span>
@@ -1294,40 +1299,32 @@
 </div>
 </div>
 
-<!-- Hours Tracker screen -->
+<!-- Hours tool screen -->
 <div class="hours-screen" id="hours-screen">
 <div class="wrap" style="padding-top:64px;padding-bottom:80px;">
   <div class="saved-screen-header" style="position:relative;">
     <button class="btn btn-sm" id="hours-back-btn">&#8592; Back</button>
-    <h1 style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Hours Tracker</h1>
-    <button class="btn btn-sm" id="hours-pdf-btn" style="margin-left:auto;">Download PDF</button>
+    <h1 id="hours-screen-title" style="font-size:18px;font-weight:700;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Hours</h1>
   </div>
-
-  <div style="margin:16px 0;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <label style="font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;">Hourly Rate</label>
-      <div style="display:flex;align-items:center;gap:2px;">
-        <span style="font-size:14px;font-weight:600;">$</span>
-        <input type="number" id="hours-rate-input" value="0" min="0" step="0.01" style="width:80px;text-align:left;font-size:14px;padding:6px 8px;" />
-        <span style="font-size:11px;color:var(--text2);">/hr</span>
-      </div>
-    </div>
-    <div id="hours-summary" style="font-size:13px;color:var(--text2);text-align:center;">0 hrs &middot; $0.00 total</div>
-  </div>
-
-  <div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;">
-    <select id="hours-filter" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);min-height:32px;">
-      <option value="all">All sessions</option>
-      <option value="standalone">Standalone only</option>
-    </select>
-  </div>
-
-  <div id="hours-sessions-list"></div>
-
-  <div style="text-align:center;margin-top:16px;">
-    <button class="btn btn-primary" id="hours-add-btn">+ Log Session</button>
-  </div>
+  <div id="hours-body"></div>
 </div>
+</div>
+
+<!-- New/Edit Log modal -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;" id="log-modal-title">New Log</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Title</label><input type="text" id="log-title-input" placeholder="e.g. Kitchen build" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Link to Project <span style="font-weight:400;">(optional)</span></label><select id="log-project-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"><option value="">None</option></select></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Hourly Rate</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="log-rate-input" min="0" step="0.01" placeholder="0.00" style="width:120px;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>
+      <div id="log-modal-error" style="display:none;font-size:12px;color:var(--red);text-align:center;"></div>
+    </div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-primary" id="log-modal-save">Save</button>
+      <button class="btn" id="log-modal-cancel">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- Log Session modal -->
@@ -8644,6 +8641,68 @@ function _projGetSessions(projId) {
   return hoursData.sessions.filter(s => s.projectId === projId);
 }
 
+function logUid() {
+  return 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function _hoursProjectName(projectId) {
+  if(!projectId) return '';
+  const p = (projectsData || []).find(x => x.id === projectId);
+  return p ? (p.name || '') : '';
+}
+
+// Migrate legacy hours (flat sessions inside Projects) into the Logs model.
+// Every session historically has a projectId; group those into one Log per project.
+function _migrateHoursLogs() {
+  if(!hoursData) return false;
+  let changed = false;
+  if(!Array.isArray(hoursData.logs)) { hoursData.logs = []; changed = true; }
+  if(!Array.isArray(hoursData.sessions)) { hoursData.sessions = []; changed = true; }
+  const byProject = {};
+  hoursData.sessions.forEach(s => {
+    if(s.logId) return; // already assigned
+    if(!s.projectId) return; // standalone legacy (not expected); leave unassigned
+    (byProject[s.projectId] = byProject[s.projectId] || []).push(s);
+  });
+  Object.keys(byProject).forEach(projId => {
+    // Reuse an existing Log for this project if one already exists, else create.
+    let log = hoursData.logs.find(l => l.projectId === projId);
+    if(!log) {
+      const proj = (projectsData || []).find(p => p.id === projId);
+      // Defer migrating this project's sessions until its project record is
+      // loaded, so the generated Log title/rate reflect the real project.
+      if(!proj) return;
+      log = {
+        id: logUid(),
+        title: 'Sessions from ' + (proj.name || 'Project'),
+        projectId: projId,
+        rate: _projGetRate(proj),
+        createdAt: new Date().toISOString()
+      };
+      hoursData.logs.push(log);
+      changed = true;
+    }
+    byProject[projId].forEach(s => { if(s.logId !== log.id) { s.logId = log.id; changed = true; } });
+  });
+  return changed;
+}
+
+function _logSessions(logId) {
+  if(!hoursData || !hoursData.sessions) return [];
+  return hoursData.sessions.filter(s => s.logId === logId);
+}
+
+function _logTotalHours(logId) {
+  let totalMin = 0;
+  _logSessions(logId).forEach(s => { totalMin += _hoursCalcMinutes(s.start, s.end, s.breaks); });
+  return totalMin / 60;
+}
+
+function _logCost(log) {
+  if(!log) return 0;
+  return _logTotalHours(log.id) * (parseFloat(log.rate) || 0);
+}
+
 function _projLaborCost(proj) {
   const rate = _projGetRate(proj);
   let totalMin = 0;
@@ -8928,7 +8987,11 @@ function renderProjectDetail() {
     hHtml += '<p style="font-size:12px;color:var(--text3);text-align:center;">No sessions logged yet.</p>';
   }
   hHtml += '<div style="text-align:center;margin-top:8px;"><button class="btn btn-sm btn-primary" id="proj-log-session-btn">+ Log Session</button></div>';
+  hHtml += '<div style="text-align:center;margin-top:8px;"><button id="proj-view-hours-btn" style="background:none;border:none;padding:4px;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">View in Hours Tracker</button></div>';
   hoursBody.innerHTML = hHtml;
+
+  const viewHoursBtn = document.getElementById('proj-view-hours-btn');
+  if(viewHoursBtn) viewHoursBtn.addEventListener('click', () => showHoursTool(proj.id));
 
   hoursBody.querySelectorAll('[data-proj-del-session]').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -8990,12 +9053,199 @@ function renderProjectDetail() {
   });
 })();
 
-// Wire hours back button
+// ============ HOURS TOOL (Logs) ============
+let _currentLogId = null;
+let _hoursProjectFilter = null; // when set, list shows only logs for this project
+let _hoursReturnTo = 'landing';
+
+function showHoursTool(projectFilter) {
+  _hoursProjectFilter = projectFilter || null;
+  _hoursReturnTo = projectFilter ? 'project' : 'landing';
+  _currentLogId = null;
+  _migrateHoursLogs();
+  _hideAllScreens();
+  document.getElementById('hours-screen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'auto'});
+  renderHoursList();
+}
+
+function renderHoursList() {
+  _currentLogId = null;
+  document.getElementById('hours-screen-title').textContent = 'Hours';
+  const body = document.getElementById('hours-body');
+  const allLogs = (hoursData && Array.isArray(hoursData.logs)) ? hoursData.logs : [];
+  const logs = _hoursProjectFilter ? allLogs.filter(l => l.projectId === _hoursProjectFilter) : allLogs;
+  const sorted = logs.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+  let html = '';
+  if(_hoursProjectFilter) {
+    const pname = _hoursProjectName(_hoursProjectFilter);
+    html += '<div style="font-size:12px;color:var(--text2);margin:12px 0 8px;text-align:center;">Showing logs for <strong>' + (pname || 'this project').replace(/</g,'&lt;') + '</strong></div>';
+  }
+  if(sorted.length === 0) {
+    html += '<p style="font-size:13px;color:var(--text3);text-align:center;margin:24px 0;">No logs yet.</p>';
+  } else {
+    sorted.forEach(log => {
+      const hrs = _logTotalHours(log.id);
+      const cost = _logCost(log);
+      const pname = _hoursProjectName(log.projectId);
+      html += '<button class="hours-log-card" data-log-id="' + log.id + '" style="width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;cursor:pointer;-webkit-appearance:none;font-family:inherit;color:var(--text);display:block;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">';
+      html += '<div style="font-size:15px;font-weight:600;">' + (log.title || 'Untitled Log').replace(/</g,'&lt;') + '</div>';
+      html += '<span style="color:var(--text3);">&rsaquo;</span>';
+      html += '</div>';
+      if(pname) html += '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + pname.replace(/</g,'&lt;') + '</div>';
+      html += '<div style="font-size:12px;color:var(--text2);margin-top:4px;">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</div>';
+      html += '</button>';
+    });
+  }
+  html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-primary" id="hours-new-log-btn">+ New Log</button></div>';
+  body.innerHTML = html;
+
+  body.querySelectorAll('.hours-log-card').forEach(card => card.addEventListener('click', function() {
+    openHoursLog(this.getAttribute('data-log-id'));
+  }));
+  document.getElementById('hours-new-log-btn').addEventListener('click', () => openLogModal(null));
+}
+
+function openHoursLog(logId) {
+  const log = (hoursData.logs || []).find(l => l.id === logId);
+  if(!log) { renderHoursList(); return; }
+  _currentLogId = logId;
+  document.getElementById('hours-screen-title').textContent = 'Log';
+  const body = document.getElementById('hours-body');
+  const rate = parseFloat(log.rate) || 0;
+  const sessions = _logSessions(logId).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const hrs = _logTotalHours(logId);
+  const cost = _logCost(log);
+  const pname = _hoursProjectName(log.projectId);
+
+  let html = '';
+  html += '<div style="margin:12px 0;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">';
+  html += '<div><div style="font-size:16px;font-weight:700;">' + (log.title || 'Untitled Log').replace(/</g,'&lt;') + '</div>';
+  if(pname) html += '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + pname.replace(/</g,'&lt;') + '</div>';
+  html += '</div>';
+  html += '<button class="btn btn-sm" id="hours-log-edit-btn">Edit</button>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:12px;margin-top:10px;font-size:13px;color:var(--text2);"><span>Rate: $' + (rate > 0 ? rate.toFixed(2) : '—') + '/hr</span><span style="margin-left:auto;font-weight:600;color:var(--text);">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</span></div>';
+  html += '</div>';
+
+  html += '<div id="hours-log-sessions">';
+  if(sessions.length > 0) {
+    sessions.forEach(s => {
+      const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
+      const shrs = mins / 60;
+      const scost = shrs * rate;
+      const breakCount = (s.breaks || []).filter(b => b.start && b.end).length;
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;">';
+      html += '<div style="display:flex;justify-content:space-between;">';
+      html += '<div style="font-size:12px;font-weight:600;">' + (s.date || '') + '</div>';
+      html += '<div style="font-size:12px;font-weight:600;">' + shrs.toFixed(1) + ' hrs · $' + scost.toFixed(2) + '</div>';
+      html += '</div>';
+      html += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (s.end||'');
+      if(breakCount > 0) html += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
+      html += '</div>';
+      if(s.note) html += '<div style="font-size:10px;color:var(--text3);font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
+      html += '<button class="shop-action-btn" data-log-del-session="' + s.id + '" style="margin-top:4px;">Delete</button>';
+      html += '</div>';
+    });
+  } else {
+    html += '<p style="font-size:12px;color:var(--text3);text-align:center;">No sessions logged yet.</p>';
+  }
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:12px;"><button class="btn btn-sm btn-primary" id="hours-log-add-session-btn">+ Log Session</button></div>';
+  html += '<div style="text-align:center;margin-top:16px;"><button id="hours-log-delete-btn" style="background:none;border:none;padding:4px;font-size:12px;color:var(--red);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Log</button></div>';
+  body.innerHTML = html;
+
+  document.getElementById('hours-log-edit-btn').addEventListener('click', () => openLogModal(logId));
+  document.getElementById('hours-log-add-session-btn').addEventListener('click', () => openHoursLogModal(null, logId));
+  document.getElementById('hours-log-delete-btn').addEventListener('click', function() {
+    appConfirm('Delete this log and all its sessions? This cannot be undone.', () => {
+      hoursData.sessions = hoursData.sessions.filter(s => s.logId !== logId);
+      hoursData.logs = hoursData.logs.filter(l => l.id !== logId);
+      saveHoursToSupabase().catch(e => console.error('save hours error', e));
+      renderHoursList();
+    });
+  });
+  body.querySelectorAll('[data-log-del-session]').forEach(btn => btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const sid = this.getAttribute('data-log-del-session');
+    appConfirm('Delete this session?', () => {
+      hoursData.sessions = hoursData.sessions.filter(s => s.id !== sid);
+      saveHoursToSupabase().catch(e => console.error('save hours error', e));
+      openHoursLog(logId);
+    });
+  }));
+}
+
+function openLogModal(logId) {
+  const modal = document.getElementById('log-modal');
+  const isEdit = !!logId;
+  const log = isEdit ? (hoursData.logs || []).find(l => l.id === logId) : null;
+  document.getElementById('log-modal-title').textContent = isEdit ? 'Edit Log' : 'New Log';
+  document.getElementById('log-title-input').value = isEdit ? (log.title || '') : '';
+  const s = _getSettings();
+  const rateVal = isEdit ? (log.rate != null ? log.rate : '') : (s.defaultShopRate || '');
+  document.getElementById('log-rate-input').value = rateVal;
+  const projSel = document.getElementById('log-project-input');
+  projSel.innerHTML = '<option value="">None</option>';
+  (projectsData || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    if(isEdit && log.projectId === p.id) opt.selected = true;
+    else if(!isEdit && _hoursProjectFilter === p.id) opt.selected = true;
+    projSel.appendChild(opt);
+  });
+  const err = document.getElementById('log-modal-error');
+  err.style.display = 'none'; err.textContent = '';
+  document.getElementById('log-modal-save').setAttribute('data-edit-id', isEdit ? logId : '');
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('log-title-input').focus(), 100);
+}
+
+(function() {
+  const saveBtn = document.getElementById('log-modal-save');
+  if(saveBtn) saveBtn.addEventListener('click', function() {
+    const title = document.getElementById('log-title-input').value.trim();
+    const err = document.getElementById('log-modal-error');
+    if(!title) { err.textContent = 'Please enter a title.'; err.style.display = 'block'; return; }
+    const projectId = document.getElementById('log-project-input').value || null;
+    const rate = parseFloat(document.getElementById('log-rate-input').value) || 0;
+    const editId = this.getAttribute('data-edit-id');
+    if(editId) {
+      const log = (hoursData.logs || []).find(l => l.id === editId);
+      if(log) { log.title = title; log.projectId = projectId; log.rate = rate; }
+    } else {
+      if(!Array.isArray(hoursData.logs)) hoursData.logs = [];
+      const log = { id: logUid(), title, projectId, rate, createdAt: new Date().toISOString() };
+      hoursData.logs.push(log);
+      _currentLogId = log.id;
+    }
+    saveHoursToSupabase().catch(e => console.error('save hours error', e));
+    document.getElementById('log-modal').classList.remove('open');
+    if(editId && _currentLogId === editId) openHoursLog(editId);
+    else if(!editId) openHoursLog(_currentLogId);
+    else renderHoursList();
+  });
+  const cancelBtn = document.getElementById('log-modal-cancel');
+  if(cancelBtn) cancelBtn.addEventListener('click', () => document.getElementById('log-modal').classList.remove('open'));
+  const modal = document.getElementById('log-modal');
+  if(modal) modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
+})();
+
+// Wire hours back button (context-aware: log detail → list, list → landing/project)
 (function() {
   const btn = document.getElementById('hours-back-btn');
   if(btn) btn.addEventListener('click', () => {
+    if(_currentLogId) { renderHoursList(); return; }
     document.getElementById('hours-screen').style.display = 'none';
-    showLanding();
+    if(_hoursReturnTo === 'project' && _currentProjectId) {
+      document.getElementById('project-detail-screen').style.display = 'block';
+      renderProjectDetail();
+    } else {
+      showLanding();
+    }
   });
 })();
 
@@ -9069,6 +9319,8 @@ function renderProjectDetail() {
       if(proj) {
         if(hoursData && hoursData.sessions) {
           hoursData.sessions = hoursData.sessions.filter(s => s.projectId !== proj.id);
+          // Remove now-empty Logs that were linked to this project.
+          if(Array.isArray(hoursData.logs)) hoursData.logs = hoursData.logs.filter(l => l.projectId !== proj.id);
           saveHoursToSupabase().catch(e => console.error('save hours error', e));
         }
         projectsData = projectsData.filter(p => p.id !== proj.id);
@@ -9216,9 +9468,11 @@ function openProjLinkModal() {
 // ---- Hours Log Modal (shared with project detail) ----
 let _hoursBreakCount = 0;
 let _hoursLogProjectId = null;
+let _hoursLogForLogId = null;
 
-function openHoursLogModal(forProjectId) {
+function openHoursLogModal(forProjectId, forLogId) {
   _hoursLogProjectId = forProjectId || null;
+  _hoursLogForLogId = forLogId || null;
   const modal = document.getElementById('hours-log-modal');
   document.getElementById('hours-log-date').value = new Date().toISOString().slice(0, 10);
   document.getElementById('hours-log-start').value = '';
@@ -9228,7 +9482,7 @@ function openHoursLogModal(forProjectId) {
   errEl.style.display = 'none'; errEl.textContent = '';
 
   const listDiv = document.getElementById('hours-log-list').parentElement;
-  if(forProjectId) {
+  if(forProjectId || forLogId) {
     listDiv.style.display = 'none';
   } else {
     listDiv.style.display = '';
@@ -9282,7 +9536,10 @@ function updateHoursLogPreview() {
   const start = document.getElementById('hours-log-start').value;
   const end = document.getElementById('hours-log-end').value;
   let rate = 0;
-  if(_hoursLogProjectId) {
+  if(_hoursLogForLogId) {
+    const log = (hoursData && hoursData.logs || []).find(l => l.id === _hoursLogForLogId);
+    rate = log ? (parseFloat(log.rate) || 0) : 0;
+  } else if(_hoursLogProjectId) {
     const proj = projectsData.find(p => p.id === _hoursLogProjectId);
     rate = _projGetRate(proj);
   } else {
@@ -9342,12 +9599,22 @@ function validateHoursLog() {
     const errEl = document.getElementById('hours-log-error');
     if(err) { errEl.textContent = err; errEl.style.display = 'block'; return; }
     errEl.style.display = 'none';
-    if(!hoursData) hoursData = {rate: 0, sessions: []};
-    const projectId = _hoursLogProjectId || null;
+    if(!hoursData) hoursData = {rate: 0, sessions: [], logs: []};
+    if(!Array.isArray(hoursData.sessions)) hoursData.sessions = [];
+    // When adding through a Log, inherit that Log's id and its linked project
+    // so project rollups (which key on projectId) still include the session.
+    let logId = null;
+    let projectId = _hoursLogProjectId || null;
+    if(_hoursLogForLogId) {
+      logId = _hoursLogForLogId;
+      const log = (hoursData.logs || []).find(l => l.id === logId);
+      if(log) projectId = log.projectId || null;
+    }
     const breaks = getHoursBreaks().filter(b => b.start && b.end);
     const session = {
       id: hoursUid(),
       projectId: projectId,
+      logId: logId,
       date: document.getElementById('hours-log-date').value,
       note: document.getElementById('hours-log-note').value.trim(),
       start: document.getElementById('hours-log-start').value,
@@ -9355,9 +9622,13 @@ function validateHoursLog() {
       breaks: breaks
     };
     hoursData.sessions.push(session);
+    // Project-added sessions (projectId, no logId) get folded into that project's Log.
+    if(!logId && projectId) _migrateHoursLogs();
     saveHoursToSupabase().catch(e => console.error('save hours error', e));
     document.getElementById('hours-log-modal').classList.remove('open');
-    if(_currentProjectId && projectId === _currentProjectId) {
+    if(_hoursLogForLogId && _currentLogId === _hoursLogForLogId) {
+      openHoursLog(_currentLogId);
+    } else if(_currentProjectId && projectId === _currentProjectId) {
       renderProjectDetail();
     }
   });
@@ -12008,6 +12279,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
       .then(() => fetchSavedLists())
       .then(() => fetchHoursIntoMemory().catch(e => console.error('Hours fetch on sign-in failed:', e)))
       .then(() => fetchProjectsFromSupabase().catch(e => console.error('Projects fetch on sign-in failed:', e)))
+      .then(() => { try { if(_migrateHoursLogs()) saveHoursToSupabase().catch(e => console.error('save hours (migration) error', e)); } catch(e) { console.error('Hours log migration failed:', e); } })
       .then(() => fetchQuotesFromSupabase().catch(e => console.error('Quotes fetch on sign-in failed:', e)))
       .then(() => fetchSettingsFromSupabase().catch(e => console.error('Settings fetch on sign-in failed:', e)))
       .then(() => { if(typeof updateLandingLink === 'function') updateLandingLink(); })
@@ -12186,7 +12458,8 @@ async function _fetchHoursRow() {
 
 async function fetchHoursIntoMemory() {
   const row = await _fetchHoursRow();
-  hoursData = row.data || {rate: 0, sessions: []};
+  hoursData = row.data || {rate: 0, sessions: [], logs: []};
+  _migrateHoursLogs();
 }
 
 async function saveHoursToSupabase() {
