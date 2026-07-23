@@ -26,7 +26,8 @@
       --bg: #faf7f2; --bg1-5: #f1ece3; --bg2: #e0d8cc; --bg3: #c8bfb0;
       --text: #2c2418; --text2: #6b5e4e; --text3: #a09080;
       --border: #c4bbad; --border2: #b0a696;
-      --red: #8b2500; --blue: #5c4a32; --green: #3a5c2e;
+      --red: #8b2500; --blue: #2f6f9c; --green: #3a5c2e;
+      --yellow: #c78a12; --amber: #cc7a1a; --accent: #2c2418; --accent-text: #ede5d8;
       --radius: 8px;
     }
     @media (prefers-color-scheme: dark) {
@@ -34,9 +35,20 @@
         --bg: #2e2418; --bg1-5: #271e12; --bg2: #1a1208; --bg3: #3d3020;
         --text: #ede5d8; --text2: #b8a898; --text3: #7a6a5a;
         --border: #3d3025; --border2: #52422f;
-        --red: #cc4400; --green: #5a8a40;
+        --red: #cc4400; --green: #5a8a40; --blue: #4a90c0;
+        --yellow: #d9a827; --amber: #e08a2b; --accent: #ede5d8; --accent-text: #2e2418;
       }
     }
+    /* Live-clock global status banner */
+    #clock-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 250;
+      height: 28px; line-height: 28px; overflow: hidden;
+      font-size: 12px; font-weight: 600; text-align: center; color: #fff;
+      cursor: pointer; -webkit-appearance: none; border: none; font-family: inherit;
+      padding: 0 12px; white-space: nowrap; text-overflow: ellipsis;
+    }
+    body.clock-active { padding-top: 28px; }
+    body.clock-active .global-header { top: 28px; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -1334,14 +1346,14 @@
     <p style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:10px;" id="clock-picker-sub">Choose a Log for this session.</p>
     <div id="clock-picker-list" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;"></div>
     <div class="modal-btns" style="margin-top:14px;flex-direction:column;gap:8px;">
-      <button class="btn" id="clock-picker-newlog" style="width:100%;">+ New Log</button>
-      <button class="btn" id="clock-picker-skip" style="width:100%;">Skip</button>
+      <button id="clock-picker-newlog" style="width:100%;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer;-webkit-appearance:none;font-family:inherit;">+ New Log</button>
+      <button id="clock-picker-skip" style="width:100%;background:none;border:none;padding:8px;font-size:13px;color:var(--text3);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Skip</button>
     </div>
   </div>
 </div>
 
-<!-- App-wide floating "clocked in" indicator -->
-<div id="clock-indicator" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:900;background:var(--green);color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;-webkit-appearance:none;border:none;font-family:inherit;white-space:nowrap;"></div>
+<!-- App-wide live-clock status banner (between header and body; status + navigation only) -->
+<div id="clock-banner" style="display:none;"></div>
 
 <!-- Log Session modal -->
 <div class="modal-overlay" id="hours-log-modal">
@@ -8651,12 +8663,28 @@ function _hoursCalcMinutes(start, end, breaks) {
 }
 
 // ── Live clock helpers ──
+// Timestamps are stored as UTC ISO; all display uses the device's local timezone, 12-hour format.
 function _nowISO() { return new Date().toISOString(); }
 function _isoToHM(iso) {
+  // 24h HH:MM in local time — stored on sessions for compatibility with _hoursCalcMinutes.
   if(!iso) return '';
   const d = new Date(iso);
   if(isNaN(d.getTime())) return '';
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function _hmTo12(hm) {
+  // "HH:MM" (24h) → "h:MM AM/PM"
+  if(!hm || hm.indexOf(':') < 0) return hm || '';
+  const parts = hm.split(':');
+  let h = parseInt(parts[0], 10); const m = parts[1];
+  if(isNaN(h)) return hm;
+  const ampm = h < 12 ? 'AM' : 'PM';
+  h = h % 12; if(h === 0) h = 12;
+  return h + ':' + m + ' ' + ampm;
+}
+function _iso12(iso) {
+  // ISO (UTC) → local "h:MM AM/PM"
+  return _hmTo12(_isoToHM(iso));
 }
 function _isoToDate(iso) {
   const d = iso ? new Date(iso) : new Date();
@@ -9032,7 +9060,7 @@ function renderProjectDetail() {
       hHtml += '<div style="font-size:12px;font-weight:600;">' + (s.date || '') + '</div>';
       hHtml += '<div style="font-size:12px;font-weight:600;">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</div>';
       hHtml += '</div>';
-      hHtml += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (s.end||'');
+      hHtml += '<div style="font-size:10px;color:var(--text3);">' + _hmTo12(s.start||'') + ' – ' + _hmTo12(s.end||'');
       if(breakCount > 0) hHtml += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
       hHtml += '</div>';
       if(s.note) hHtml += '<div style="font-size:10px;color:var(--text3);font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
@@ -9156,7 +9184,7 @@ function _renderLogDetailHtml(log) {
       if(isActive) html += '<div style="font-size:12px;font-weight:600;color:var(--green);">In progress</div>';
       else html += '<div style="font-size:12px;font-weight:600;">' + shrs.toFixed(1) + ' hrs · $' + scost.toFixed(2) + '</div>';
       html += '</div>';
-      html += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (isActive ? 'now' : (s.end||''));
+      html += '<div style="font-size:10px;color:var(--text3);">' + _hmTo12(s.start||'') + ' – ' + (isActive ? 'now' : _hmTo12(s.end||''));
       if(breakCount > 0) html += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
       html += '</div>';
       if(s.note) html += '<div style="font-size:10px;color:var(--text3);font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
@@ -9211,7 +9239,7 @@ function renderHoursList() {
   html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-primary" id="hours-new-log-btn">+ New Log</button></div>';
   body.innerHTML = html;
   _wireClockWidget();
-  _updateClockIndicator();
+  _updateClockBanner();
 
   body.querySelectorAll('.hours-log-header').forEach(h => h.addEventListener('click', function() {
     const id = this.getAttribute('data-log-id');
@@ -9322,22 +9350,23 @@ function openLogModal(logId) {
 // Render the clock widget at the top of the Hours tool based on the active session.
 function _renderClockWidgetHtml() {
   const active = _activeSession();
-  let html = '<div id="hours-clock-widget" style="margin:12px 0 16px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;text-align:center;">';
+  // Standalone at the top of the Hours screen — no card / container wrapper.
+  let html = '<div id="hours-clock-widget" style="text-align:center;margin:8px 0 18px;">';
   if(!active) {
-    html += '<button class="btn btn-primary" id="clock-in-btn" style="min-width:140px;">Clock In</button>';
+    html += '<button class="btn" id="clock-in-btn" style="min-width:150px;background:var(--green);color:#fff;border:none;">Clock In</button>';
   } else {
     const onBreak = !!_openBreak(active);
     const logName = active.logId ? ((hoursData.logs||[]).find(l => l.id === active.logId) || {}).title : null;
     const elapsed = _elapsedMinutes(active);
-    html += '<div style="font-size:13px;color:var(--text2);">Clocked in since ' + _isoToHM(active.clockedInAt);
+    html += '<div style="font-size:13px;color:var(--text2);">Clocked in since ' + _iso12(active.clockedInAt);
     if(logName) html += ' · <strong style="color:var(--text);">' + (logName||'').replace(/</g,'&lt;') + '</strong>';
     else html += ' · <span style="color:var(--text3);">No log</span>';
     html += '</div>';
     html += '<div style="font-size:12px;color:' + (onBreak ? 'var(--text3)' : 'var(--text2)') + ';margin-top:2px;">' + (onBreak ? 'On break' : (Math.floor(elapsed/60) + 'h ' + (elapsed%60) + 'm elapsed')) + '</div>';
     html += '<div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">';
-    if(onBreak) html += '<button class="btn btn-sm" id="break-end-btn">Break End</button>';
-    else html += '<button class="btn btn-sm" id="break-start-btn">Break Start</button>';
-    html += '<button class="btn btn-sm" id="clock-out-btn" style="background:var(--red);color:#fff;border:none;">Clock Out</button>';
+    if(onBreak) html += '<button class="btn btn-sm" id="break-end-btn" style="background:var(--blue);color:#fff;border:none;">Break End</button>';
+    else html += '<button class="btn btn-sm" id="break-start-btn" style="background:var(--amber);color:#fff;border:none;">Break Start</button>';
+    html += '<button class="btn btn-sm" id="clock-out-btn" style="background:var(--yellow);color:#2c2418;border:none;">Clock Out</button>';
     html += '</div>';
   }
   html += '</div>';
@@ -9355,19 +9384,26 @@ function _wireClockWidget() {
   if(out) out.addEventListener('click', clockOut);
 }
 
-function _updateClockIndicator() {
-  const ind = document.getElementById('clock-indicator');
-  if(!ind) return;
+function _updateClockBanner() {
+  const bar = document.getElementById('clock-banner');
+  if(!bar) return;
   const active = _activeSession();
-  if(!active) { ind.style.display = 'none'; return; }
+  if(!active) {
+    bar.style.display = 'none';
+    document.body.classList.remove('clock-active');
+    return;
+  }
   const onBreak = !!_openBreak(active);
-  ind.style.background = onBreak ? 'var(--text3)' : 'var(--green)';
-  ind.textContent = '⏱ ' + (onBreak ? 'On break' : 'Clocked in');
-  ind.style.display = 'block';
+  // Banner accent matches the current active state (green = working, blue = on break).
+  bar.style.background = onBreak ? 'var(--blue)' : 'var(--green)';
+  const since = _iso12(active.clockedInAt);
+  bar.textContent = onBreak ? ('On break · clocked in since ' + since) : ('Clocked in since ' + since);
+  bar.style.display = 'block';
+  document.body.classList.add('clock-active');
 }
 
 function _refreshClockUI() {
-  _updateClockIndicator();
+  _updateClockBanner();
   // If the Hours tool is visible, re-render so the widget reflects new state.
   const hs = document.getElementById('hours-screen');
   if(hs && hs.style.display !== 'none') renderHoursList();
@@ -9519,10 +9555,10 @@ function _clockPickerChoose(logId) {
 // Set when the clock picker's "+ New Log" opens the log modal, so its save routes back to the clock.
 let _clockPendingAfterNewLog = false;
 
-// Indicator taps through to the Hours tool.
+// Banner taps through to the Hours tool (status + navigation only, no buttons).
 (function() {
-  const ind = document.getElementById('clock-indicator');
-  if(ind) ind.addEventListener('click', () => showHoursTool());
+  const bar = document.getElementById('clock-banner');
+  if(bar) bar.addEventListener('click', () => showHoursTool());
 })();
 
 // Wire hours back button (context-aware: log detail → list, list → landing/project)
@@ -12753,7 +12789,7 @@ async function fetchHoursIntoMemory() {
   hoursData = row.data || {rate: 0, sessions: [], logs: []};
   _migrateHoursLogs();
   // Resume the app-wide indicator if a session was left running (e.g. tab closed mid-session).
-  if(typeof _updateClockIndicator === 'function') _updateClockIndicator();
+  if(typeof _updateClockBanner === 'function') _updateClockBanner();
 }
 
 async function saveHoursToSupabase() {
