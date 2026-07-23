@@ -9054,14 +9054,14 @@ function renderProjectDetail() {
 })();
 
 // ============ HOURS TOOL (Logs) ============
-let _currentLogId = null;
+let _expandedLogId = null;   // which Log's detail is expanded inline within its card
 let _hoursProjectFilter = null; // when set, list shows only logs for this project
 let _hoursReturnTo = 'landing';
 
 function showHoursTool(projectFilter) {
   _hoursProjectFilter = projectFilter || null;
   _hoursReturnTo = projectFilter ? 'project' : 'landing';
-  _currentLogId = null;
+  _expandedLogId = null;
   _migrateHoursLogs();
   _hideAllScreens();
   document.getElementById('hours-screen').style.display = 'block';
@@ -9069,68 +9069,24 @@ function showHoursTool(projectFilter) {
   renderHoursList();
 }
 
-function renderHoursList() {
-  _currentLogId = null;
-  document.getElementById('hours-screen-title').textContent = 'Hours';
-  const body = document.getElementById('hours-body');
-  const allLogs = (hoursData && Array.isArray(hoursData.logs)) ? hoursData.logs : [];
-  const logs = _hoursProjectFilter ? allLogs.filter(l => l.projectId === _hoursProjectFilter) : allLogs;
-  const sorted = logs.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
-  let html = '';
-  if(_hoursProjectFilter) {
-    const pname = _hoursProjectName(_hoursProjectFilter);
-    html += '<div style="font-size:12px;color:var(--text2);margin:12px 0 8px;text-align:center;">Showing logs for <strong>' + (pname || 'this project').replace(/</g,'&lt;') + '</strong></div>';
-  }
-  if(sorted.length === 0) {
-    html += '<p style="font-size:13px;color:var(--text3);text-align:center;margin:24px 0;">No logs yet.</p>';
-  } else {
-    sorted.forEach(log => {
-      const hrs = _logTotalHours(log.id);
-      const cost = _logCost(log);
-      const pname = _hoursProjectName(log.projectId);
-      html += '<button class="hours-log-card" data-log-id="' + log.id + '" style="width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;cursor:pointer;-webkit-appearance:none;font-family:inherit;color:var(--text);display:block;">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">';
-      html += '<div style="font-size:15px;font-weight:600;">' + (log.title || 'Untitled Log').replace(/</g,'&lt;') + '</div>';
-      html += '<span style="color:var(--text3);">&rsaquo;</span>';
-      html += '</div>';
-      if(pname) html += '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + pname.replace(/</g,'&lt;') + '</div>';
-      html += '<div style="font-size:12px;color:var(--text2);margin-top:4px;">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</div>';
-      html += '</button>';
-    });
-  }
-  html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-primary" id="hours-new-log-btn">+ New Log</button></div>';
-  body.innerHTML = html;
-
-  body.querySelectorAll('.hours-log-card').forEach(card => card.addEventListener('click', function() {
-    openHoursLog(this.getAttribute('data-log-id'));
-  }));
-  document.getElementById('hours-new-log-btn').addEventListener('click', () => openLogModal(null));
+// Expand a specific Log inline (used by save handlers / project deep-link).
+function openHoursLog(logId) {
+  _expandedLogId = logId;
+  renderHoursList();
 }
 
-function openHoursLog(logId) {
-  const log = (hoursData.logs || []).find(l => l.id === logId);
-  if(!log) { renderHoursList(); return; }
-  _currentLogId = logId;
-  document.getElementById('hours-screen-title').textContent = 'Log';
-  const body = document.getElementById('hours-body');
+// Detail markup rendered INSIDE the log card when expanded.
+function _renderLogDetailHtml(log) {
+  const logId = log.id;
   const rate = parseFloat(log.rate) || 0;
   const sessions = _logSessions(logId).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
-  const hrs = _logTotalHours(logId);
-  const cost = _logCost(log);
-  const pname = _hoursProjectName(log.projectId);
-
   let html = '';
-  html += '<div style="margin:12px 0;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">';
-  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">';
-  html += '<div><div style="font-size:16px;font-weight:700;">' + (log.title || 'Untitled Log').replace(/</g,'&lt;') + '</div>';
-  if(pname) html += '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + pname.replace(/</g,'&lt;') + '</div>';
+  html += '<div class="hours-log-detail" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;">';
+  html += '<span style="font-size:12px;color:var(--text2);">Rate: $' + (rate > 0 ? rate.toFixed(2) : '—') + '/hr</span>';
+  html += '<button class="btn btn-sm hours-log-edit-btn" data-log-id="' + logId + '">Edit</button>';
   html += '</div>';
-  html += '<button class="btn btn-sm" id="hours-log-edit-btn">Edit</button>';
-  html += '</div>';
-  html += '<div style="display:flex;gap:12px;margin-top:10px;font-size:13px;color:var(--text2);"><span>Rate: $' + (rate > 0 ? rate.toFixed(2) : '—') + '/hr</span><span style="margin-left:auto;font-weight:600;color:var(--text);">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</span></div>';
-  html += '</div>';
-
-  html += '<div id="hours-log-sessions">';
+  html += '<div class="hours-log-sessions">';
   if(sessions.length > 0) {
     sessions.forEach(s => {
       const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
@@ -9153,17 +9109,72 @@ function openHoursLog(logId) {
     html += '<p style="font-size:12px;color:var(--text3);text-align:center;">No sessions logged yet.</p>';
   }
   html += '</div>';
-  html += '<div style="text-align:center;margin-top:12px;"><button class="btn btn-sm btn-primary" id="hours-log-add-session-btn">+ Log Session</button></div>';
-  html += '<div style="text-align:center;margin-top:16px;"><button id="hours-log-delete-btn" style="background:none;border:none;padding:4px;font-size:12px;color:var(--red);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Log</button></div>';
+  html += '<div style="text-align:center;margin-top:12px;"><button class="btn btn-sm btn-primary hours-log-add-session-btn" data-log-id="' + logId + '">+ Log Session</button></div>';
+  html += '<div style="text-align:center;margin-top:12px;"><button class="hours-log-delete-btn" data-log-id="' + logId + '" style="background:none;border:none;padding:4px;font-size:12px;color:var(--red);cursor:pointer;text-decoration:underline;-webkit-appearance:none;font-family:inherit;">Delete Log</button></div>';
+  html += '</div>';
+  return html;
+}
+
+function renderHoursList() {
+  document.getElementById('hours-screen-title').textContent = 'Hours';
+  const body = document.getElementById('hours-body');
+  const allLogs = (hoursData && Array.isArray(hoursData.logs)) ? hoursData.logs : [];
+  const logs = _hoursProjectFilter ? allLogs.filter(l => l.projectId === _hoursProjectFilter) : allLogs;
+  // Keep the expanded id valid (log may have been deleted).
+  if(_expandedLogId && !logs.some(l => l.id === _expandedLogId)) _expandedLogId = null;
+  const sorted = logs.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+  let html = '';
+  if(_hoursProjectFilter) {
+    const pname = _hoursProjectName(_hoursProjectFilter);
+    html += '<div style="font-size:12px;color:var(--text2);margin:12px 0 8px;text-align:center;">Showing logs for <strong>' + (pname || 'this project').replace(/</g,'&lt;') + '</strong></div>';
+  }
+  if(sorted.length === 0) {
+    html += '<p style="font-size:13px;color:var(--text3);text-align:center;margin:24px 0;">No logs yet.</p>';
+  } else {
+    sorted.forEach(log => {
+      const expanded = log.id === _expandedLogId;
+      const hrs = _logTotalHours(log.id);
+      const cost = _logCost(log);
+      const pname = _hoursProjectName(log.projectId);
+      html += '<div class="hours-log-card" data-log-id="' + log.id + '" style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;color:var(--text);">';
+      html += '<div class="hours-log-header" data-log-id="' + log.id + '" style="cursor:pointer;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">';
+      html += '<div style="font-size:15px;font-weight:600;">' + (log.title || 'Untitled Log').replace(/</g,'&lt;') + '</div>';
+      html += '<span class="hours-log-chevron" style="color:var(--text3);font-size:16px;transition:transform 0.2s;display:inline-block;' + (expanded ? 'transform:rotate(90deg);' : '') + '">&rsaquo;</span>';
+      html += '</div>';
+      if(pname) html += '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + pname.replace(/</g,'&lt;') + '</div>';
+      html += '<div style="font-size:12px;color:var(--text2);margin-top:4px;">' + hrs.toFixed(1) + ' hrs · $' + cost.toFixed(2) + '</div>';
+      html += '</div>'; // header
+      if(expanded) html += _renderLogDetailHtml(log);
+      html += '</div>'; // card
+    });
+  }
+  html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-primary" id="hours-new-log-btn">+ New Log</button></div>';
   body.innerHTML = html;
 
-  document.getElementById('hours-log-edit-btn').addEventListener('click', () => openLogModal(logId));
-  document.getElementById('hours-log-add-session-btn').addEventListener('click', () => openHoursLogModal(null, logId));
-  document.getElementById('hours-log-delete-btn').addEventListener('click', function() {
+  body.querySelectorAll('.hours-log-header').forEach(h => h.addEventListener('click', function() {
+    const id = this.getAttribute('data-log-id');
+    _expandedLogId = (_expandedLogId === id) ? null : id;
+    renderHoursList();
+  }));
+  document.getElementById('hours-new-log-btn').addEventListener('click', () => openLogModal(null));
+  if(_expandedLogId) _wireLogDetailHandlers(_expandedLogId);
+}
+
+function _wireLogDetailHandlers(logId) {
+  const body = document.getElementById('hours-body');
+  const editBtn = body.querySelector('.hours-log-edit-btn[data-log-id="' + logId + '"]');
+  if(editBtn) editBtn.addEventListener('click', function(e) { e.stopPropagation(); openLogModal(logId); });
+  const addBtn = body.querySelector('.hours-log-add-session-btn[data-log-id="' + logId + '"]');
+  if(addBtn) addBtn.addEventListener('click', function(e) { e.stopPropagation(); openHoursLogModal(null, logId); });
+  const delBtn = body.querySelector('.hours-log-delete-btn[data-log-id="' + logId + '"]');
+  if(delBtn) delBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
     appConfirm('Delete this log and all its sessions? This cannot be undone.', () => {
       hoursData.sessions = hoursData.sessions.filter(s => s.logId !== logId);
       hoursData.logs = hoursData.logs.filter(l => l.id !== logId);
       saveHoursToSupabase().catch(e => console.error('save hours error', e));
+      _expandedLogId = null;
       renderHoursList();
     });
   });
@@ -9173,7 +9184,7 @@ function openHoursLog(logId) {
     appConfirm('Delete this session?', () => {
       hoursData.sessions = hoursData.sessions.filter(s => s.id !== sid);
       saveHoursToSupabase().catch(e => console.error('save hours error', e));
-      openHoursLog(logId);
+      renderHoursList(); // stays expanded on the same card
     });
   }));
 }
@@ -9220,13 +9231,12 @@ function openLogModal(logId) {
       if(!Array.isArray(hoursData.logs)) hoursData.logs = [];
       const log = { id: logUid(), title, projectId, rate, createdAt: new Date().toISOString() };
       hoursData.logs.push(log);
-      _currentLogId = log.id;
+      _expandedLogId = log.id;
     }
     saveHoursToSupabase().catch(e => console.error('save hours error', e));
     document.getElementById('log-modal').classList.remove('open');
-    if(editId && _currentLogId === editId) openHoursLog(editId);
-    else if(!editId) openHoursLog(_currentLogId);
-    else renderHoursList();
+    if(editId) _expandedLogId = editId; // keep the edited card expanded
+    renderHoursList();
   });
   const cancelBtn = document.getElementById('log-modal-cancel');
   if(cancelBtn) cancelBtn.addEventListener('click', () => document.getElementById('log-modal').classList.remove('open'));
@@ -9238,7 +9248,8 @@ function openLogModal(logId) {
 (function() {
   const btn = document.getElementById('hours-back-btn');
   if(btn) btn.addEventListener('click', () => {
-    if(_currentLogId) { renderHoursList(); return; }
+    // If a card is expanded, collapse it first; otherwise leave the tool.
+    if(_expandedLogId) { _expandedLogId = null; renderHoursList(); return; }
     document.getElementById('hours-screen').style.display = 'none';
     if(_hoursReturnTo === 'project' && _currentProjectId) {
       document.getElementById('project-detail-screen').style.display = 'block';
@@ -9626,8 +9637,8 @@ function validateHoursLog() {
     if(!logId && projectId) _migrateHoursLogs();
     saveHoursToSupabase().catch(e => console.error('save hours error', e));
     document.getElementById('hours-log-modal').classList.remove('open');
-    if(_hoursLogForLogId && _currentLogId === _hoursLogForLogId) {
-      openHoursLog(_currentLogId);
+    if(_hoursLogForLogId && document.getElementById('hours-screen').style.display !== 'none') {
+      openHoursLog(_hoursLogForLogId); // re-render Hours list with this card expanded
     } else if(_currentProjectId && projectId === _currentProjectId) {
       renderProjectDetail();
     }
