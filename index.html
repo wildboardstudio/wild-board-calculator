@@ -1410,7 +1410,7 @@
   </div>
 
   <div class="proj-section" id="proj-notes-section">
-    <div class="proj-section-hdr"><h3>Notes</h3></div>
+    <div class="proj-section-hdr"><h3>Project Details</h3></div>
     <div class="proj-section-body" id="proj-notes-body"></div>
   </div>
 
@@ -1427,7 +1427,6 @@
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Estimated Start Date</label><input type="date" id="proj-date-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Estimated Completion Date <span style="font-weight:400;">(optional)</span></label><input type="date" id="proj-completion-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Link a List <span style="font-weight:400;">(optional)</span></label><select id="proj-list-select" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"><option value="">None</option></select></div>
-      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Note <span style="font-weight:400;">(optional)</span></label><input type="text" id="proj-note-input" placeholder="Optional notes" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Hourly Rate <span style="font-weight:400;">(optional)</span></label><input type="number" id="proj-rate-input" min="0" step="0.01" placeholder="0.00" style="width:100%;font-size:14px;padding:8px;text-align:left;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div id="proj-modal-error" style="display:none;font-size:12px;color:var(--red);text-align:center;"></div>
     </div>
@@ -8865,30 +8864,75 @@ function renderProjectDetail() {
     });
   }
 
-  // Notes section
+  // Project Details section — individual note entries
   const notesBody = document.getElementById('proj-notes-body');
   if(notesBody) {
-    const noteText = proj.note || '';
-    notesBody.innerHTML = '<div id="proj-note-display" style="min-height:40px;cursor:text;">' +
-      (noteText ? '<p style="font-size:13px;color:var(--text);margin:0;white-space:pre-wrap;">' + noteText.replace(/</g,'&lt;') + '</p>' :
-      '<p style="font-size:13px;color:var(--text3);margin:0;font-style:italic;">Tap to add a note...</p>') +
-      '</div>';
-    document.getElementById('proj-note-display').addEventListener('click', function() {
-      notesBody.innerHTML = '<textarea id="proj-note-edit" style="width:100%;min-height:80px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' +
-        noteText.replace(/</g,'&lt;') + '</textarea>' +
-        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">' +
-        '<button class="btn btn-sm btn-primary" id="proj-note-save">Save</button>' +
-        '<button class="btn btn-sm" id="proj-note-cancel">Cancel</button></div>';
-      const ta = document.getElementById('proj-note-edit');
-      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
-      document.getElementById('proj-note-save').addEventListener('click', function() {
-        proj.note = document.getElementById('proj-note-edit').value.trim();
-        saveProjectToSupabase(proj).catch(e => console.error('save note error', e));
-        renderProjectDetail();
+    _migrateProjectNotes(proj);
+    notesBody.innerHTML = '<div id="proj-notes-list">' + _renderProjectNotesList(proj) + '</div>' +
+      '<div id="proj-note-add-wrap" style="text-align:center;margin-top:8px;"><button class="btn btn-sm" id="proj-note-add-btn">Add Note</button></div>';
+    const notesList = document.getElementById('proj-notes-list');
+    const noteAddWrap = document.getElementById('proj-note-add-wrap');
+    const noteAddBtn = document.getElementById('proj-note-add-btn');
+
+    function persistNotes() { saveProjectToSupabase(proj).catch(e => console.error('save note error', e)); }
+    function rerenderProjNotes() { notesList.innerHTML = _renderProjectNotesList(proj); wireProjNoteRows(); }
+    function wireProjNoteRows() {
+      notesList.querySelectorAll('.proj-note-del').forEach(btn => btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const idx = parseInt(this.getAttribute('data-note-idx'));
+        proj.notes.splice(idx, 1);
+        persistNotes();
+        rerenderProjNotes();
+      }));
+      notesList.querySelectorAll('.proj-note-view').forEach(v => v.addEventListener('click', function() {
+        const idx = this.getAttribute('data-note-idx');
+        const row = notesList.querySelector('.proj-note-row[data-note-idx="' + idx + '"]');
+        row.querySelector('.proj-note-viewwrap').style.display = 'none';
+        const edit = row.querySelector('.proj-note-edit');
+        edit.style.display = 'block';
+        edit.querySelector('.proj-note-edit-text').focus();
+      }));
+      notesList.querySelectorAll('.proj-note-save').forEach(btn => btn.addEventListener('click', function() {
+        const idx = parseInt(this.getAttribute('data-note-idx'));
+        const row = notesList.querySelector('.proj-note-row[data-note-idx="' + idx + '"]');
+        proj.notes[idx].text = row.querySelector('.proj-note-edit-text').value.trim();
+        proj.notes[idx].updatedAt = new Date().toISOString();
+        persistNotes();
+        rerenderProjNotes();
+      }));
+      notesList.querySelectorAll('.proj-note-cancel').forEach(btn => btn.addEventListener('click', function() {
+        rerenderProjNotes();
+      }));
+    }
+    wireProjNoteRows();
+
+    noteAddBtn.addEventListener('click', function() {
+      if(document.getElementById('proj-note-new-wrap')) return;
+      noteAddBtn.style.display = 'none';
+      const wrap = document.createElement('div');
+      wrap.id = 'proj-note-new-wrap';
+      wrap.style.cssText = 'margin-top:8px;';
+      wrap.innerHTML = '<textarea id="proj-note-new-text" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>' +
+        '<div style="display:flex;gap:6px;margin-top:4px;justify-content:center;"><button class="btn btn-sm btn-primary" id="proj-note-new-save">Save</button><button class="btn btn-sm" id="proj-note-new-cancel">Cancel</button></div>';
+      noteAddWrap.appendChild(wrap);
+      const ta = document.getElementById('proj-note-new-text');
+      ta.focus();
+      const closeAdd = () => { wrap.remove(); noteAddBtn.style.display = ''; };
+      document.getElementById('proj-note-new-save').addEventListener('click', function() {
+        const val = ta.value.trim();
+        if(val) {
+          proj.notes.push({
+            id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+            text: val,
+            createdAt: new Date().toISOString(),
+            updatedAt: null
+          });
+          persistNotes();
+          rerenderProjNotes();
+        }
+        closeAdd();
       });
-      document.getElementById('proj-note-cancel').addEventListener('click', function() {
-        renderProjectDetail();
-      });
+      document.getElementById('proj-note-new-cancel').addEventListener('click', closeAdd);
     });
   }
 
@@ -9083,7 +9127,6 @@ function openNewProjectModal() {
   document.getElementById('project-modal-title').textContent = 'New Project';
   document.getElementById('proj-name-input').value = '';
   document.getElementById('proj-date-input').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('proj-note-input').value = '';
   document.getElementById('proj-rate-input').value = (hoursData && hoursData.rate) ? hoursData.rate : '';
   const errEl = document.getElementById('proj-modal-error');
   errEl.style.display = 'none'; errEl.textContent = '';
@@ -9105,7 +9148,6 @@ function openEditProjectModal(proj) {
   document.getElementById('project-modal-title').textContent = 'Edit Project';
   document.getElementById('proj-name-input').value = proj.name || '';
   document.getElementById('proj-date-input').value = proj.date || '';
-  document.getElementById('proj-note-input').value = proj.note || '';
   document.getElementById('proj-rate-input').value = proj.rate || '';
   document.getElementById('proj-completion-input').value = proj.completionDate || '';
   const errEl = document.getElementById('proj-modal-error');
@@ -9150,7 +9192,6 @@ function openEditProjectModal(proj) {
         proj.name = name;
         proj.date = document.getElementById('proj-date-input').value;
         proj.completionDate = document.getElementById('proj-completion-input').value || null;
-        proj.note = document.getElementById('proj-note-input').value.trim();
         proj.listId = listId;
         proj.listName = listName;
         proj.rate = rate;
@@ -9165,7 +9206,7 @@ function openEditProjectModal(proj) {
         name: name,
         date: document.getElementById('proj-date-input').value,
         completionDate: document.getElementById('proj-completion-input').value || null,
-        note: document.getElementById('proj-note-input').value.trim(),
+        notes: [],
         listId: listId,
         listName: listName,
         status: 'active',
@@ -10540,6 +10581,49 @@ function _renderNotesList(q) {
     out += '<div class="qe-note-edit" data-note-idx="' + i + '" style="display:none;">';
     out += '<textarea class="qe-note-edit-text" data-note-idx="' + i + '" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + (n.text || '').replace(/</g,'&lt;') + '</textarea>';
     out += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary qe-note-save" data-note-idx="' + i + '">Save</button><button class="btn btn-sm qe-note-cancel" data-note-idx="' + i + '">Cancel</button></div>';
+    out += '</div>';
+    out += '</div>';
+  });
+  return out;
+}
+
+function _migrateProjectNotes(proj) {
+  // Project notes are now an array of { id, text, createdAt, updatedAt }.
+  // Migrate legacy single-string proj.note into a single-entry array.
+  if(Array.isArray(proj.notes)) return proj.notes;
+  if(typeof proj.note === 'string' && proj.note.trim()) {
+    proj.notes = [{
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      text: proj.note,
+      createdAt: proj.date || new Date().toISOString(),
+      updatedAt: null
+    }];
+  } else {
+    proj.notes = [];
+  }
+  delete proj.note;
+  return proj.notes;
+}
+
+function _renderProjectNotesList(proj) {
+  const notes = Array.isArray(proj.notes) ? proj.notes : [];
+  if(notes.length === 0) {
+    return '<div style="font-size:13px;color:var(--text3);font-style:italic;">No notes yet</div>';
+  }
+  let out = '';
+  notes.forEach((n, i) => {
+    const stamp = n.updatedAt ? ('Edited ' + _formatNoteDate(n.updatedAt)) : _formatNoteDate(n.createdAt);
+    out += '<div class="proj-note-row" data-note-idx="' + i + '" style="border-bottom:1px solid var(--border);padding:8px 0;">';
+    out += '<div class="proj-note-viewwrap" data-note-idx="' + i + '" style="display:flex;align-items:flex-start;gap:8px;">';
+    out += '<div class="proj-note-view" data-note-idx="' + i + '" style="flex:1;cursor:pointer;">';
+    out += '<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">' + (n.text || '').replace(/</g,'&lt;') + '</div>';
+    out += '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + stamp + '</div>';
+    out += '</div>';
+    out += '<button class="del-btn proj-note-del" data-note-idx="' + i + '" style="min-height:28px;">&times;</button>';
+    out += '</div>';
+    out += '<div class="proj-note-edit" data-note-idx="' + i + '" style="display:none;">';
+    out += '<textarea class="proj-note-edit-text" data-note-idx="' + i + '" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + (n.text || '').replace(/</g,'&lt;') + '</textarea>';
+    out += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary proj-note-save" data-note-idx="' + i + '">Save</button><button class="btn btn-sm proj-note-cancel" data-note-idx="' + i + '">Cancel</button></div>';
     out += '</div>';
     out += '</div>';
   });
