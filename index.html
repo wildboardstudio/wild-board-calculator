@@ -1327,6 +1327,22 @@
   </div>
 </div>
 
+<!-- Clock-in/out Log picker modal -->
+<div class="modal-overlay" id="clock-picker-modal">
+  <div class="modal" style="max-width:380px;">
+    <h3 style="text-align:center;" id="clock-picker-title">Assign to a Log</h3>
+    <p style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:10px;" id="clock-picker-sub">Choose a Log for this session.</p>
+    <div id="clock-picker-list" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;"></div>
+    <div class="modal-btns" style="margin-top:14px;flex-direction:column;gap:8px;">
+      <button class="btn" id="clock-picker-newlog" style="width:100%;">+ New Log</button>
+      <button class="btn" id="clock-picker-skip" style="width:100%;">Skip</button>
+    </div>
+  </div>
+</div>
+
+<!-- App-wide floating "clocked in" indicator -->
+<div id="clock-indicator" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:900;background:var(--green);color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;-webkit-appearance:none;border:none;font-family:inherit;white-space:nowrap;"></div>
+
 <!-- Log Session modal -->
 <div class="modal-overlay" id="hours-log-modal">
   <div class="modal" style="max-width:380px;">
@@ -8618,8 +8634,11 @@ function hoursUid() {
 }
 
 function _hoursCalcMinutes(start, end, breaks) {
+  // Active (live-clocked, not yet clocked out) sessions have no end yet → 0 until complete.
+  if(!start || !end) return 0;
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
+  if([sh, sm, eh, em].some(n => isNaN(n))) return 0;
   let total = (eh * 60 + em) - (sh * 60 + sm);
   (breaks || []).forEach(b => {
     if(b.start && b.end) {
@@ -8629,6 +8648,43 @@ function _hoursCalcMinutes(start, end, breaks) {
     }
   });
   return Math.max(0, total);
+}
+
+// ── Live clock helpers ──
+function _nowISO() { return new Date().toISOString(); }
+function _isoToHM(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function _isoToDate(iso) {
+  const d = iso ? new Date(iso) : new Date();
+  if(isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
+  return String(d.getFullYear()) + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function _activeSession() {
+  if(!hoursData || !Array.isArray(hoursData.sessions)) return null;
+  return hoursData.sessions.find(s => s.status === 'active') || null;
+}
+function _openBreak(session) {
+  if(!session || !Array.isArray(session.breaks)) return null;
+  return session.breaks.find(b => b.clockedInAt && !b.clockedOutAt) || null;
+}
+function _elapsedMinutes(session) {
+  // Live elapsed for an active session: (now - clockedInAt) minus completed break spans.
+  if(!session || !session.clockedInAt) return 0;
+  const inMs = new Date(session.clockedInAt).getTime();
+  const nowMs = Date.now();
+  let ms = nowMs - inMs;
+  (session.breaks || []).forEach(b => {
+    if(b.clockedInAt) {
+      const bStart = new Date(b.clockedInAt).getTime();
+      const bEnd = b.clockedOutAt ? new Date(b.clockedOutAt).getTime() : nowMs;
+      ms -= (bEnd - bStart);
+    }
+  });
+  return Math.max(0, Math.round(ms / 60000));
 }
 
 function _projGetRate(proj) {
@@ -9089,16 +9145,18 @@ function _renderLogDetailHtml(log) {
   html += '<div class="hours-log-sessions">';
   if(sessions.length > 0) {
     sessions.forEach(s => {
+      const isActive = s.status === 'active';
       const mins = _hoursCalcMinutes(s.start, s.end, s.breaks);
       const shrs = mins / 60;
       const scost = shrs * rate;
       const breakCount = (s.breaks || []).filter(b => b.start && b.end).length;
-      html += '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;">';
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;' + (isActive ? 'border:1px solid var(--green);' : '') + '">';
       html += '<div style="display:flex;justify-content:space-between;">';
       html += '<div style="font-size:12px;font-weight:600;">' + (s.date || '') + '</div>';
-      html += '<div style="font-size:12px;font-weight:600;">' + shrs.toFixed(1) + ' hrs · $' + scost.toFixed(2) + '</div>';
+      if(isActive) html += '<div style="font-size:12px;font-weight:600;color:var(--green);">In progress</div>';
+      else html += '<div style="font-size:12px;font-weight:600;">' + shrs.toFixed(1) + ' hrs · $' + scost.toFixed(2) + '</div>';
       html += '</div>';
-      html += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (s.end||'');
+      html += '<div style="font-size:10px;color:var(--text3);">' + (s.start||'') + ' – ' + (isActive ? 'now' : (s.end||''));
       if(breakCount > 0) html += ' · ' + breakCount + ' break' + (breakCount > 1 ? 's' : '');
       html += '</div>';
       if(s.note) html += '<div style="font-size:10px;color:var(--text3);font-style:italic;">' + s.note.replace(/</g,'&lt;') + '</div>';
@@ -9124,6 +9182,7 @@ function renderHoursList() {
   if(_expandedLogId && !logs.some(l => l.id === _expandedLogId)) _expandedLogId = null;
   const sorted = logs.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
   let html = '';
+  if(!_hoursProjectFilter) html += _renderClockWidgetHtml();
   if(_hoursProjectFilter) {
     const pname = _hoursProjectName(_hoursProjectFilter);
     html += '<div style="font-size:12px;color:var(--text2);margin:12px 0 8px;text-align:center;">Showing logs for <strong>' + (pname || 'this project').replace(/</g,'&lt;') + '</strong></div>';
@@ -9151,6 +9210,8 @@ function renderHoursList() {
   }
   html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-primary" id="hours-new-log-btn">+ New Log</button></div>';
   body.innerHTML = html;
+  _wireClockWidget();
+  _updateClockIndicator();
 
   body.querySelectorAll('.hours-log-header').forEach(h => h.addEventListener('click', function() {
     const id = this.getAttribute('data-log-id');
@@ -9232,6 +9293,19 @@ function openLogModal(logId) {
       const log = { id: logUid(), title, projectId, rate, createdAt: new Date().toISOString() };
       hoursData.logs.push(log);
       _expandedLogId = log.id;
+      // If this New Log was launched from the clock picker, route it to the clock.
+      if(_clockPendingAfterNewLog) {
+        _clockPendingAfterNewLog = false;
+        saveHoursToSupabase().catch(e => console.error('save hours error', e));
+        document.getElementById('log-modal').classList.remove('open');
+        if(_clockPickerMode === 'in') _startSession(log.id);
+        else { // assign the just-clocked-out session to this new log
+          const sess = (hoursData.sessions||[]).find(s => s.id === _clockPickerSessionId);
+          if(sess) { sess.logId = log.id; sess.projectId = log.projectId || null; saveHoursToSupabase().catch(e => console.error('save hours error', e)); }
+          _refreshClockUI();
+        }
+        return;
+      }
     }
     saveHoursToSupabase().catch(e => console.error('save hours error', e));
     document.getElementById('log-modal').classList.remove('open');
@@ -9239,9 +9313,216 @@ function openLogModal(logId) {
     renderHoursList();
   });
   const cancelBtn = document.getElementById('log-modal-cancel');
-  if(cancelBtn) cancelBtn.addEventListener('click', () => document.getElementById('log-modal').classList.remove('open'));
+  if(cancelBtn) cancelBtn.addEventListener('click', () => { _clockPendingAfterNewLog = false; document.getElementById('log-modal').classList.remove('open'); });
   const modal = document.getElementById('log-modal');
   if(modal) modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
+})();
+
+// ============ LIVE CLOCK ============
+// Render the clock widget at the top of the Hours tool based on the active session.
+function _renderClockWidgetHtml() {
+  const active = _activeSession();
+  let html = '<div id="hours-clock-widget" style="margin:12px 0 16px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;text-align:center;">';
+  if(!active) {
+    html += '<button class="btn btn-primary" id="clock-in-btn" style="min-width:140px;">Clock In</button>';
+  } else {
+    const onBreak = !!_openBreak(active);
+    const logName = active.logId ? ((hoursData.logs||[]).find(l => l.id === active.logId) || {}).title : null;
+    const elapsed = _elapsedMinutes(active);
+    html += '<div style="font-size:13px;color:var(--text2);">Clocked in since ' + _isoToHM(active.clockedInAt);
+    if(logName) html += ' · <strong style="color:var(--text);">' + (logName||'').replace(/</g,'&lt;') + '</strong>';
+    else html += ' · <span style="color:var(--text3);">No log</span>';
+    html += '</div>';
+    html += '<div style="font-size:12px;color:' + (onBreak ? 'var(--text3)' : 'var(--text2)') + ';margin-top:2px;">' + (onBreak ? 'On break' : (Math.floor(elapsed/60) + 'h ' + (elapsed%60) + 'm elapsed')) + '</div>';
+    html += '<div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">';
+    if(onBreak) html += '<button class="btn btn-sm" id="break-end-btn">Break End</button>';
+    else html += '<button class="btn btn-sm" id="break-start-btn">Break Start</button>';
+    html += '<button class="btn btn-sm" id="clock-out-btn" style="background:var(--red);color:#fff;border:none;">Clock Out</button>';
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function _wireClockWidget() {
+  const inBtn = document.getElementById('clock-in-btn');
+  if(inBtn) inBtn.addEventListener('click', clockIn);
+  const bs = document.getElementById('break-start-btn');
+  if(bs) bs.addEventListener('click', breakStart);
+  const be = document.getElementById('break-end-btn');
+  if(be) be.addEventListener('click', breakEnd);
+  const out = document.getElementById('clock-out-btn');
+  if(out) out.addEventListener('click', clockOut);
+}
+
+function _updateClockIndicator() {
+  const ind = document.getElementById('clock-indicator');
+  if(!ind) return;
+  const active = _activeSession();
+  if(!active) { ind.style.display = 'none'; return; }
+  const onBreak = !!_openBreak(active);
+  ind.style.background = onBreak ? 'var(--text3)' : 'var(--green)';
+  ind.textContent = '⏱ ' + (onBreak ? 'On break' : 'Clocked in');
+  ind.style.display = 'block';
+}
+
+function _refreshClockUI() {
+  _updateClockIndicator();
+  // If the Hours tool is visible, re-render so the widget reflects new state.
+  const hs = document.getElementById('hours-screen');
+  if(hs && hs.style.display !== 'none') renderHoursList();
+}
+
+function clockIn() {
+  if(_activeSession()) return; // only one active session app-wide
+  // Immediately offer the Log picker; the clock starts on selection/skip (never blocked).
+  openClockPicker('in');
+}
+
+function _startSession(logId) {
+  if(_activeSession()) return;
+  if(!hoursData) hoursData = { rate: 0, sessions: [], logs: [] };
+  if(!Array.isArray(hoursData.sessions)) hoursData.sessions = [];
+  const now = _nowISO();
+  let projectId = null;
+  if(logId) { const log = (hoursData.logs||[]).find(l => l.id === logId); if(log) projectId = log.projectId || null; }
+  const session = {
+    id: hoursUid(),
+    status: 'active',
+    logId: logId || null,
+    projectId: projectId,
+    clockedInAt: now,
+    clockedOutAt: null,
+    date: _isoToDate(now),
+    start: _isoToHM(now),
+    end: '',
+    breaks: [],
+    note: ''
+  };
+  hoursData.sessions.push(session);
+  saveHoursToSupabase().catch(e => console.error('save hours (clock in) error', e));
+  _refreshClockUI();
+}
+
+function breakStart() {
+  const active = _activeSession();
+  if(!active || _openBreak(active)) return;
+  const now = _nowISO();
+  active.breaks.push({ clockedInAt: now, clockedOutAt: null, start: _isoToHM(now), end: '' });
+  saveHoursToSupabase().catch(e => console.error('save hours (break start) error', e));
+  _refreshClockUI();
+}
+
+function breakEnd() {
+  const active = _activeSession();
+  if(!active) return;
+  const open = _openBreak(active);
+  if(!open) return;
+  const now = _nowISO();
+  open.clockedOutAt = now;
+  open.end = _isoToHM(now);
+  saveHoursToSupabase().catch(e => console.error('save hours (break end) error', e));
+  _refreshClockUI();
+}
+
+function clockOut() {
+  const active = _activeSession();
+  if(!active) return;
+  const now = _nowISO();
+  // Auto-close any open break.
+  const open = _openBreak(active);
+  if(open) { open.clockedOutAt = now; open.end = _isoToHM(now); }
+  active.clockedOutAt = now;
+  active.end = _isoToHM(now);
+  active.status = 'complete';
+  saveHoursToSupabase().catch(e => console.error('save hours (clock out) error', e));
+  _refreshClockUI();
+  // If unassigned, offer the picker to file it (or Skip → stays unassigned).
+  if(!active.logId) openClockPicker('out', active.id);
+}
+
+// ── Clock Log picker ──
+let _clockPickerMode = 'in';   // 'in' | 'out'
+let _clockPickerSessionId = null;
+
+function openClockPicker(mode, sessionId) {
+  _clockPickerMode = mode;
+  _clockPickerSessionId = sessionId || null;
+  const modal = document.getElementById('clock-picker-modal');
+  document.getElementById('clock-picker-title').textContent = mode === 'in' ? 'Clock In' : 'Assign this session to a Log';
+  document.getElementById('clock-picker-sub').textContent = mode === 'in'
+    ? 'Pick a Log to clock into, or skip.'
+    : 'This session has no Log. File it now, or skip to leave it unassigned.';
+  const list = document.getElementById('clock-picker-list');
+  const logs = ((hoursData && hoursData.logs) || []).slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+  let lhtml = '';
+  if(logs.length === 0) {
+    lhtml += '<p style="font-size:12px;color:var(--text3);text-align:center;">No logs yet.</p>';
+  } else {
+    logs.forEach(l => {
+      const pname = _hoursProjectName(l.projectId);
+      lhtml += '<button class="clock-picker-log" data-log-id="' + l.id + '" style="width:100%;text-align:left;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;font-family:inherit;color:var(--text);-webkit-appearance:none;">';
+      lhtml += '<div style="font-size:14px;font-weight:600;">' + (l.title||'Untitled Log').replace(/</g,'&lt;') + '</div>';
+      if(pname) lhtml += '<div style="font-size:11px;color:var(--text2);">' + pname.replace(/</g,'&lt;') + '</div>';
+      lhtml += '</button>';
+    });
+  }
+  list.innerHTML = lhtml;
+  list.querySelectorAll('.clock-picker-log').forEach(btn => btn.addEventListener('click', function() {
+    _clockPickerChoose(this.getAttribute('data-log-id'));
+  }));
+  modal.classList.add('open');
+}
+
+function _clockPickerChoose(logId) {
+  document.getElementById('clock-picker-modal').classList.remove('open');
+  if(_clockPickerMode === 'in') {
+    _startSession(logId);
+  } else {
+    // Assign a just-clocked-out unassigned session to the chosen log.
+    const sess = (hoursData.sessions||[]).find(s => s.id === _clockPickerSessionId);
+    if(sess) {
+      const log = (hoursData.logs||[]).find(l => l.id === logId);
+      sess.logId = logId;
+      sess.projectId = log ? (log.projectId || null) : sess.projectId;
+      saveHoursToSupabase().catch(e => console.error('save hours (assign) error', e));
+    }
+    _refreshClockUI();
+  }
+}
+
+(function() {
+  const newBtn = document.getElementById('clock-picker-newlog');
+  if(newBtn) newBtn.addEventListener('click', function() {
+    // Quick New Log (title only), rate pre-fills from settings, then use it.
+    document.getElementById('clock-picker-modal').classList.remove('open');
+    _clockPendingAfterNewLog = true;
+    openLogModal(null);
+  });
+  const skipBtn = document.getElementById('clock-picker-skip');
+  if(skipBtn) skipBtn.addEventListener('click', function() {
+    document.getElementById('clock-picker-modal').classList.remove('open');
+    if(_clockPickerMode === 'in') _startSession(null); // start immediately, unassigned
+    else _refreshClockUI(); // clock-out: leave unassigned
+  });
+  const modal = document.getElementById('clock-picker-modal');
+  if(modal) modal.addEventListener('click', (e) => {
+    if(e.target === modal) {
+      // Dismiss = same as Skip so the clock is never blocked.
+      modal.classList.remove('open');
+      if(_clockPickerMode === 'in') _startSession(null);
+      else _refreshClockUI();
+    }
+  });
+})();
+
+// Set when the clock picker's "+ New Log" opens the log modal, so its save routes back to the clock.
+let _clockPendingAfterNewLog = false;
+
+// Indicator taps through to the Hours tool.
+(function() {
+  const ind = document.getElementById('clock-indicator');
+  if(ind) ind.addEventListener('click', () => showHoursTool());
 })();
 
 // Wire hours back button (context-aware: log detail → list, list → landing/project)
@@ -12471,6 +12752,8 @@ async function fetchHoursIntoMemory() {
   const row = await _fetchHoursRow();
   hoursData = row.data || {rate: 0, sessions: [], logs: []};
   _migrateHoursLogs();
+  // Resume the app-wide indicator if a session was left running (e.g. tab closed mid-session).
+  if(typeof _updateClockIndicator === 'function') _updateClockIndicator();
 }
 
 async function saveHoursToSupabase() {
