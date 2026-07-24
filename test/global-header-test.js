@@ -96,6 +96,8 @@ function ok(cond, msg) {
 
     await page.fill('#auth-email', email);
     await page.fill('#auth-password', password);
+    const confirmField = await page.$('#auth-password-confirm');
+    if(confirmField) await page.fill('#auth-password-confirm', password);
     if(username) await page.fill('#auth-username', username);
     if(companyName) await page.fill('#auth-company', companyName);
     await page.click('#auth-submit-btn');
@@ -103,7 +105,31 @@ function ok(cond, msg) {
     await page.waitForFunction(() => {
       return typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email;
     }, { timeout: 5000 });
+    const welcomeBtn = await page.$('#auth-welcome-btn');
+    if(welcomeBtn) await welcomeBtn.click();
     await page.waitForTimeout(300);
+  }
+
+  // Current Settings is a single scrollable page with collapsible cards.
+  // Expand a top-level section (account | pricing) and a pricing sub-section
+  // (surface | thickness | glue | grain | features | labor | threshold).
+  async function expandSection(page, sec) {
+    await page.evaluate((s) => {
+      const hdr = document.querySelector('.settings-collapse-hdr[data-section="' + s + '"]');
+      if(hdr && !hdr.classList.contains('expanded')) hdr.click();
+    }, sec);
+    await page.waitForTimeout(200);
+  }
+  async function expandSubSection(page, sub) {
+    await page.evaluate((s) => {
+      const hdr = document.querySelector('.settings-sub-collapse-hdr[data-sub="' + s + '"]');
+      if(hdr && !hdr.classList.contains('expanded')) hdr.click();
+    }, sub);
+    await page.waitForTimeout(200);
+  }
+  async function saveSub(page, sub) {
+    await page.click('.set-sub-save[data-sub="' + sub + '"]');
+    await page.waitForTimeout(500);
   }
 
   async function signIn(page, emailOrUsername, password) {
@@ -240,16 +266,10 @@ function ok(cond, msg) {
     await resetMock();
     page = await freshPage();
     await signUp(page, 'user7@example.com', 'Pass7777!', 'testuser7');
-    await page.evaluate(() => _supabase.auth.signOut());
-    await page.waitForTimeout(500);
-    // Now sign back in with username
-    await page.waitForFunction(() => !_currentUser, { timeout: 3000 }).catch(() => {});
-    await page.waitForTimeout(200);
-    // The account btn should be visible again
-    await page.evaluate(() => {
-      const btn = document.getElementById('landing-account-btn');
-      if(btn) btn.style.display = '';
-    });
+    await page.context().close();
+    // Sign in on a FRESH page: after a signup the app replaces the auth-modal body with a
+    // welcome screen (login inputs are gone until reload), so signing back in must use a new page.
+    page = await freshPage();
     await signIn(page, 'testuser7', 'Pass7777!');
     result = await page.evaluate(() => {
       return { loggedIn: !!_currentUser, email: _currentUser?.email };
@@ -257,8 +277,8 @@ function ok(cond, msg) {
     ok(result.loggedIn && result.email === 'user7@example.com', 'T7: Sign in with username works');
     await page.context().close();
 
-    // =============== TEST 8: Feature grid 2x3 ===============
-    console.log('\n--- Test 8: Feature grid 2x3 ---');
+    // =============== TEST 8: Feature grid tool cards ===============
+    console.log('\n--- Test 8: Feature grid tool cards ---');
     page = await freshPage();
     result = await page.evaluate(() => {
       const grid = document.querySelector('.feature-grid');
@@ -267,7 +287,7 @@ function ok(cond, msg) {
       const texts = Array.from(cards).map(c => c.textContent.trim());
       return { exists: true, count: cards.length, texts };
     });
-    ok(result.exists && result.count === 6, 'T8: Feature grid has 6 cards (2x3)');
+    ok(result.exists && result.count === 7, 'T8: Feature grid has 7 tool cards');
     await page.context().close();
 
     // =============== TEST 9: Settings gear on landing ===============
@@ -297,20 +317,26 @@ function ok(cond, msg) {
     ok(result.exists && result.visible, 'T10: Settings gear in global header on shop screen');
     await page.context().close();
 
-    // =============== TEST 11: Settings home shows 2 options ===============
-    console.log('\n--- Test 11: Settings home shows exactly 2 options ---');
+    // =============== TEST 11: Settings shows 2 top-level sections ===============
+    console.log('\n--- Test 11: Settings home shows exactly 2 sections ---');
     await resetMock();
     page = await freshPage();
     await signUp(page, 'test11@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(300);
+    // Settings is now a single scrollable page with two collapsible cards (account + pricing).
     result = await page.evaluate(() => {
-      const items = document.querySelectorAll('#settings-menu .settings-menu-item');
-      const texts = Array.from(items).map(el => el.textContent.replace(/›/g, '').trim());
-      return { count: items.length, texts };
+      const hdrs = document.querySelectorAll('.settings-collapse-hdr');
+      const sections = Array.from(hdrs).map(h => ({
+        sec: h.getAttribute('data-section'),
+        text: (h.querySelector('.settings-sub-label') || h).textContent.replace(/[▶►i]/g, '').trim()
+      }));
+      return { count: hdrs.length, sections };
     });
-    ok(result.count === 2 && result.texts[0] === 'My Account' && result.texts[1] === 'Your Pricing Defaults',
-      'T11: Settings shows My Account + Your Pricing Defaults');
+    const hasAccount = result.sections.some(s => s.sec === 'account' && s.text === 'My Account');
+    const hasPricing = result.sections.some(s => s.sec === 'pricing' && s.text === 'Quote Defaults');
+    ok(result.count === 2 && hasAccount && hasPricing,
+      'T11: Settings shows My Account + Quote Defaults sections');
     await page.context().close();
 
     // =============== TEST 12: Settings uses global header (Variant D) ===============
@@ -341,7 +367,7 @@ function ok(cond, msg) {
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
     // Click My Account
-    await page.click('[data-settings-idx="0"]');
+    await expandSection(page, 'account');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const username = document.getElementById('set-username');
@@ -364,14 +390,13 @@ function ok(cond, msg) {
     await signUp(page, 'test14@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="0"]');
-    await page.waitForTimeout(300);
-    await page.click('#set-acct-signout');
+    // Sign Out moved to the Settings header (settings-ux); no longer inside the My Account card.
+    await page.click('#settings-signout-btn');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       return { loggedIn: !!_currentUser };
     });
-    ok(!result.loggedIn, 'T14: Sign Out works from My Account');
+    ok(!result.loggedIn, 'T14: Sign Out works from Settings header');
     await page.context().close();
 
     // =============== TEST 15: Delete Account is grey underlined text ===============
@@ -381,7 +406,7 @@ function ok(cond, msg) {
     await signUp(page, 'test15@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="0"]');
+    await expandSection(page, 'account');
     await page.waitForTimeout(300);
     result = await page.evaluate(() => {
       const btn = document.getElementById('set-acct-delete');
@@ -396,20 +421,20 @@ function ok(cond, msg) {
     ok(result.exists && result.isUnderlined && result.noBg, 'T15: Delete Account is grey underlined text');
     await page.context().close();
 
-    // =============== TEST 16: Pricing explainer button ===============
-    console.log('\n--- Test 16: "How does tiered pricing work?" button ---');
+    // =============== TEST 16: Pricing explainer trigger ===============
+    console.log('\n--- Test 16: Pricing explainer trigger ---');
     await resetMock();
     page = await freshPage();
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
+    // The "how pricing works" explainer is now an info (i) trigger on the Quote Defaults header.
     result = await page.evaluate(() => {
       const btn = document.getElementById('pricing-explainer-open');
-      return { exists: !!btn, text: btn?.textContent?.trim() };
+      return { exists: !!btn, isInfoBtn: !!btn && btn.classList.contains('settings-info-btn') };
     });
-    ok(result.exists && result.text === 'How does tiered pricing work?',
-      'T16: Pricing explainer button visible');
+    ok(result.exists && result.isInfoBtn, 'T16: Pricing explainer trigger present on Quote Defaults');
     await page.context().close();
 
     // =============== TEST 17: Pricing explainer modal ===============
@@ -418,7 +443,7 @@ function ok(cond, msg) {
     page = await freshPage();
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
     await page.click('#pricing-explainer-open');
     await page.waitForTimeout(200);
@@ -426,14 +451,20 @@ function ok(cond, msg) {
       const modal = document.getElementById('pricing-explainer-modal');
       const isOpen = modal?.classList.contains('open');
       const body = modal?.querySelector('.pricing-modal-body');
-      const hasSurface = body?.textContent?.includes('Surface Area');
-      const hasThickness = body?.textContent?.includes('Thickness');
-      const hasConstruction = body?.textContent?.includes('Construction');
-      const hasFeatures = body?.textContent?.includes('Features');
-      return { isOpen, hasSurface, hasThickness, hasConstruction, hasFeatures };
+      const t = (body?.textContent || '').toLowerCase();
+      // Layered-pricing explanation: surface-area base, percentage increases (thickness/glue),
+      // feature add-ons, then labor.
+      return {
+        isOpen,
+        hasSurface: t.includes('surface area'),
+        hasThickness: t.includes('thickness'),
+        hasGlue: t.includes('glue'),
+        hasFeatures: t.includes('feature'),
+        hasLabor: t.includes('labor')
+      };
     });
-    ok(result.isOpen && result.hasSurface && result.hasThickness && result.hasConstruction && result.hasFeatures,
-      'T17: Pricing explainer modal opens with correct content');
+    ok(result.isOpen && result.hasSurface && result.hasThickness && result.hasGlue && result.hasFeatures && result.hasLabor,
+      'T17: Pricing explainer modal opens with layered-pricing content');
     await page.context().close();
 
     // =============== TEST 18: Your Pricing Defaults sub-menu has 7 options ===============
@@ -442,14 +473,15 @@ function ok(cond, msg) {
     page = await freshPage();
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
+    // Sub-options are now collapsible sub-section headers within the pricing card (not a sub-menu).
     result = await page.evaluate(() => {
-      const items = document.querySelectorAll('#settings-sub-body .settings-menu-item');
-      const texts = Array.from(items).map(el => el.textContent.replace(/›/g, '').trim());
+      const items = document.querySelectorAll('.settings-collapse-body[data-section="pricing"] .settings-sub-collapse-hdr');
+      const texts = Array.from(items).map(el => el.textContent.replace(/[›▶]/g, '').trim());
       return { count: items.length, texts };
     });
-    ok(result.count === 7, 'T18: Your Pricing Defaults has 7 sub-options');
+    ok(result.count === 7, 'T18: Quote Defaults has 7 sub-sections');
     await page.context().close();
 
     // =============== TEST 19: Labour Rates save ===============
@@ -459,16 +491,16 @@ function ok(cond, msg) {
     await signUp(page, 'test19@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="10"]');
+    await expandSubSection(page, 'labor');
     await page.waitForTimeout(200);
     // Clear and fill
     await page.evaluate(() => {
       document.getElementById('set-shop-rate').value = '75';
       document.getElementById('set-employee-rate').value = '25';
     });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -484,25 +516,25 @@ function ok(cond, msg) {
     await signUp(page, 'test20@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="11"]');
+    await expandSubSection(page, 'surface');
     await page.waitForTimeout(200);
+    // Surface Area pricing is now per-tier $/sq in rates (surfaceAreaTiers), default 3 tiers.
     result = await page.evaluate(() => {
-      const hint = document.getElementById('diag-hint');
-      const prices = document.querySelectorAll('.set-diag-price');
-      return { hintExists: !!hint, priceCount: prices.length };
+      const rates = document.querySelectorAll('.set-sa-rate');
+      return { rateCount: rates.length };
     });
-    ok(result.hintExists && result.priceCount === 30, 'T20: Surface Area hint present, 30 prices editable');
-    // Edit one and save
-    await page.evaluate(() => { document.querySelector('.set-diag-price[data-idx="0"]').value = '55'; });
-    await page.click('#settings-sub-save-btn');
+    ok(result.rateCount === 3, 'T20: Surface Area has 3 editable tier rates');
+    // Edit the first tier rate and save
+    await page.evaluate(() => { document.querySelector('.set-sa-rate[data-idx="0"]').value = '1.5'; });
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
-      return { firstPrice: s?.diagonalTiers?.[0]?.price };
+      return { firstRate: s?.surfaceAreaTiers?.[0]?.rate };
     });
-    ok(result.firstPrice === 55, 'T20b: Surface Area price saved');
+    ok(result.firstRate === 1.5, 'T20b: Surface Area tier rate saved');
     await page.context().close();
 
     // =============== TEST 21: Thickness Tiers ===============
@@ -512,17 +544,17 @@ function ok(cond, msg) {
     await signUp(page, 'test21@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="12"]');
+    await expandSubSection(page, 'thickness');
     await page.waitForTimeout(200);
     result = await page.evaluate(() => {
       const mods = document.querySelectorAll('.set-thick-mod');
       return { count: mods.length };
     });
-    ok(result.count === 22, 'T21: 22 thickness tier modifiers editable');
+    ok(result.count === 13, 'T21: 13 thickness tier modifiers editable');
     await page.evaluate(() => { document.querySelector('.set-thick-mod[data-idx="1"]').value = '5'; });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -538,18 +570,17 @@ function ok(cond, msg) {
     await signUp(page, 'test22@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="13"]');
+    await expandSubSection(page, 'glue');
     await page.waitForTimeout(200);
     result = await page.evaluate(() => {
-      const hint = document.getElementById('glue-hint');
       const mods = document.querySelectorAll('.set-glue-mod');
-      return { hintExists: !!hint, count: mods.length };
+      return { count: mods.length };
     });
-    ok(result.hintExists && result.count === 6, 'T22: Glue Ups hint present, 6 modifiers');
+    ok(result.count === 6, 'T22: Glue Ups has 6 editable modifiers');
     await page.evaluate(() => { document.querySelector('.set-glue-mod[data-idx="2"]').value = '12'; });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -565,29 +596,30 @@ function ok(cond, msg) {
     await signUp(page, 'test23@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="14"]');
+    await expandSubSection(page, 'grain');
     await page.waitForTimeout(200);
+    // Grain & Pattern sub-section: End Grain + Complex Pattern % inputs, each with an info (i) trigger.
     result = await page.evaluate(() => {
-      const egHint = document.getElementById('eg-hint');
-      const cpHint = document.getElementById('cp-hint');
+      const body = document.querySelector('.settings-sub-collapse-body[data-sub="grain"]');
       const eg = document.getElementById('set-end-grain');
       const cp = document.getElementById('set-complex');
+      const egInfo = body?.querySelector('.settings-info-btn[data-info="eg"]');
+      const cpInfo = body?.querySelector('.settings-info-btn[data-info="cp"]');
+      const text = body?.textContent || '';
       return {
-        egHint: !!egHint, cpHint: !!cpHint,
-        egHintText: egHint?.textContent || '',
-        cpHintText: cpHint?.textContent || '',
-        egValue: eg?.value, cpValue: cp?.value
+        eg: !!eg, cp: !!cp, egInfo: !!egInfo, cpInfo: !!cpInfo,
+        hasHeadings: text.includes('End Grain') && text.includes('Complex Pattern')
       };
     });
-    ok(result.egHint && result.cpHint && result.egHintText.includes('End grain') && result.cpHintText.includes('complex pattern'),
-      'T23: End Grain & Complex Pattern hints correct');
+    ok(result.eg && result.cp && result.egInfo && result.cpInfo && result.hasHeadings,
+      'T23: End Grain & Complex Pattern inputs and info triggers present');
     await page.evaluate(() => {
       document.getElementById('set-end-grain').value = '30';
       document.getElementById('set-complex').value = '35';
     });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -603,9 +635,9 @@ function ok(cond, msg) {
     await signUp(page, 'test24@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="15"]');
+    await expandSubSection(page, 'features');
     await page.waitForTimeout(200);
     result = await page.evaluate(() => {
       const names = document.querySelectorAll('.set-feat-name');
@@ -629,7 +661,7 @@ function ok(cond, msg) {
       document.querySelector('.set-feat-name[data-idx="0"]').value = 'Custom Thing';
       document.querySelector('.set-feat-price[data-idx="0"]').value = '99';
     });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -645,12 +677,12 @@ function ok(cond, msg) {
     await signUp(page, 'test25@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="16"]');
+    await expandSubSection(page, 'threshold');
     await page.waitForTimeout(200);
     await page.evaluate(() => { document.getElementById('set-min-threshold').value = '100'; });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(500);
     result = await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('wbc_settings'));
@@ -666,17 +698,17 @@ function ok(cond, msg) {
     await signUp(page, 'test26@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="10"]');
+    await expandSubSection(page, 'labor');
     await page.waitForTimeout(200);
     // Focus and check clearing
     const shopRateVal = await page.evaluate(() => document.getElementById('set-shop-rate').value);
     await page.focus('#set-shop-rate');
     await page.waitForTimeout(100);
     const clearedVal = await page.evaluate(() => document.getElementById('set-shop-rate').value);
-    // Click outside to blur (use the visible sub-title)
-    await page.click('#settings-sub-title');
+    // Blur the field to trigger restore-on-blur
+    await page.evaluate(() => document.getElementById('set-shop-rate').blur());
     await page.waitForTimeout(100);
     const restoredVal = await page.evaluate(() => document.getElementById('set-shop-rate').value);
     ok(clearedVal === '' && restoredVal === shopRateVal, 'T26: Field clears on focus, restores on blur');
@@ -816,15 +848,15 @@ function ok(cond, msg) {
     await signUp(page, 'test33@example.com', 'Test1234!');
     await page.evaluate(() => showSettings());
     await page.waitForTimeout(200);
-    await page.click('[data-settings-idx="1"]');
+    await expandSection(page, 'pricing');
     await page.waitForTimeout(200);
-    await page.click('[data-pricing-sub="10"]');
+    await expandSubSection(page, 'labor');
     await page.waitForTimeout(200);
     await page.evaluate(() => {
       document.getElementById('set-shop-rate').value = '85';
       document.getElementById('set-employee-rate').value = '30';
     });
-    await page.click('#settings-sub-save-btn');
+    await page.click('.settings-sub-collapse-body.expanded .set-sub-save');
     await page.waitForTimeout(1000);
     // Check mock dump
     const dumpResp = await new Promise((resolve, reject) => {
