@@ -612,6 +612,7 @@
     .settings-collapse-hdr:active { opacity: 0.7; }
     .settings-collapse-chevron { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
     .settings-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
+    .settings-sub-collapse-hdr.expanded .settings-collapse-chevron { transform: rotate(90deg); }
     .settings-collapse-body { display: none; padding: 0 16px 16px; }
     .settings-collapse-body.expanded { display: block; }
     .settings-sub-collapse-hdr {
@@ -1434,7 +1435,7 @@
   </div>
 
   <div class="proj-section" id="proj-notes-section">
-    <div class="proj-section-hdr"><h3>Notes</h3></div>
+    <div class="proj-section-hdr"><h3>Project Details</h3></div>
     <div class="proj-section-body" id="proj-notes-body"></div>
   </div>
 
@@ -1451,7 +1452,6 @@
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Estimated Start Date</label><input type="date" id="proj-date-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Estimated Completion Date <span style="font-weight:400;">(optional)</span></label><input type="date" id="proj-completion-input" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Link a List <span style="font-weight:400;">(optional)</span></label><select id="proj-list-select" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"><option value="">None</option></select></div>
-      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Note <span style="font-weight:400;">(optional)</span></label><input type="text" id="proj-note-input" placeholder="Optional notes" style="width:100%;font-size:14px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div><label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">Hourly Rate <span style="font-weight:400;">(optional)</span></label><input type="number" id="proj-rate-input" min="0" step="0.01" placeholder="0.00" style="width:100%;font-size:14px;padding:8px;text-align:left;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);" /></div>
       <div id="proj-modal-error" style="display:none;font-size:12px;color:var(--red);text-align:center;"></div>
     </div>
@@ -1683,15 +1683,11 @@
 <!-- Pricing explainer modal -->
 <div class="modal-overlay" id="pricing-explainer-modal">
   <div class="pricing-modal-body" style="background:var(--bg);border-radius:14px;padding:24px 20px;max-height:80vh;overflow-y:auto;">
-    <h3>How does tiered pricing work?</h3>
-    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Your quote price is built in layers based on the dimensions of your product:</p>
-    <ol>
-      <li><strong>Surface Area</strong> &mdash; We calculate the surface area of your product (length x width = square inches). The surface area determines which pricing tier your product falls into, and each tier has its own $/sq in rate.</li>
-      <li><strong>Thickness</strong> &mdash; A percentage is added based on how thick the material is.</li>
-      <li><strong>Construction</strong> &mdash; Glue-ups, grain direction, and complex patterns each add a percentage on top.</li>
-      <li><strong>Features</strong> &mdash; Flat dollar amounts are added last for things like juice grooves, feet, or custom engraving.</li>
-    </ol>
-    <p style="font-size:13px;color:var(--text2);line-height:1.5;">All of these defaults are yours to edit below.</p>
+    <h3>How does pricing work?</h3>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Your quote price is built in layers, starting with a base price calculated from your product's surface area.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">From there, percentage increases are applied for things like thickness, grain direction, glue-ups, and complex patterns. Each percentage increase is calculated from the base price only, not from the running total. They are all added together and applied to the base price once.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">Feature add-ons like juice grooves, finger holds, or custom engraving are fixed dollar amounts added after all percentage increases have been applied.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.5;">Labor and additional expenses are calculated separately and added to arrive at your final quote total.</p>
     <div style="text-align:center;margin-top:16px;">
       <button class="btn btn-sm" id="pricing-explainer-close">Close</button>
     </div>
@@ -9011,30 +9007,75 @@ function renderProjectDetail() {
     });
   }
 
-  // Notes section
+  // Project Details section — individual note entries
   const notesBody = document.getElementById('proj-notes-body');
   if(notesBody) {
-    const noteText = proj.note || '';
-    notesBody.innerHTML = '<div id="proj-note-display" style="min-height:40px;cursor:text;">' +
-      (noteText ? '<p style="font-size:13px;color:var(--text);margin:0;white-space:pre-wrap;">' + noteText.replace(/</g,'&lt;') + '</p>' :
-      '<p style="font-size:13px;color:var(--text3);margin:0;font-style:italic;">Tap to add a note...</p>') +
-      '</div>';
-    document.getElementById('proj-note-display').addEventListener('click', function() {
-      notesBody.innerHTML = '<textarea id="proj-note-edit" style="width:100%;min-height:80px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' +
-        noteText.replace(/</g,'&lt;') + '</textarea>' +
-        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">' +
-        '<button class="btn btn-sm btn-primary" id="proj-note-save">Save</button>' +
-        '<button class="btn btn-sm" id="proj-note-cancel">Cancel</button></div>';
-      const ta = document.getElementById('proj-note-edit');
-      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
-      document.getElementById('proj-note-save').addEventListener('click', function() {
-        proj.note = document.getElementById('proj-note-edit').value.trim();
-        saveProjectToSupabase(proj).catch(e => console.error('save note error', e));
-        renderProjectDetail();
+    _migrateProjectNotes(proj);
+    notesBody.innerHTML = '<div id="proj-notes-list">' + _renderProjectNotesList(proj) + '</div>' +
+      '<div id="proj-note-add-wrap" style="text-align:center;margin-top:8px;"><button class="btn btn-sm" id="proj-note-add-btn">Add Note</button></div>';
+    const notesList = document.getElementById('proj-notes-list');
+    const noteAddWrap = document.getElementById('proj-note-add-wrap');
+    const noteAddBtn = document.getElementById('proj-note-add-btn');
+
+    function persistNotes() { saveProjectToSupabase(proj).catch(e => console.error('save note error', e)); }
+    function rerenderProjNotes() { notesList.innerHTML = _renderProjectNotesList(proj); wireProjNoteRows(); }
+    function wireProjNoteRows() {
+      notesList.querySelectorAll('.proj-note-del').forEach(btn => btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const idx = parseInt(this.getAttribute('data-note-idx'));
+        proj.notes.splice(idx, 1);
+        persistNotes();
+        rerenderProjNotes();
+      }));
+      notesList.querySelectorAll('.proj-note-view').forEach(v => v.addEventListener('click', function() {
+        const idx = this.getAttribute('data-note-idx');
+        const row = notesList.querySelector('.proj-note-row[data-note-idx="' + idx + '"]');
+        row.querySelector('.proj-note-viewwrap').style.display = 'none';
+        const edit = row.querySelector('.proj-note-edit');
+        edit.style.display = 'block';
+        edit.querySelector('.proj-note-edit-text').focus();
+      }));
+      notesList.querySelectorAll('.proj-note-save').forEach(btn => btn.addEventListener('click', function() {
+        const idx = parseInt(this.getAttribute('data-note-idx'));
+        const row = notesList.querySelector('.proj-note-row[data-note-idx="' + idx + '"]');
+        proj.notes[idx].text = row.querySelector('.proj-note-edit-text').value.trim();
+        proj.notes[idx].updatedAt = new Date().toISOString();
+        persistNotes();
+        rerenderProjNotes();
+      }));
+      notesList.querySelectorAll('.proj-note-cancel').forEach(btn => btn.addEventListener('click', function() {
+        rerenderProjNotes();
+      }));
+    }
+    wireProjNoteRows();
+
+    noteAddBtn.addEventListener('click', function() {
+      if(document.getElementById('proj-note-new-wrap')) return;
+      noteAddBtn.style.display = 'none';
+      const wrap = document.createElement('div');
+      wrap.id = 'proj-note-new-wrap';
+      wrap.style.cssText = 'margin-top:8px;';
+      wrap.innerHTML = '<textarea id="proj-note-new-text" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>' +
+        '<div style="display:flex;gap:6px;margin-top:4px;justify-content:center;"><button class="btn btn-sm btn-primary" id="proj-note-new-save">Save</button><button class="btn btn-sm" id="proj-note-new-cancel">Cancel</button></div>';
+      noteAddWrap.appendChild(wrap);
+      const ta = document.getElementById('proj-note-new-text');
+      ta.focus();
+      const closeAdd = () => { wrap.remove(); noteAddBtn.style.display = ''; };
+      document.getElementById('proj-note-new-save').addEventListener('click', function() {
+        const val = ta.value.trim();
+        if(val) {
+          proj.notes.push({
+            id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+            text: val,
+            createdAt: new Date().toISOString(),
+            updatedAt: null
+          });
+          persistNotes();
+          rerenderProjNotes();
+        }
+        closeAdd();
       });
-      document.getElementById('proj-note-cancel').addEventListener('click', function() {
-        renderProjectDetail();
-      });
+      document.getElementById('proj-note-new-cancel').addEventListener('click', closeAdd);
     });
   }
 
@@ -9666,7 +9707,6 @@ function openNewProjectModal() {
   document.getElementById('project-modal-title').textContent = 'New Project';
   document.getElementById('proj-name-input').value = '';
   document.getElementById('proj-date-input').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('proj-note-input').value = '';
   document.getElementById('proj-rate-input').value = (hoursData && hoursData.rate) ? hoursData.rate : '';
   const errEl = document.getElementById('proj-modal-error');
   errEl.style.display = 'none'; errEl.textContent = '';
@@ -9688,7 +9728,6 @@ function openEditProjectModal(proj) {
   document.getElementById('project-modal-title').textContent = 'Edit Project';
   document.getElementById('proj-name-input').value = proj.name || '';
   document.getElementById('proj-date-input').value = proj.date || '';
-  document.getElementById('proj-note-input').value = proj.note || '';
   document.getElementById('proj-rate-input').value = proj.rate || '';
   document.getElementById('proj-completion-input').value = proj.completionDate || '';
   const errEl = document.getElementById('proj-modal-error');
@@ -9733,7 +9772,6 @@ function openEditProjectModal(proj) {
         proj.name = name;
         proj.date = document.getElementById('proj-date-input').value;
         proj.completionDate = document.getElementById('proj-completion-input').value || null;
-        proj.note = document.getElementById('proj-note-input').value.trim();
         proj.listId = listId;
         proj.listName = listName;
         proj.rate = rate;
@@ -9748,7 +9786,7 @@ function openEditProjectModal(proj) {
         name: name,
         date: document.getElementById('proj-date-input').value,
         completionDate: document.getElementById('proj-completion-input').value || null,
-        note: document.getElementById('proj-note-input').value.trim(),
+        notes: [],
         listId: listId,
         listName: listName,
         status: 'active',
@@ -10199,20 +10237,10 @@ function _renderSettingsBody() {
   html += '</div>';
   html += '</div>';
 
-  // ── Pricing Defaults section ──
+  // ── Quote Defaults section ──
   html += '<div class="settings-card">';
-  html += '<button class="settings-collapse-hdr" data-section="pricing">Pricing Defaults<span class="settings-collapse-chevron">&#9654;</span></button>';
+  html += '<button class="settings-collapse-hdr" data-section="pricing"><span class="settings-sub-label">Quote Defaults<span class="settings-info-btn" id="pricing-explainer-open" role="button" style="margin-left:8px;">i</span></span><span class="settings-collapse-chevron">&#9654;</span></button>';
   html += '<div class="settings-collapse-body" data-section="pricing">';
-
-  html += '<button class="pricing-explainer-btn" id="pricing-explainer-open" style="justify-content:center;">How does pricing work?</button>';
-
-  // ── Labor Rates sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="labor">Labor Rates<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="labor">';
-  html += '<div class="settings-section">';
-  html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-  html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
-  html += '</div>' + subSaveBtn('labor') + '</div>';
 
   // ── Surface Area Pricing Tiers sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="surface"><span class="settings-sub-label">Surface Area Pricing Tiers</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="sa" role="button">i</span></div>';
@@ -10262,14 +10290,17 @@ function _renderSettingsBody() {
   // ── Glue Ups sub-section ──
   html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="glue"><span class="settings-sub-label">Glue Ups</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="glue" role="button">i</span></div>';
   html += '<div class="settings-sub-collapse-body has-info" data-sub="glue">';
-  for(let i = 0; i <= 5; i++) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((s.multipliers.glueUps[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
+  const glueArr = (s.multipliers && s.multipliers.glueUps) || [];
+  const glueRows = Math.max(glueArr.length, 6);
+  for(let i = 0; i < glueRows; i++) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;">' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" class="set-glue-mod" data-idx="' + i + '" value="' + Math.round((glueArr[i] || 0) * 100) + '" min="0" step="1" style="width:50px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   }
+  if(!ro) html += '<button class="btn btn-sm" id="set-glue-add" style="margin-top:6px;">+ Add Glue Up</button>';
   html += subSaveBtn('glue') + '</div>';
 
   // ── Grain & Pattern sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="grain">Grain &amp; Pattern<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="grain">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="grain"><span class="settings-sub-label">Grain &amp; Pattern</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="grain" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="grain">';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>End Grain</span><span class="settings-info-btn" data-info="eg" role="button">i</span></h3>';
   html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;"><span style="font-size:11px;color:var(--text2);">+</span><input type="number" id="set-end-grain" value="' + Math.round(s.multipliers.endGrain * 100) + '" min="0" step="1" style="width:60px;font-size:12px;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /><span style="font-size:11px;color:var(--text2);">%</span></div></div>';
   html += '<div class="settings-section"><h3 class="settings-info-row" style="margin-bottom:4px;"><span>Complex Pattern</span><span class="settings-info-btn" data-info="cp" role="button">i</span></h3>';
@@ -10277,8 +10308,8 @@ function _renderSettingsBody() {
   html += subSaveBtn('grain') + '</div>';
 
   // ── Feature Add-Ons sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="features">Feature Add-Ons<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="features">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="features"><span class="settings-sub-label">Feature Add-Ons</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="feat" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="features">';
   (s.featureAddOns || []).forEach((f, i) => {
     html += '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><input type="text" class="set-feat-name" data-idx="' + i + '" value="' + (f.name || '').replace(/"/g,'&quot;') + '" style="flex:2;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);"' + roAttr + ' /><div style="display:flex;align-items:center;gap:2px;"><span style="font-weight:600;font-size:12px;">$</span><input type="number" class="set-feat-price" data-idx="' + i + '" value="' + (f.price || 0) + '" min="0" step="1" style="width:70px;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);text-align:right;"' + roAttr + ' /></div>';
     if(!ro) html += '<button class="del-btn" data-del-feat="' + i + '" style="min-height:28px;font-size:14px;">&times;</button>';
@@ -10287,14 +10318,22 @@ function _renderSettingsBody() {
   if(!ro) html += '<button class="btn btn-sm" id="set-add-feat" style="margin-top:4px;">+ Add Feature</button>';
   html += subSaveBtn('features') + '</div>';
 
+  // ── Labor Rates sub-section ──
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="labor"><span class="settings-sub-label">Labor Rates</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="labor" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="labor">';
+  html += '<div class="settings-section">';
+  html += '<div class="settings-field"><label>Your Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-shop-rate" value="' + (s.defaultShopRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '<div class="settings-field"><label>Employee Rate ($/hr)</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-employee-rate" value="' + (s.defaultEmployeeRate || 0) + '" min="0" step="0.01" style="width:120px;"' + roAttr + ' /><span style="font-size:12px;color:var(--text2);">/hr</span></div></div>';
+  html += '</div>' + subSaveBtn('labor') + '</div>';
+
   // ── Minimum Quote Threshold sub-section ──
-  html += '<button class="settings-sub-collapse-hdr" data-sub="threshold">Minimum Quote Threshold<span class="settings-collapse-chevron">&#9654;</span></button>';
-  html += '<div class="settings-sub-collapse-body" data-sub="threshold">';
+  html += '<div class="settings-sub-hdr-row"><button class="settings-sub-collapse-hdr" data-sub="threshold"><span class="settings-sub-label">Minimum Quote Threshold</span><span class="settings-collapse-chevron">&#9654;</span></button><span class="settings-info-btn" data-info="minq" role="button">i</span></div>';
+  html += '<div class="settings-sub-collapse-body has-info" data-sub="threshold">';
   html += '<div class="settings-field"><label>Warn me if a quote total falls below this amount.</label><div style="display:flex;align-items:center;gap:4px;"><span style="font-weight:600;">$</span><input type="number" id="set-min-threshold" value="' + (s.minThreshold || 0) + '" min="0" step="1"' + roAttr + ' /></div></div>';
   html += subSaveBtn('threshold') + '</div>';
 
-  html += '</div>'; // close pricing defaults body
-  html += '</div>'; // close pricing defaults card
+  html += '</div>'; // close quote defaults body
+  html += '</div>'; // close quote defaults card
 
   document.getElementById('settings-body').innerHTML = html;
 
@@ -10302,6 +10341,7 @@ function _renderSettingsBody() {
   document.querySelectorAll('.settings-collapse-hdr').forEach(hdr => {
     hdr.addEventListener('click', function(e) {
       if(e.target.classList.contains('settings-info-btn')) return;
+      if(e.target.id === 'pricing-explainer-open') return;
       const sec = this.getAttribute('data-section');
       const body = document.querySelector('.settings-collapse-body[data-section="' + sec + '"]');
       const isExp = this.classList.toggle('expanded');
@@ -10320,11 +10360,15 @@ function _renderSettingsBody() {
 
   // ── Wire info buttons ──
   const infoTexts = {
-    sa: 'Price is calculated by multiplying your product\'s surface area (length × width in square inches) by the $/sq in rate for that size tier. Larger products land in higher tiers with a higher rate per square inch.',
-    thick: 'Thickness adds a percentage modifier on top of the surface area price. Thicker material costs more to source and work with.',
-    glue: 'A glue-up joins multiple pieces of wood edge-to-edge to achieve the desired width. More glue-ups mean more labor and complexity.',
+    labor: 'Your shop rate is what you charge the customer per hour and appears on the quote. Your employee rate is your internal labor cost and is never shared with the customer. It is used to calculate your profit margin in the quote summary.\n\nEnter 0 if you are owner-operated.',
+    sa: 'Your base price is calculated by multiplying your product\'s length by its width to get the total surface area in square inches. That area determines which pricing tier your product falls into, and each tier has its own price per square inch. A larger product lands in a higher tier and costs more per square inch.\n\nEach tier includes its lower limit and excludes its upper limit, so a product at exactly 300 sq in is priced in Tier 2, not Tier 1.',
+    thick: 'Thickness adds a percentage increase on top of your surface area base price. Thicker material requires more raw lumber to mill down to final dimensions and adds weight and structural complexity to the build. The thicker the project, the higher the percentage increase applied to your base price.\n\nAdjust your default thickness percentage increases in the Thickness Tiers settings.',
+    glue: 'Each glue-up adds a percentage increase to the base price. A basic edge grain board will typically require just one glue-up. End grain boards require a minimum of two, one for the initial long grain panel, and another for the end grain orientation after crosscutting.\n\nBoards with borders or complex patterns can require several more.',
+    grain: 'Grain direction and pattern complexity each add a percentage increase to your base price. If only one applies, that increase is applied on its own. If both apply, the percentage increases are added together and applied once. Adjust your default percentage increases for each in the Grain & Pattern settings.\n\nEnd grain construction is widely regarded as the premium standard in cutting board craft, requiring significantly more time to produce than a standard edge grain board.\n\nA complex pattern involves angled cuts or three or more thicknesses in the project material. This adds significant labor and skill to the build.',
     eg: 'End grain boards are cut perpendicular to the wood\'s growth rings, revealing the ends of the wood fibers. This creates a distinctive checkerboard or mosaic pattern and is significantly more labor intensive than edge grain construction.',
-    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.'
+    cp: 'A complex pattern involves angled cuts or the use of three or more different thicknesses in the working material. This adds significant time and precision to the build.',
+    feat: 'Feature add-ons are fixed dollar amounts added to your price after all percentage increases have been applied. This means feature costs stay consistent regardless of grain direction or pattern complexity.\n\nCommon examples include juice grooves, finger holds, feet, or custom engraving.',
+    minq: 'Set a minimum quote amount. You will be warned if a quote total falls below this number before sending it to a customer.'
   };
   document.querySelectorAll('.settings-info-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -10485,7 +10529,7 @@ function _renderSettingsBody() {
     if(e.target === changeEmailModal) changeEmailModal.classList.remove('open');
   });
 
-  // ── Pricing Defaults bindings ──
+  // ── Quote Defaults bindings ──
   const explainerBtn = document.getElementById('pricing-explainer-open');
   if(explainerBtn) explainerBtn.addEventListener('click', () => {
     document.getElementById('pricing-explainer-modal').classList.add('open');
@@ -10531,6 +10575,17 @@ function _renderSettingsBody() {
       s2.thicknessTiers.push({ min: +(last.max + 0.01).toFixed(2), max: +(last.max + 0.25).toFixed(2), modifier: (last.modifier || 0) + 0.03 });
       _renderSettingsBody();
       _expandSection('pricing'); _expandSubSection('thickness');
+    });
+
+    const glueAddBtn = document.getElementById('set-glue-add');
+    if(glueAddBtn) glueAddBtn.addEventListener('click', () => {
+      _collectAllSettings();
+      const s2 = _getSettings();
+      const arr = s2.multipliers.glueUps || (s2.multipliers.glueUps = []);
+      const last = arr.length > 0 ? (arr[arr.length - 1] || 0) : 0;
+      arr.push(+(last + 0.05).toFixed(2));
+      _renderSettingsBody();
+      _expandSection('pricing'); _expandSubSection('glue');
     });
 
     // Feature add/delete
@@ -10587,7 +10642,7 @@ function _showInfoModal(text) {
     modal = document.createElement('div');
     modal.id = 'settings-info-modal';
     modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal" style="max-width:340px;"><p id="settings-info-text" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;"></p><div style="text-align:center;"><button class="btn btn-sm" id="settings-info-close">Close</button></div></div>';
+    modal.innerHTML = '<div class="modal" style="max-width:340px;"><p id="settings-info-text" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;white-space:pre-line;"></p><div style="text-align:center;"><button class="btn btn-sm" id="settings-info-close">Close</button></div></div>';
     document.body.appendChild(modal);
     modal.querySelector('#settings-info-close').addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
@@ -11081,6 +11136,99 @@ function _getDefaultLaborTasks(productType) {
   ];
 }
 
+function _migrateQuoteNotes(q) {
+  // Notes are now an array of { id, text, createdAt, updatedAt }.
+  // Migrate legacy single-string notes into a single-entry array.
+  if(Array.isArray(q.notes)) return q.notes;
+  if(typeof q.notes === 'string' && q.notes.trim()) {
+    q.notes = [{
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      text: q.notes,
+      createdAt: q.issueDate || new Date().toISOString(),
+      updatedAt: null
+    }];
+  } else {
+    q.notes = [];
+  }
+  return q.notes;
+}
+
+function _formatNoteDate(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function _renderNotesList(q) {
+  const notes = Array.isArray(q.notes) ? q.notes : [];
+  if(notes.length === 0) {
+    return '<div style="font-size:13px;color:var(--text3);font-style:italic;">No notes yet</div>';
+  }
+  let out = '';
+  notes.forEach((n, i) => {
+    const stamp = n.updatedAt ? ('Edited ' + _formatNoteDate(n.updatedAt)) : _formatNoteDate(n.createdAt);
+    out += '<div class="qe-note-row" data-note-idx="' + i + '" style="border-bottom:1px solid var(--border);padding:8px 0;">';
+    out += '<div class="qe-note-viewwrap" data-note-idx="' + i + '" style="display:flex;align-items:flex-start;gap:8px;">';
+    out += '<div class="qe-note-view" data-note-idx="' + i + '" style="flex:1;cursor:pointer;">';
+    out += '<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">' + (n.text || '').replace(/</g,'&lt;') + '</div>';
+    out += '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + stamp + '</div>';
+    out += '</div>';
+    out += '<button class="del-btn qe-note-del" data-note-idx="' + i + '" style="min-height:28px;">&times;</button>';
+    out += '</div>';
+    out += '<div class="qe-note-edit" data-note-idx="' + i + '" style="display:none;">';
+    out += '<textarea class="qe-note-edit-text" data-note-idx="' + i + '" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + (n.text || '').replace(/</g,'&lt;') + '</textarea>';
+    out += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary qe-note-save" data-note-idx="' + i + '">Save</button><button class="btn btn-sm qe-note-cancel" data-note-idx="' + i + '">Cancel</button></div>';
+    out += '</div>';
+    out += '</div>';
+  });
+  return out;
+}
+
+function _migrateProjectNotes(proj) {
+  // Project notes are now an array of { id, text, createdAt, updatedAt }.
+  // Migrate legacy single-string proj.note into a single-entry array.
+  if(Array.isArray(proj.notes)) return proj.notes;
+  if(typeof proj.note === 'string' && proj.note.trim()) {
+    proj.notes = [{
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      text: proj.note,
+      createdAt: proj.date || new Date().toISOString(),
+      updatedAt: null
+    }];
+  } else {
+    proj.notes = [];
+  }
+  delete proj.note;
+  return proj.notes;
+}
+
+function _renderProjectNotesList(proj) {
+  const notes = Array.isArray(proj.notes) ? proj.notes : [];
+  if(notes.length === 0) {
+    return '<div style="font-size:13px;color:var(--text3);font-style:italic;">No notes yet</div>';
+  }
+  let out = '';
+  notes.forEach((n, i) => {
+    const stamp = n.updatedAt ? ('Edited ' + _formatNoteDate(n.updatedAt)) : _formatNoteDate(n.createdAt);
+    out += '<div class="proj-note-row" data-note-idx="' + i + '" style="border-bottom:1px solid var(--border);padding:8px 0;">';
+    out += '<div class="proj-note-viewwrap" data-note-idx="' + i + '" style="display:flex;align-items:flex-start;gap:8px;">';
+    out += '<div class="proj-note-view" data-note-idx="' + i + '" style="flex:1;cursor:pointer;">';
+    out += '<div style="font-size:13px;color:var(--text);white-space:pre-wrap;">' + (n.text || '').replace(/</g,'&lt;') + '</div>';
+    out += '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + stamp + '</div>';
+    out += '</div>';
+    out += '<button class="del-btn proj-note-del" data-note-idx="' + i + '" style="min-height:28px;">&times;</button>';
+    out += '</div>';
+    out += '<div class="proj-note-edit" data-note-idx="' + i + '" style="display:none;">';
+    out += '<textarea class="proj-note-edit-text" data-note-idx="' + i + '" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + (n.text || '').replace(/</g,'&lt;') + '</textarea>';
+    out += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary proj-note-save" data-note-idx="' + i + '">Save</button><button class="btn btn-sm proj-note-cancel" data-note-idx="' + i + '">Cancel</button></div>';
+    out += '</div>';
+    out += '</div>';
+  });
+  return out;
+}
+
 function _newQuote() {
   const s = _getSettings();
   const today = new Date().toISOString().slice(0, 10);
@@ -11113,7 +11261,7 @@ function _newQuote() {
     discount: { type: 'percent', value: 0 },
     taxRate: s.defaultTaxRate || 0,
     lumberAllocations: [],
-    notes: '',
+    notes: [],
     minThreshold: s.minThreshold || 0,
     _genProjectName: '',
     _genProjectStart: today,
@@ -11240,10 +11388,6 @@ function renderQuoteDetail() {
     html += '</div></div>';
   }
 
-  if(q.notes) {
-    html += '<div class="quote-section"><div class="quote-section-hdr">Notes / Terms</div><div class="quote-section-body"><p style="font-size:12px;white-space:pre-wrap;">' + q.notes.replace(/</g,'&lt;') + '</p></div></div>';
-  }
-
   const isDraftOrPending = q.status === 'draft' || q.status === 'pending_customer';
   if(isDraftOrPending && q.customer.email) {
     html += '<button class="btn btn-primary" id="qd-send-btn" style="width:100%;background:var(--green);border-color:var(--green);margin-bottom:8px;">Send Quote</button>';
@@ -11303,8 +11447,8 @@ function renderQuoteEditForm(q) {
 
   // Card 1B: Project Info
   html += '<div class="quote-section"><div class="quote-section-hdr">Project Info</div><div class="quote-section-body">';
+  html += '<div class="quote-field"><label>Project Title</label><input type="text" id="qe-desc" value="' + (q.description || '').replace(/"/g,'&quot;') + '" /></div>';
   html += '<div class="quote-field"><label>Quote Number</label><input type="text" id="qe-number" value="' + (q.number || '').replace(/"/g,'&quot;') + '" /></div>';
-  html += '<div class="quote-field"><label>Project Description</label><input type="text" id="qe-desc" value="' + (q.description || '').replace(/"/g,'&quot;') + '" /></div>';
   html += '<div style="display:flex;gap:8px;">';
   html += '<div class="quote-field" style="flex:1;"><label>Issue Date</label><input type="date" id="qe-issue-date" value="' + (q.issueDate || '') + '" /></div>';
   html += '<div class="quote-field" style="flex:1;"><label>Estimated Completion Date</label><input type="date" id="qe-est-completion" value="' + (q._genProjectEnd || '') + '" /></div>';
@@ -11327,14 +11471,11 @@ function renderQuoteEditForm(q) {
   html += '</div>';
   html += '</div></div>';
 
-  // Card 1C: Notes
-  const notesText = (q.notes || '').replace(/</g,'&lt;');
-  html += '<div class="quote-section"><div class="quote-section-hdr">Notes</div><div class="quote-section-body">';
-  html += '<div class="quote-field"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><label style="margin:0;">Notes</label><button class="btn btn-sm" id="qe-notes-edit-btn" style="font-size:11px;padding:2px 8px;">Edit</button></div>';
-  html += '<div id="qe-notes-display" style="font-size:13px;color:var(--text);white-space:pre-wrap;min-height:20px;">' + (notesText || '<span style="color:var(--text3);font-style:italic;">No notes yet</span>') + '</div>';
-  html += '<div id="qe-notes-edit-wrap" style="display:none;"><textarea id="qe-notes" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;">' + notesText + '</textarea>';
-  html += '<div style="display:flex;gap:6px;margin-top:4px;"><button class="btn btn-sm btn-primary" id="qe-notes-save-btn">Save</button><button class="btn btn-sm" id="qe-notes-cancel-btn">Cancel</button></div></div>';
-  html += '</div>';
+  // Card 1C: Project Details (internal note entries)
+  _migrateQuoteNotes(q);
+  html += '<div class="quote-section"><div class="quote-section-hdr">Project Details</div><div class="quote-section-body">';
+  html += '<div id="qe-notes-list">' + _renderNotesList(q) + '</div>';
+  html += '<div id="qe-note-add-wrap" style="text-align:center;margin-top:8px;"><button class="btn btn-sm" id="qe-note-add-btn">Add Note</button></div>';
   html += '</div></div>';
 
   // Card 2: Base Pricing
@@ -11417,9 +11558,13 @@ function renderQuoteEditForm(q) {
 
   if(showGlueUps) {
     const glueCount = co ? (co.glueUps ? co.glueUps.count : 0) : (q.glueUps || 0);
-    html += '<div class="quote-field"><label>Glue Ups</label><div class="quote-pill-group">';
-    for(let i = 0; i <= 5; i++) html += '<button class="quote-pill' + (glueCount === i ? ' active' : '') + '" data-glue="' + i + '">' + i + '</button>';
-    html += '</div></div>';
+    const glueLevels = (s.multipliers && s.multipliers.glueUps) || [];
+    html += '<div class="quote-field"><label>Glue Ups</label><select id="qe-glue-select" class="qe-live">';
+    glueLevels.forEach((mod, i) => {
+      const sel = (glueCount === i) ? ' selected' : '';
+      html += '<option value="' + i + '"' + sel + '>' + i + ' glue-up' + (i !== 1 ? 's' : '') + '</option>';
+    });
+    html += '</select></div>';
   }
 
   // Divider between required and optional
@@ -11528,14 +11673,8 @@ function _collectQuoteFromForm(q) {
   if(issueDateEl) q.issueDate = issueDateEl.value || '';
   const estCompEl = document.getElementById('qe-est-completion');
   if(estCompEl) q._genProjectEnd = estCompEl.value || '';
-  const notesTextarea = document.getElementById('qe-notes');
-  const notesDisplay = document.getElementById('qe-notes-display');
-  if(notesTextarea && notesTextarea.offsetParent !== null) {
-    q.notes = (notesTextarea.value || '').trim();
-  } else if(notesDisplay) {
-    const placeholder = notesDisplay.querySelector('span[style*="font-style:italic"]');
-    q.notes = placeholder ? '' : (notesDisplay.textContent || '').trim();
-  }
+  // Notes are managed directly on q.notes (array) via the Project Details handlers.
+  _migrateQuoteNotes(q);
 
   const pt = q.productType || 'cutting_board';
   const isCustom = pt === 'custom';
@@ -11749,33 +11888,72 @@ function _wireQuoteEditEvents(q) {
 
   body.querySelectorAll('.qe-live').forEach(inp => inp.addEventListener('input', liveUpdate));
 
-  // Notes edit/save/cancel
-  const notesEditBtn = document.getElementById('qe-notes-edit-btn');
-  const notesDisplay = document.getElementById('qe-notes-display');
-  const notesEditWrap = document.getElementById('qe-notes-edit-wrap');
-  const notesTextarea = document.getElementById('qe-notes');
-  const notesSaveBtn = document.getElementById('qe-notes-save-btn');
-  const notesCancelBtn = document.getElementById('qe-notes-cancel-btn');
-  if(notesEditBtn) notesEditBtn.addEventListener('click', function() {
-    notesDisplay.style.display = 'none';
-    notesEditWrap.style.display = 'block';
-    this.style.display = 'none';
-    notesTextarea.focus();
-  });
-  if(notesSaveBtn) notesSaveBtn.addEventListener('click', function() {
-    const val = notesTextarea.value.trim();
-    q.notes = val;
-    notesDisplay.textContent = val || '';
-    if(!val) notesDisplay.innerHTML = '<span style="color:var(--text3);font-style:italic;">No notes yet</span>';
-    notesDisplay.style.display = 'block';
-    notesEditWrap.style.display = 'none';
-    notesEditBtn.style.display = '';
-  });
-  if(notesCancelBtn) notesCancelBtn.addEventListener('click', function() {
-    notesTextarea.value = q.notes || '';
-    notesDisplay.style.display = 'block';
-    notesEditWrap.style.display = 'none';
-    notesEditBtn.style.display = '';
+  // Project Details — individual note entries
+  _migrateQuoteNotes(q);
+  const notesList = document.getElementById('qe-notes-list');
+  const noteAddWrap = document.getElementById('qe-note-add-wrap');
+  const noteAddBtn = document.getElementById('qe-note-add-btn');
+
+  function rerenderNotes() {
+    if(notesList) { notesList.innerHTML = _renderNotesList(q); wireNoteRows(); }
+  }
+  function wireNoteRows() {
+    notesList.querySelectorAll('.qe-note-del').forEach(btn => btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(this.getAttribute('data-note-idx'));
+      q.notes.splice(idx, 1);
+      rerenderNotes();
+    }));
+    notesList.querySelectorAll('.qe-note-view').forEach(v => v.addEventListener('click', function() {
+      const idx = this.getAttribute('data-note-idx');
+      const row = notesList.querySelector('.qe-note-row[data-note-idx="' + idx + '"]');
+      row.querySelector('.qe-note-viewwrap').style.display = 'none';
+      const edit = row.querySelector('.qe-note-edit');
+      edit.style.display = 'block';
+      const ta = edit.querySelector('.qe-note-edit-text');
+      ta.focus();
+    }));
+    notesList.querySelectorAll('.qe-note-save').forEach(btn => btn.addEventListener('click', function() {
+      const idx = parseInt(this.getAttribute('data-note-idx'));
+      const row = notesList.querySelector('.qe-note-row[data-note-idx="' + idx + '"]');
+      const val = row.querySelector('.qe-note-edit-text').value.trim();
+      q.notes[idx].text = val;
+      q.notes[idx].updatedAt = new Date().toISOString();
+      rerenderNotes();
+    }));
+    notesList.querySelectorAll('.qe-note-cancel').forEach(btn => btn.addEventListener('click', function() {
+      rerenderNotes();
+    }));
+  }
+  if(notesList) wireNoteRows();
+
+  if(noteAddBtn) noteAddBtn.addEventListener('click', function() {
+    // Reveal an inline textarea with Save / Cancel below the list.
+    if(document.getElementById('qe-note-new-wrap')) return;
+    noteAddBtn.style.display = 'none';
+    const wrap = document.createElement('div');
+    wrap.id = 'qe-note-new-wrap';
+    wrap.style.cssText = 'margin-top:8px;';
+    wrap.innerHTML = '<textarea id="qe-note-new-text" style="width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:6px;margin-top:4px;justify-content:center;"><button class="btn btn-sm btn-primary" id="qe-note-new-save">Save</button><button class="btn btn-sm" id="qe-note-new-cancel">Cancel</button></div>';
+    noteAddWrap.appendChild(wrap);
+    const ta = document.getElementById('qe-note-new-text');
+    ta.focus();
+    const closeAdd = () => { wrap.remove(); noteAddBtn.style.display = ''; };
+    document.getElementById('qe-note-new-save').addEventListener('click', function() {
+      const val = ta.value.trim();
+      if(val) {
+        q.notes.push({
+          id: 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+          text: val,
+          createdAt: new Date().toISOString(),
+          updatedAt: null
+        });
+        rerenderNotes();
+      }
+      closeAdd();
+    });
+    document.getElementById('qe-note-new-cancel').addEventListener('click', closeAdd);
   });
 
   // Complex pattern info button
@@ -11828,18 +12006,18 @@ function _wireQuoteEditEvents(q) {
     liveUpdate();
   }));
 
-  // Glue-ups toggle
-  body.querySelectorAll('[data-glue]').forEach(btn => btn.addEventListener('click', function() {
-    const count = parseInt(this.getAttribute('data-glue'));
+  // Glue-ups dropdown
+  const glueSelect = document.getElementById('qe-glue-select');
+  if(glueSelect) glueSelect.addEventListener('change', function() {
+    const count = parseInt(this.value) || 0;
     if(q.constructionOptions && q.constructionOptions.glueUps) {
       q.constructionOptions.glueUps.count = count;
       const s = _getSettings();
       q.constructionOptions.glueUps.modifierValue = Math.round(((s.multipliers.glueUps || [])[count] || 0) * 100);
     }
     q.glueUps = count;
-    body.querySelectorAll('[data-glue]').forEach(b => b.classList.toggle('active', parseInt(b.getAttribute('data-glue')) === count));
     liveUpdate();
-  }));
+  });
 
   // Construction Options feature checkboxes
   body.querySelectorAll('.qe-co-feat-check').forEach(cb => cb.addEventListener('change', function() {
@@ -12335,7 +12513,6 @@ function openQuoteSendModal(q) {
     const displayName = s.displayName || 'Wild Board Calculator';
     const subject = encodeURIComponent('Quote from ' + displayName + ' — ' + q.number);
     let bodyText = 'Hi ' + (q.customer.name || '') + ',\n\nPlease find your quote attached.\n\nQuote: ' + q.number + '\nProject: ' + (q.description || '') + '\nTotal: $' + total.toFixed(2) + '\nValid until: ' + (q.validUntil || '');
-    if(q.notes) bodyText += '\n\n' + q.notes;
     bodyText += '\n\n' + displayName;
     const mailTo = 'mailto:' + encodeURIComponent(q.customer.email) + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
     window.open(mailTo, '_blank');
@@ -12437,15 +12614,6 @@ function exportQuotePDF(q) {
   doc.text('Total', margin + 3, ry);
   doc.text('$' + total.toFixed(2), colRight - 3, ry, {align:'right'});
   y = ry + 10;
-
-  // Notes
-  if(q.notes) {
-    checkPage(14);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
-    const noteLines = doc.splitTextToSize(q.notes, pageW - margin * 2);
-    noteLines.forEach(line => { checkPage(5); doc.text(line, margin, y); y += 4; });
-    y += 4;
-  }
 
   doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
   doc.text('Valid until ' + (q.validUntil || ''), margin, y);
